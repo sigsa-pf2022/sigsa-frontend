@@ -4,9 +4,15 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { RegisterPageRoutingModule } from './register-routing.module';
-
+import { Routes, RouterModule } from '@angular/router';
 import { RegisterPage } from './register.page';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: RegisterPage
+  }
+];
 
 @NgModule({
   imports: [
@@ -14,7 +20,7 @@ import { RegisterPage } from './register.page';
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    RegisterPageRoutingModule
+    RouterModule.forChild(routes),
   ],
   declarations: [RegisterPage]
 })
