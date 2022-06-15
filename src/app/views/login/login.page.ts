@@ -1,51 +1,74 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { AvailableResult, BiometryType, Credentials, NativeBiometric } from 'capacitor-native-biometric';
 
 @Component({
   selector: 'app-login',
   template: `
-    <ion-header>
-      <ion-toolbar>
+    <ion-header class="ui-background__light">
+      <ion-toolbar class="ui-toolbar__transparent">
         <ion-buttons slot="start">
           <ion-back-button></ion-back-button>
         </ion-buttons>
-        <ion-title>Iniciar Sesión</ion-title>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content>
-      <form [formGroup]="loginForm" (submit)="onSubmit()">
-        <ion-item lines="full">
-          <ion-label position="floating">Email</ion-label>
-          <ion-input
-            formControlName="email"
-            type="email"
-            inputmode="email"
-            autocomplete="off"
-          ></ion-input>
-        </ion-item>
-        <ion-item lines="full">
-          <ion-label position="floating">Contraseña</ion-label>
-          <ion-input
-            formControlName="password"
-            type="password"
-            autocomplete="off"
-          ></ion-input>
-        </ion-item>
-        <ion-row>
-          <ion-col>
+    <ion-content class="login">
+      <div class="login__logo ui-background__light">
+        <ion-img
+          class="ui-logo__small"
+          src="/assets/images/logos/logo-with-title.png"
+        ></ion-img>
+      </div>
+      <div class="login__content ui-background__light">
+        <form
+          class="login__content__form"
+          [formGroup]="this.loginForm"
+          (submit)="onSubmit()"
+        >
+          <ion-text
+            class="login__content__form__title ui-font-title"
+            color="complementary"
+            >Bienvenido</ion-text
+          >
+          <div class="login__content__form__items">
+            <ion-input
+              class="ui-form-input"
+              formControlName="email"
+              placeholder="Email"
+            ></ion-input>
+            <ion-input
+              class="ui-form-input"
+              formControlName="password"
+              placeholder="Contraseña"
+              type="password"
+            ></ion-input>
+            <ion-text
+              class="login__content__form__items__forgot-password ui-font-text"
+              color="complementary"
+              >¿Olvido su contraseña?</ion-text
+            >
+          </div>
+          <div class="login__content__form__actions">
             <ion-button
+              class="ui-button"
               type="submit"
-              color="danger"
+              color="primary"
               expand="block"
-              [disabled]="!loginForm.valid"
+              [disabled]="!this.loginForm.valid"
             >
               Ingresar
             </ion-button>
-          </ion-col>
-        </ion-row>
-      </form>
+            <div class="login__content__form__actions__secondary">
+              <ion-text class="ui-font-text" color="medium"
+                >No tiene una cuenta?</ion-text
+              >
+              <ion-text class="ui-font-text" color="complementary"
+                > Registrese</ion-text
+              >
+            </div>
+          </div>
+        </form>
+      </div>
     </ion-content>
   `,
   styleUrls: ['./login.page.scss'],
@@ -59,41 +82,5 @@ export class LoginPage implements OnInit {
 
   ngOnInit() {}
 
-  onSubmit() {
-    this.biometricLogin();
-    // try {
-    // } catch (error) {
-    //   console.log(error);
-    // }
-  }
-
-  biometricLogin(){
-    NativeBiometric.isAvailable().then(
-      (result: AvailableResult) => {
-        const isAvailable = result.isAvailable;
-        const isTouchId = result.biometryType === BiometryType.FINGERPRINT;
-        if (isAvailable) {
-          // Get user's credentials
-            // Authenticate using biometrics before logging the user in
-            NativeBiometric.verifyIdentity({
-              reason: 'For easy log in',
-              title: 'Log in',
-              subtitle: 'Maybe add subtitle here?',
-              description: 'Maybe a description too?',
-            }).then(
-              () => {
-                // Authentication successful
-                // this.login(credentials.username, credentials.password);
-              },
-              (error) => {
-                // Failed to authenticate
-              }
-            );
-        }
-      },
-      (error) => {
-        // Couldn't check availability
-      }
-    );
-  }
+  onSubmit() {}
 }

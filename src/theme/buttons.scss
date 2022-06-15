@@ -1,0 +1,19 @@
+.ui-button {
+  text-transform: none;
+  font-family: var(--ui-font-roboto);
+  font-weight: var(--ui-fweight-bold);
+  font-size: var(--ui-fsize-18);
+  --border-radius: 8px;
+  width: 250px;
+  --box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  min-height: 45px;
+  &-outlined{
+    color: var(--ion-color-primary);
+    --border-width:1px;
+    --border-color:var(--ion-color-primary);
+    --border-style: solid;
+    --background: var(--ion-color-white);
+  }
+}
+
+
