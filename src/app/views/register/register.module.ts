@@ -3,12 +3,24 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Routes, RouterModule } from '@angular/router';
-import { RegisterPage } from './register.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: RegisterPage,
+    children: [
+      {
+        path: 'personal-data',
+        loadChildren: () =>
+          import('./personal-data/personal-data.module').then(
+            (m) => m.PersonalDataModule
+          ),
+      },
+      {
+        path: 'user-data',
+        loadChildren: () =>
+          import('./user-data/user-data.module').then((m) => m.UserDataModule),
+      },
+    ],
   },
 ];
 
@@ -20,6 +32,6 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes),
   ],
-  declarations: [RegisterPage],
+  declarations: [],
 })
-export class RegisterPageModule {}
+export class RegisterModule {}

@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { ModalController, NavController } from '@ionic/angular';
+import { SendVerificationEmailModalComponent } from 'src/app/components/send-verification-email-modal/send-verification-email-modal.component';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
 @Component({
   selector: 'app-login',
@@ -62,8 +65,12 @@ import { FormBuilder, Validators } from '@angular/forms';
               <ion-text class="ui-font-text" color="medium"
                 >No tiene una cuenta?</ion-text
               >
-              <ion-text class="ui-font-text" color="complementary"
-                > Registrese</ion-text
+              <ion-text
+                (click)="goToRegister()"
+                class="ui-font-text"
+                color="complementary"
+              >
+                Registrese</ion-text
               >
             </div>
           </div>
@@ -75,12 +82,51 @@ import { FormBuilder, Validators } from '@angular/forms';
 })
 export class LoginPage implements OnInit {
   loginForm = this.fb.group({
-    email: [null, Validators.email],
-    password: null,
+    email: [
+      null,
+      [Validators.compose([Validators.email, Validators.required])],
+    ],
+    password: [
+      null,
+      [Validators.compose([Validators.minLength(6), Validators.required])],
+    ],
   });
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private navController: NavController,
+    private auth: AuthenticationService,
+    private modalController: ModalController
+  ) {}
 
   ngOnInit() {}
 
-  onSubmit() {}
+  onSubmit() {
+    this.auth
+      .signIn(this.loginForm.value)
+      .then((user) => user.emailVerified ? this.goHome() :  this.sendVerificationEmailModal() )
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
+  goHome() {
+    this.navController.navigateRoot(['home']);
+  }
+
+  async sendVerificationEmailModal() {
+    const modal = await this.modalController.create({
+      component: SendVerificationEmailModalComponent,
+      cssClass: 'modal',
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data === 'resend') {
+      await this.auth.sendVerificationMail();
+    }
+    await this.auth.signOut();
+  }
+
+  goToRegister() {
+    this.navController.navigateForward(['/register/personal-data']);
+  }
 }

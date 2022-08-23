@@ -1,25 +1,42 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import {
+  canActivate,
+  redirectLoggedInTo,
+} from '@angular/fire/compat/auth-guard';
+import { AuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: '', redirectTo: 'welcome', pathMatch: 'full' },
   {
     path: 'register',
-    loadChildren: () => import('./views/register/register.module').then( m => m.RegisterPageModule)
+    loadChildren: () =>
+      import('./views/register/register.module').then((m) => m.RegisterModule),
+    ...canActivate(() => redirectLoggedInTo(['home'])),
   },
   {
-    path: 'home',
-    loadChildren: () => import('./views/home/home.module').then( m => m.HomePageModule)
+    path: 'welcome',
+    loadChildren: () =>
+      import('./views/welcome/welcome.module').then((m) => m.WelcomePageModule),
+    ...canActivate(() => redirectLoggedInTo(['home'])),
   },
   {
     path: 'login',
-    loadChildren: () => import('./views/login/login.module').then( m => m.LoginPageModule)
+    loadChildren: () =>
+      import('./views/login/login.module').then((m) => m.LoginPageModule),
+    ...canActivate(() => redirectLoggedInTo(['home'])),
+  },
+  {
+    path: 'home',
+    loadChildren: () =>
+      import('./views/home/home.module').then((m) => m.HomePageModule),
+    canActivate: [AuthGuard],
   },
 ];
 @NgModule({
   imports: [
-    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })
+    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules }),
   ],
-  exports: [RouterModule]
+  exports: [RouterModule],
 })
 export class AppRoutingModule {}

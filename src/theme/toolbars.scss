@@ -1,5 +1,15 @@
-.ui-toolbar{
-    &__transparent{
-        --background: transparent;
+.ui-toolbar {
+  &__transparent {
+    --background: transparent;
+    ion-buttons ion-back-button {
+      color: var(--ion-color-primary);
     }
+  }
+  &__primary {
+    --background: var(--ion-color-primary);
+    color: var(--ion-color-white);
+    ion-buttons ion-back-button {
+      color: var(--ion-color-white);
+    }
+  }
 }
