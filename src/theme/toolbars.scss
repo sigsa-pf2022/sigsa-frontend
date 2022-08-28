@@ -8,8 +8,18 @@
   &__primary {
     --background: var(--ion-color-primary);
     color: var(--ion-color-white);
-    ion-buttons ion-back-button {
-      color: var(--ion-color-white);
+    .toolbar-content {
+      justify-content: center;
+      display: flex;
+    }
+    ion-buttons {
+      ion-back-button {
+        color: var(--ion-color-white);
+      }
+    }
+    ion-icon {
+      width: 35px;
+      height: 35px;
     }
   }
 }

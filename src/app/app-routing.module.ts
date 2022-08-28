@@ -12,25 +12,26 @@ const routes: Routes = [
     path: 'register',
     loadChildren: () =>
       import('./views/register/register.module').then((m) => m.RegisterModule),
-    ...canActivate(() => redirectLoggedInTo(['home'])),
   },
   {
     path: 'welcome',
     loadChildren: () =>
       import('./views/welcome/welcome.module').then((m) => m.WelcomePageModule),
-    ...canActivate(() => redirectLoggedInTo(['home'])),
   },
   {
     path: 'login',
     loadChildren: () =>
       import('./views/login/login.module').then((m) => m.LoginPageModule),
-    ...canActivate(() => redirectLoggedInTo(['home'])),
+  },
+  {
+    path: 'tabs',
+    loadChildren: () =>
+      import('./views/tabs/tabs.module').then((m) => m.TabsPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'home',
-    loadChildren: () =>
-      import('./views/home/home.module').then((m) => m.HomePageModule),
-    canActivate: [AuthGuard],
+    loadChildren: () => import('./views/home/home.module').then( m => m.HomePageModule)
   },
 ];
 @NgModule({

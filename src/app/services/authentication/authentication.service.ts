@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import {
-  AngularFirestore,
-  AngularFirestoreDocument,
-} from '@angular/fire/compat/firestore';
 import { NavController } from '@ionic/angular';
 import { User } from 'src/app/interfaces/user';
 @Injectable({
@@ -13,12 +9,16 @@ export class AuthenticationService {
   userData: User;
   constructor(
     public afAuth: AngularFireAuth,
-    public afs: AngularFirestore,
     public navController: NavController
   ) {
     this.afAuth.authState.subscribe((user) => {
-      this.userData = user && user.emailVerified ? user : null;
-      localStorage.setItem('user', JSON.stringify(this.userData));
+      if (user) {
+        if (user.emailVerified) {
+          this.userData = user;
+          localStorage.setItem('user', JSON.stringify(this.userData));
+          this.navController.navigateRoot(['tabs/home']);
+        }
+      }
     });
   }
 
@@ -32,55 +32,29 @@ export class AuthenticationService {
   }
   // Sign up with email/password
   async signUp(email, password) {
-    try {
-      const result = await this.afAuth.createUserWithEmailAndPassword(
-        email,
-        password
-      );
-      this.sendVerificationMail();
-      this.setUserData(result.user);
-    } catch (error) {
-      window.alert(error.message);
-    }
+    await this.afAuth
+      .createUserWithEmailAndPassword(email, password)
+      .then((result) => {
+        this.sendVerificationMail();
+      })
+      .catch((error) => {
+        throw error.code.split('/')[1];
+      });
   }
   // Sign in with email/password
   async signIn(params) {
     const { email, password } = params;
-    try {
-      const result = await this.afAuth.signInWithEmailAndPassword(
-        email,
-        password
-      );
-      return result.user;
-    } catch (error) {
-      return error;
-    }
+    return await this.afAuth
+      .signInWithEmailAndPassword(email, password)
+      .then((result) => result.user)
+      .catch((error) => {
+        throw error.code.split('/')[1];
+      });
   }
-
-  async signOut(){
+  async signOut() {
     return this.afAuth.signOut();
   }
   async sendVerificationMail() {
-    return this.afAuth.currentUser
-      .then((u: any) => u.sendEmailVerification())
-      .then(() => {
-        // this.router.navigate(['verify-email-address']);
-      });
-  }
-
-  setUserData(user: any) {
-    const userRef: AngularFirestoreDocument<any> = this.afs.doc(
-      `users/${user.uid}`
-    );
-    const userData = {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      photoURL: user.photoURL,
-      emailVerified: user.emailVerified,
-    };
-    return userRef.set(userData, {
-      merge: true,
-    });
+    return (await this.afAuth.currentUser).sendEmailVerification();
   }
 }

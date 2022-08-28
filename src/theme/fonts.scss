@@ -5,9 +5,17 @@
   font-size: 32px;
 }
 
-.ui-font-text {
+.ui-font-modal-title {
   font-family: var(--ui-font-roboto);
   font-style: normal;
   font-weight: 500;
+  font-size: 24px;
+  text-align: center;
+}
+
+.ui-font-text {
+  font-family: var(--ui-font-roboto);
+  font-style: normal;
+  font-weight: 400;
   letter-spacing: -0.3px;
 }

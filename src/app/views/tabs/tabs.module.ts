@@ -1,16 +1,28 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { IonicModule } from '@ionic/angular';
-import { HomePage } from './home.page';
+import { TabsPage } from './tabs.page';
 import { RouterModule, Routes } from '@angular/router';
-import { SharedComponentsModule } from 'src/app/components/shared-components.module';
+import { HomePage } from '../home/home.page';
 import { SwiperModule } from 'swiper/angular';
 
 const routes: Routes = [
   {
     path: '',
-    component: HomePage,
+    component: TabsPage,
+    children: [
+      {
+        path:'home',
+        component: HomePage
+      },
+      {
+        path: '',
+        redirectTo: '/tabs/home',
+        pathMatch: 'full',
+      },
+    ]
   },
 ];
 @NgModule({
@@ -19,9 +31,8 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     RouterModule.forChild(routes),
-    SharedComponentsModule,
-    SwiperModule,
+    SwiperModule
   ],
-  declarations: [HomePage],
+  declarations: [TabsPage],
 })
-export class HomePageModule {}
+export class TabsPageModule {}

@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ModalController, NavController } from '@ionic/angular';
+import {
+  ModalController,
+  NavController,
+  ToastController,
+} from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { SendVerificationEmailModalComponent } from 'src/app/components/send-verification-email-modal/send-verification-email-modal.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
@@ -95,22 +100,28 @@ export class LoginPage implements OnInit {
     private fb: FormBuilder,
     private navController: NavController,
     private auth: AuthenticationService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private toast: ToastController,
+    private translate: TranslateService
   ) {}
 
   ngOnInit() {}
 
-  onSubmit() {
-    this.auth
+  async onSubmit() {
+    await this.auth
       .signIn(this.loginForm.value)
-      .then((user) => user.emailVerified ? this.goHome() :  this.sendVerificationEmailModal() )
+      .then(async (user) => {
+        if (!user.emailVerified) {
+          this.sendVerificationEmailModal();
+        }
+      })
       .catch((error) => {
-        console.log(error);
+        this.showError(error);
       });
   }
 
   goHome() {
-    this.navController.navigateRoot(['home']);
+    this.navController.navigateRoot(['tabs/home']);
   }
 
   async sendVerificationEmailModal() {
@@ -128,5 +139,14 @@ export class LoginPage implements OnInit {
 
   goToRegister() {
     this.navController.navigateForward(['/register/personal-data']);
+  }
+
+  async showError(code: string) {
+    const toast = await this.toast.create({
+      message: this.translate.instant(`login.errors.${code}`),
+      duration: 2000,
+      color: 'danger',
+    });
+    await toast.present();
   }
 }

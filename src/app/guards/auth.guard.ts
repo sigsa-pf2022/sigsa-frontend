@@ -24,6 +24,7 @@ export class AuthGuard implements CanActivate {
     | boolean
     | UrlTree {
     this.user = JSON.parse(localStorage.getItem('user'));
+    console.log(this.user);
     const userVerified = !!this.user && this.user?.emailVerified;
     console.log(userVerified);
     if(userVerified){

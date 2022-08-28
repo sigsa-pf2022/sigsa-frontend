@@ -1,6 +1,19 @@
 {
-    "welcome":{
-        "login":"Iniciar sesión",
-        "register": "Registrarse"
+  "welcome": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse"
+  },
+  "login": {
+    "errors": {
+      "user-not-found": "No se encontro el email y/o contraseña ingresado.",
+      "wrong-password": "La contraseña ingresada es incorrecta.",
+      "too-many-request": "El acceso a esta cuenta se ha desactivado temporalmente debido a muchos intentos fallidos de inicio de sesión. Puede restablecerlo inmediatamente restableciendo su contraseña o puede volver a intentarlo más tarde."
     }
+  },
+  "register": {
+    "errors": {
+      "email-already-in-use": "La dirección de correo electrónico ya está siendo utilizada por otra cuenta.",
+      "invalid-email":"La dirección de correo electrónico tiene un formato incorrecto."
+    }
+  }
 }

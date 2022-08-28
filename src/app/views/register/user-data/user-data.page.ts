@@ -1,7 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { IonDatetime, NavController } from '@ionic/angular';
+import { IonDatetime, ModalController, ToastController } from '@ionic/angular';
+import { TranslateService } from '@ngx-translate/core';
 import { format } from 'date-fns';
+import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { RegisterFormDataService } from '../services/register-form-data.service';
 
@@ -51,7 +53,7 @@ import { RegisterFormDataService } from '../services/register-form-data.service'
         [disabled]="!this.registerForm.valid"
         color="primary"
       >
-        Siguiente
+        Confirmar
       </ion-button>
     </ion-footer>
   `,
@@ -65,8 +67,10 @@ export class UserDataPage implements OnInit {
   formattedDate;
   constructor(
     private registerFormDataService: RegisterFormDataService,
-    private navController: NavController,
-    private authService: AuthenticationService
+    private toast: ToastController,
+    private translate: TranslateService,
+    private authService: AuthenticationService,
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {
@@ -79,12 +83,30 @@ export class UserDataPage implements OnInit {
         this.registerForm.get('email').value,
         this.registerForm.get('password').value
       )
-      .then((res) => {
-        this.navController.navigateRoot(['/login']);
+      .then(async (res) => {
+        await this.successRegister();
+      })
+      .catch(async (error) => {
+        await this.showError(error);
+        console.log(error);
       });
   }
 
-  navigate() {
-    this.navController.navigateForward(['/user-data']);
+  async successRegister() {
+    const modal = await this.modalController.create({
+      component: SuccessCreationAcountComponent,
+      cssClass: 'modal',
+      backdropDismiss: false,
+    });
+    await modal.present();
+  }
+
+  async showError(code: string) {
+    const toast = await this.toast.create({
+      message: this.translate.instant(`register.errors.${code}`),
+      duration: 2000,
+      color:'danger',
+    });
+    await toast.present();
   }
 }

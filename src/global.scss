@@ -16,7 +16,7 @@
 @import "~@ionic/angular/css/normalize.css";
 @import "~@ionic/angular/css/structure.css";
 @import "~@ionic/angular/css/typography.css";
-@import '~@ionic/angular/css/display.css';
+@import "~@ionic/angular/css/display.css";
 
 /* Optional CSS utils that can be commented out */
 @import "~@ionic/angular/css/padding.css";
@@ -26,13 +26,16 @@
 @import "~@ionic/angular/css/flex-utils.css";
 
 /* User Interface Theme */
-@import './theme/backgrounds.scss';
-@import './theme/buttons.scss';
-@import './theme/datetime.scss';
-@import './theme/fonts.scss';
-@import './theme/headers.scss';
-@import './theme/inputs.scss';
-@import './theme/logos.scss';
-@import './theme/modals.scss';
-@import './theme/toolbars.scss';
-@import './theme/footers.scss';
+@import "./theme/backgrounds.scss";
+@import "./theme/buttons.scss";
+@import "./theme/datetime.scss";
+@import "./theme/fonts.scss";
+@import "./theme/headers.scss";
+@import "./theme/inputs.scss";
+@import "./theme/logos.scss";
+@import "./theme/modals.scss";
+@import "./theme/toolbars.scss";
+@import "./theme/footers.scss";
+
+// global.scss
+@import '~swiper/scss';

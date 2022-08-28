@@ -5,10 +5,10 @@ import { ModalController } from '@ionic/angular';
   selector: 'app-send-verification-email-modal',
   template: `<div class="modal-content">
     <div class="body">
-      <ion-title>Atencion!</ion-title>
+      <ion-title>¡Atención!</ion-title>
       <ion-label
         >La cuenta debe confirmar el correo para continuar. Revise la casilla de
-        correo o solicite un reenvio</ion-label
+        correo o solicite un reenvío</ion-label
       >
       <div class="body__actions">
         <ion-button (click)="close()">Cerrar</ion-button>
