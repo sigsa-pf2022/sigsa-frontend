@@ -7,15 +7,13 @@ import {
 } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { Observable } from 'rxjs';
-import { User } from 'src/app/interfaces/user';
 import { AuthenticationService } from '../services/authentication/authentication.service';
 
 @Injectable({
   providedIn: 'root',
 })
-export class AuthGuard implements CanActivate {
-  user: User;
-  constructor(private navController: NavController, private auth: AuthenticationService){}
+export class IsLoggedInGuard implements CanActivate {
+  constructor(private navController: NavController, private auth: AuthenticationService) {}
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
@@ -24,12 +22,10 @@ export class AuthGuard implements CanActivate {
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    this.user = this.auth.user();
-    const userVerified = !!this.user && this.user?.emailVerified;
-    if(userVerified){
-      return true;
+    const userLogged = this.auth.user() !== null;
+    if (userLogged) {
+      this.navController.navigateRoot(['/tabs/home']);
     }
-    this.navController.navigateRoot(['welcome']);
-    return false;
+    return !userLogged;
   }
 }

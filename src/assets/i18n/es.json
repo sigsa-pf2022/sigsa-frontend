@@ -4,6 +4,10 @@
     "register": "Registrarse"
   },
   "login": {
+    "recovery-password":{
+      "success":"El email para recuperar la contraseña ha sido enviado",
+      "invalid-email":"La dirección de correo electrónico tiene un formato incorrecto o no existe."
+    },
     "errors": {
       "user-not-found": "No se encontro el email y/o contraseña ingresado.",
       "wrong-password": "La contraseña ingresada es incorrecta.",

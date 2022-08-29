@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
 @Component({
   selector: 'app-home',
   template: `<ion-header class="ui-background__primary">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-button>
+          <ion-button (click)="logout()">
             <ion-icon
               src="./assets/images/home/personal-profile.svg"
             ></ion-icon>
@@ -45,7 +47,16 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./tabs.page.scss'],
 })
 export class TabsPage implements OnInit {
-  constructor() {}
+  constructor(
+    private auth: AuthenticationService,
+    private navController: NavController
+  ) {}
 
   ngOnInit() {}
+
+  async logout() {
+    await this.auth.signOut().then(() => {
+      this.navController.navigateRoot(['welcome']);
+    });
+  }
 }

@@ -1,3 +1,4 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { NavController } from '@ionic/angular';
@@ -6,9 +7,10 @@ import { User } from 'src/app/interfaces/user';
   providedIn: 'root',
 })
 export class AuthenticationService {
-  userData: User;
+  private userData: User;
   constructor(
     public afAuth: AngularFireAuth,
+    private http: HttpClient,
     public navController: NavController
   ) {
     this.afAuth.authState.subscribe((user) => {
@@ -18,6 +20,9 @@ export class AuthenticationService {
           localStorage.setItem('user', JSON.stringify(this.userData));
           this.navController.navigateRoot(['tabs/home']);
         }
+      } else {
+        localStorage.setItem('user', null);
+        this.navController.navigateRoot(['welcome']);
       }
     });
   }
@@ -41,6 +46,15 @@ export class AuthenticationService {
         throw error.code.split('/')[1];
       });
   }
+
+  async sendPasswordResetEmail(formValue) {
+    return await this.afAuth
+      .sendPasswordResetEmail(formValue.email)
+      .then((result) => result)
+      .catch((error) => {
+        throw error.code.split('/')[1];
+      });
+  }
   // Sign in with email/password
   async signIn(params) {
     const { email, password } = params;
@@ -55,6 +69,10 @@ export class AuthenticationService {
     return this.afAuth.signOut();
   }
   async sendVerificationMail() {
-    return (await this.afAuth.currentUser).sendEmailVerification();
+    return (await this.afAuth.currentUser).sendEmailVerification({
+      url: 'https://sisga.page.link/recovery-password',
+      iOS: { bundleId: 'com.sigsa.sigsa' },
+      handleCodeInApp: true,
+    });
   }
 }

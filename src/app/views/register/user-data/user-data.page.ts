@@ -69,7 +69,7 @@ export class UserDataPage implements OnInit {
     private registerFormDataService: RegisterFormDataService,
     private toast: ToastController,
     private translate: TranslateService,
-    private authService: AuthenticationService,
+    private auth: AuthenticationService,
     private modalController: ModalController
   ) {}
 
@@ -78,7 +78,10 @@ export class UserDataPage implements OnInit {
   }
 
   async onSubmit() {
-    await this.authService
+    // this.auth.register(this.registerForm.value).subscribe(res =>{
+    //   console.log(res);
+    // });
+    await this.auth
       .signUp(
         this.registerForm.get('email').value,
         this.registerForm.get('password').value
@@ -104,7 +107,7 @@ export class UserDataPage implements OnInit {
   async showError(code: string) {
     const toast = await this.toast.create({
       message: this.translate.instant(`register.errors.${code}`),
-      duration: 2000,
+      duration: 5000,
       color:'danger',
     });
     await toast.present();

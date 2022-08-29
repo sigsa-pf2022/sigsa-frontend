@@ -6,6 +6,7 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { TranslateService } from '@ngx-translate/core';
+import { RecoveryPasswordModalComponent } from 'src/app/components/recovery-password-modal/recovery-password-modal.component';
 import { SendVerificationEmailModalComponent } from 'src/app/components/send-verification-email-modal/send-verification-email-modal.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
@@ -53,6 +54,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
             <ion-text
               class="login__content__form__items__forgot-password ui-font-text"
               color="complementary"
+              (click)="openRecoveryPassword()"
               >¿Olvido su contraseña?</ion-text
             >
           </div>
@@ -137,6 +139,14 @@ export class LoginPage implements OnInit {
     await this.auth.signOut();
   }
 
+  async openRecoveryPassword() {
+    const modal = await this.modalController.create({
+      component: RecoveryPasswordModalComponent,
+      cssClass: 'modal',
+    });
+    await modal.present();
+  }
+
   goToRegister() {
     this.navController.navigateForward(['/register/personal-data']);
   }
@@ -144,7 +154,7 @@ export class LoginPage implements OnInit {
   async showError(code: string) {
     const toast = await this.toast.create({
       message: this.translate.instant(`login.errors.${code}`),
-      duration: 2000,
+      duration: 5000,
       color: 'danger',
     });
     await toast.present();
