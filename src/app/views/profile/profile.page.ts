@@ -13,16 +13,19 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
       </ion-toolbar>
     </ion-header>
     <ion-content>
-      <ion-item>
-        <ion-icon src="./assets/images/home/personal-profile.svg"></ion-icon>
-      </ion-item>
-      <app-profile-item
-        *ngFor="let option of options"
-        [title]="option.title"
-        [icon]="option.icon"
-        [content1]="option.content1"
-        [content2]="option.content2"
-      > </app-profile-item>
+      <div class="p__items">
+        <ion-item>
+          <ion-icon src="./assets/images/home/personal-profile.svg"></ion-icon>
+        </ion-item>
+        <app-profile-item
+          *ngFor="let option of options"
+          [title]="option.title"
+          [icon]="option.icon"
+          [content]="option.content"
+        >
+        </app-profile-item>
+
+      </div>
     </ion-content>
   `,
   styleUrls: ['./profile.page.scss'],

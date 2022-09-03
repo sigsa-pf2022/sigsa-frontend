@@ -1,25 +1,32 @@
-.row {
+.pi {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 2px;
+  &__wrapper {
     display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+    width: 100%;
+    &__title {
+      display: flex;
+      ion-icon {
+        font-size: 24px;
+      }
+    }
+    &__data{
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    &__data-toggle{
+        display: flex;
+        margin-top: 10px;
+        align-items: center;
+        ion-toggle{
+            margin-left: auto;
+        }
+    }
   }
-
-.column {
-    flex: 33.33%;
-    padding: 5px;
-}
-.icon-column {
-
-}
-ion-icon {
-    font-size: 25px;
-}
-.profile-icon {
-    display: inline-block;
-    vertical-align: middle;
-    height: 100%;
-}
-.item {
-    background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.3);
-    border-radius: 10px;
-    padding: 2px;
 }

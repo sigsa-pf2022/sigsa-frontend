@@ -10,7 +10,6 @@ export class AuthenticationService {
   private userData: User;
   constructor(
     public afAuth: AngularFireAuth,
-    private http: HttpClient,
     public navController: NavController
   ) {
     this.afAuth.authState.subscribe((user) => {
