@@ -33,6 +33,10 @@ const routes: Routes = [
       import('./views/tabs/tabs.module').then((m) => m.TabsPageModule),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'profile',
+    loadChildren: () => import('./views/profile/profile.module').then( m => m.ProfilePageModule)
+  },
 ];
 @NgModule({
   imports: [

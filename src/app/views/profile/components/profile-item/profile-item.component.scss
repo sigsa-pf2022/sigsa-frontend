@@ -1,0 +1,25 @@
+.row {
+    display: flex;
+  }
+
+.column {
+    flex: 33.33%;
+    padding: 5px;
+}
+.icon-column {
+
+}
+ion-icon {
+    font-size: 25px;
+}
+.profile-icon {
+    display: inline-block;
+    vertical-align: middle;
+    height: 100%;
+}
+.item {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 2px;
+}
