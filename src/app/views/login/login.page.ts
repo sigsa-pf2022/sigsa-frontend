@@ -1,6 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  ComponentRef,
+  ContentChild,
+  OnInit,
+  ViewRef,
+} from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import {
+  IonInput,
   ModalController,
   NavController,
   ToastController,
@@ -45,12 +52,14 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
               formControlName="email"
               placeholder="Email"
             ></ion-input>
-            <ion-input
-              class="ui-form-input"
-              formControlName="password"
-              placeholder="Contraseña"
-              type="password"
-            ></ion-input>
+            <app-password-input>
+              <ion-input
+                type="password"
+                class="ui-form-input"
+                formControlName="password"
+                placeholder="Contraseña"
+              ></ion-input>
+            </app-password-input>
             <ion-text
               class="login__content__form__items__forgot-password ui-font-text"
               color="complementary"
@@ -108,6 +117,8 @@ export class LoginPage implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  ionViewWillEnter() {}
 
   async onSubmit() {
     await this.auth
