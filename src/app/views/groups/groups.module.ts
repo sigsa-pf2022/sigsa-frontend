@@ -6,6 +6,7 @@ import { GroupsPage } from './groups.page';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 import { SwiperModule } from 'swiper/angular';
+import { BrowserModule } from '@angular/platform-browser';
 
 const routes: Routes = [
   {
@@ -15,6 +16,7 @@ const routes: Routes = [
 ];
 @NgModule({
   imports: [
+    BrowserModule,
     CommonModule,
     FormsModule,
     IonicModule,
