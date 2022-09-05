@@ -13,6 +13,7 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AuthenticationService } from './services/authentication/authentication.service';
 import { CommonModule } from '@angular/common';
+import { GroupsPageModule } from './views/groups/groups.module';
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -21,6 +22,7 @@ export function createTranslateLoader(http: HttpClient) {
   declarations: [AppComponent],
   entryComponents: [],
   imports: [
+    GroupsPageModule,
     BrowserModule,
     CommonModule,
     IonicModule.forRoot(),

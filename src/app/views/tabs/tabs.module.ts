@@ -22,20 +22,15 @@ const routes: Routes = [
         path:'groups',
         component: GroupsPage
       },
-      {
-        path: '',
-        redirectTo: '/tabs/home',
-        pathMatch: 'full',
-      },
     ]
   },
 ];
 @NgModule({
   imports: [
+    RouterModule.forChild(routes),
     CommonModule,
     FormsModule,
     IonicModule,
-    RouterModule.forChild(routes),
     SwiperModule
   ],
   declarations: [TabsPage],
