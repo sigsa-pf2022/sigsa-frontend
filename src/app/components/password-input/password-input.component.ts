@@ -1,34 +1,49 @@
-import { Component, ContentChild, OnInit } from '@angular/core';
-import { IonInput } from '@ionic/angular';
+import { Component, Input, OnInit } from '@angular/core';
+import {
+  AbstractControl,
+  ControlContainer,
+  FormGroupDirective,
+} from '@angular/forms';
 
 @Component({
   selector: 'app-password-input',
   template: `
-    <ng-content></ng-content>
-    <a class="type-toggle" (click)="toggleShow()">
-      <ion-icon
-        class="show-option"
-        [hidden]="showPassword"
-        name="eye-off-outline"
-      ></ion-icon>
-
-      <ion-icon
-        class="hide-option"
-        [hidden]="!showPassword"
-        name="eye-outline"
-      ></ion-icon>
-    </a>
+    <ion-input
+      [type]="showPassword ? 'text' : 'password'"
+      class="ui-form-input pi__input"
+      [formControlName]="this.controlName"
+      [placeholder]="this.placeholder"
+    ></ion-input>
+    <ion-icon
+      class="pi__icon"
+      color="medium"
+      slot="end"
+      [name]="pwdIcon"
+      (click)="togglePassword()"
+    >
+    </ion-icon>
   `,
   styleUrls: ['./password-input.component.scss'],
+  viewProviders: [
+    {
+      provide: ControlContainer,
+      useExisting: FormGroupDirective,
+    },
+  ],
 })
 export class PasswordInputComponent implements OnInit {
-  @ContentChild(IonInput) input: IonInput;
+  @Input() controlName: string;
+  @Input() placeholder: string;
+  control: AbstractControl;
   showPassword = false;
-  constructor() {}
-  toggleShow() {
+  pwdIcon = 'eye-outline';
+  constructor(private formGroupDirective: FormGroupDirective) {}
+  togglePassword() {
     this.showPassword = !this.showPassword;
-    this.input.type = this.showPassword ? 'text' : 'password';
+    this.pwdIcon = this.showPassword ? 'eye-off-outline' : 'eye-outline';
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.control = this.formGroupDirective.form.get(this.controlName);
+  }
 }
