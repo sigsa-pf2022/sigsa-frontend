@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { TabsPage } from './tabs.page';
 import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from '../home/home.page';
+import { GroupsPage } from '../groups/groups.page';
 import { SwiperModule } from 'swiper/angular';
 
 const routes: Routes = [
@@ -16,6 +17,10 @@ const routes: Routes = [
       {
         path:'home',
         component: HomePage
+      },
+      {
+        path:'groups',
+        component: GroupsPage
       },
       {
         path: '',

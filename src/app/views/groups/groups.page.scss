@@ -1,0 +1,83 @@
+.home {
+    &__swiper {
+      min-height: 300px;
+      height: 300px;
+      width: 300px;
+      min-width: 300px;
+      &__slide {
+        min-height: 300px;
+        height: 300px;
+        width: 300px;
+        min-width: 300px;
+        display: flex;
+        flex-direction: column;
+      }
+    }
+  }
+.fuente{
+        margin: 15px;
+        width: 140px;
+        height: 23px;
+        left: 22px;
+        top: 108px;
+        font-size: 20px;
+        line-height: 23px;
+        text-align: center;
+        letter-spacing: -0.3px;
+}
+.marco{
+box-sizing: border-box;
+display: flex;
+align-items: center;
+width: 320px;
+height: 70px;
+left: 20px;
+top: 15px;
+margin-block: 20px;
+background: #FFFFFF;
+border: 1px solid rgba(0, 0, 0, 0.15);
+box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.1);
+border-radius: 17px;
+}
+.div{
+display: flex;
+width: 100%;
+align-items: center;
+}
+.foto{
+width: 50px;
+height: 50px;
+left: 38px;
+top: 25px;
+}
+.titulo{
+width: 100px;
+height: 18px;
+left: 105px;
+top: 32px;
+font-size: 15px;
+line-height: 18px;
+letter-spacing: -0.3px;
+
+color: #000000;
+}
+.subtitulo{
+width: 44px;
+height: 12px;
+left: 105px;
+top: 60px;
+font-size: 10px;
+line-height: 12px;
+/* identical to box height */
+
+text-align: center;
+letter-spacing: -0.3px;
+}
+.icon{
+width: 20px;
+height: 20px;
+left: 300px;
+top: 40px;
+color: purple;
+margin-left: auto;
+}
