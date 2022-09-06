@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { PROFILE_OPTIONS } from './constants/profile-options';
 
 @Component({
@@ -14,17 +15,14 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
     </ion-header>
     <ion-content>
       <div class="p__items">
-        <ion-item>
-          <ion-icon src="./assets/images/home/personal-profile.svg"></ion-icon>
-        </ion-item>
         <app-profile-item
           *ngFor="let option of options"
           [title]="option.title"
           [icon]="option.icon"
+          [profileIcon]="option.profileIcon"
           [content]="option.content"
         >
         </app-profile-item>
-
       </div>
     </ion-content>
   `,
@@ -32,7 +30,13 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
 })
 export class ProfilePage implements OnInit {
   options = PROFILE_OPTIONS;
-  constructor() {}
+  constructor(private authenticationService: AuthenticationService) {}
 
   ngOnInit() {}
+  ionViewWillEnter() {
+    this.setUserEmail();
+  }
+  setUserEmail() {
+    this.options[0].title = this.authenticationService.user().email;
+  }
 }

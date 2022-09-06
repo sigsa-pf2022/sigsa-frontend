@@ -1,5 +1,9 @@
 export const PROFILE_OPTIONS = [
   {
+    profileIcon: 'home/personal-profile.svg',
+    title: 'Correo electronico',
+  },
+  {
     icon: 'accessibility-outline',
     title: 'Mis Profesionales',
   },
