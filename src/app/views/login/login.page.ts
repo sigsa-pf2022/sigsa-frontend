@@ -1,13 +1,6 @@
-import {
-  Component,
-  ComponentRef,
-  ContentChild,
-  OnInit,
-  ViewRef,
-} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import {
-  IonInput,
   ModalController,
   NavController,
   ToastController,
@@ -52,7 +45,8 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
               formControlName="email"
               placeholder="Email"
             ></ion-input>
-            <app-password-input controlName="password"> </app-password-input>
+            <app-password-input controlName="password" placeholder="Contraseña">
+            </app-password-input>
             <ion-text
               class="login__content__form__items__forgot-password ui-font-text"
               color="complementary"
