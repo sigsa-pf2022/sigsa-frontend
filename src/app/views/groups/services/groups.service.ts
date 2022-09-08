@@ -10,6 +10,6 @@ export class GroupsService {
   constructor(private http: HttpClient) { }
 
   getFamilyGroupsByUserId(id: string){
-    return this.http.get(`${environment.apiUrl}family-groups?id=${id}`)
+    return this.http.get(`${environment.apiUrl}family-groups?id=${id}`).toPromise();
   }
 }
