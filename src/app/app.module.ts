@@ -12,6 +12,8 @@ import { environment } from 'src/environments/environment';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AuthenticationService } from './services/authentication/authentication.service';
+import { CommonModule } from '@angular/common';
+import { GroupsPageModule } from './views/groups/groups.module';
 import { HomePageModule } from './views/home/home.module';
 import { TabsPageModule } from './views/tabs/tabs.module';
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
@@ -22,8 +24,10 @@ export function createTranslateLoader(http: HttpClient) {
   declarations: [AppComponent],
   entryComponents: [],
   imports: [
+    GroupsPageModule,
     HomePageModule,
     BrowserModule,
+    CommonModule,
     IonicModule.forRoot(),
     AppRoutingModule,
     FormsModule,

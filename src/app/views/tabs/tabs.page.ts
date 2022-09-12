@@ -7,7 +7,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
   template: `<ion-header class="ui-background__primary">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-button (click)="logout()">
+          <ion-button (click)='onPerfil()'>
             <ion-icon
               src="./assets/images/home/personal-profile.svg"
             ></ion-icon>
@@ -19,7 +19,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           </ion-button>
         </ion-buttons>
         <div class="toolbar-content">
-          <ion-icon src="./assets/images/logos/logo-white.svg"></ion-icon>
+          <ion-icon (click)='logout()' src="./assets/images/logos/logo-white.svg"></ion-icon>
         </div>
       </ion-toolbar>
     </ion-header>
@@ -35,7 +35,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           <ion-tab-button tab="clipboard">
             <ion-icon name="clipboard"></ion-icon>
           </ion-tab-button>
-          <ion-tab-button tab="people">
+          <ion-tab-button tab="groups">
             <ion-icon name="people"></ion-icon>
           </ion-tab-button>
           <ion-tab-button tab="meds">
@@ -58,5 +58,8 @@ export class TabsPage implements OnInit {
     await this.auth.signOut().then(() => {
       this.navController.navigateRoot(['welcome']);
     });
+  }
+  onPerfil(){
+    this.navController.navigateRoot(['profile']);
   }
 }

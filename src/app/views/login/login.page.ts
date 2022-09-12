@@ -45,12 +45,8 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
               formControlName="email"
               placeholder="Email"
             ></ion-input>
-            <ion-input
-              class="ui-form-input"
-              formControlName="password"
-              placeholder="Contraseña"
-              type="password"
-            ></ion-input>
+            <app-password-input controlName="password" placeholder="Contraseña">
+            </app-password-input>
             <ion-text
               class="login__content__form__items__forgot-password ui-font-text"
               color="complementary"
@@ -108,6 +104,8 @@ export class LoginPage implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  ionViewWillEnter() {}
 
   async onSubmit() {
     await this.auth
