@@ -6,7 +6,7 @@ import { GroupsService } from './services/groups.service';
   selector: 'app-groups',
   template: `
     <ion-content class="g">
-      <ion-title class="g__title">Mis Grupos</ion-title>
+      <ion-title class="g__title">{{'tabs.groups.title' | translate}}</ion-title>
       <ion-item *ngFor="let group of groups" lines="none" class="g__item marco">
         <div class="g__item__wrap">
           <ion-avatar slot="start" class="g__item__wrap__avatar">
