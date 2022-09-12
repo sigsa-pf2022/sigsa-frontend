@@ -39,3 +39,9 @@
 
 // global.scss
 @import '~swiper/scss';
+@import 'swiper/css/bundle';
+@import '~@ionic/angular/css/ionic-swiper';
+
+.swiper .swiper-slide{
+    justify-content: left;
+}
