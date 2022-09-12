@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { TabsPage } from './tabs.page';
 import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from '../home/home.page';
+import { GroupsPage } from '../groups/groups.page';
 import { SwiperModule } from 'swiper/angular';
 
 const routes: Routes = [
@@ -18,19 +19,18 @@ const routes: Routes = [
         component: HomePage
       },
       {
-        path: '',
-        redirectTo: '/tabs/home',
-        pathMatch: 'full',
+        path:'groups',
+        component: GroupsPage
       },
     ]
   },
 ];
 @NgModule({
   imports: [
+    RouterModule.forChild(routes),
     CommonModule,
     FormsModule,
     IonicModule,
-    RouterModule.forChild(routes),
     SwiperModule
   ],
   declarations: [TabsPage],

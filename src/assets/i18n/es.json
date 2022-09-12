@@ -19,5 +19,10 @@
       "email-already-in-use": "La dirección de correo electrónico ya está siendo utilizada por otra cuenta.",
       "invalid-email":"La dirección de correo electrónico tiene un formato incorrecto."
     }
+  },
+  "tabs":{
+    "groups":{
+      "title": "Mis Grupos"
+    }
   }
 }
