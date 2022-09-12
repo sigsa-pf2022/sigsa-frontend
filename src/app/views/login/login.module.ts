@@ -20,7 +20,7 @@ const routes: Routes = [
     ReactiveFormsModule,
     IonicModule,
     RouterModule.forChild(routes),
-    SharedComponentsModule
+    SharedComponentsModule,
   ],
   declarations: [LoginPage],
 })
