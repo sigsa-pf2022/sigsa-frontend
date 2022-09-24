@@ -1,6 +1,11 @@
 {
-    "welcome":{
-        "login":"Login",
-        "register": "Rgister"
+  "welcome": {
+    "login": "Login",
+    "register": "Rgister"
+  },
+  "tabs": {
+    "groups": {
+      "title": "My Groups"
     }
+  }
 }

@@ -14,7 +14,7 @@ import { Gesture, GestureController } from '@ionic/angular';
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/welcome"></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">Register</ion-title>
+        <ion-title class="ui-header__title-center">Registrarse</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -60,7 +60,8 @@ import { Gesture, GestureController } from '@ionic/angular';
             <ion-content>
               <ion-datetime
                 #bdt
-                [value]="date"
+                [value]="this.maxDate"
+                [max]="this.maxDate"
                 locale="es-ES"
                 presentation="date"
                 (ionChange)="dateChanged(bdt.value)"
@@ -89,7 +90,7 @@ export class PersonalDataPage implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
   registerForm: FormGroup;
   showCalendar = false;
-  date = format(new Date(), 'yyyy-MM-dd');
+  maxDate = format(new Date(new Date().getFullYear() - 18, new Date().getMonth(),new Date().getDay()), 'yyyy-MM-dd');
   // timeout;
   // el;
 

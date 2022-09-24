@@ -17,7 +17,7 @@ import { RegisterFormDataService } from '../services/register-form-data.service'
             defaultHref="/register/personal-data"
           ></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">Register</ion-title>
+        <ion-title class="ui-header__title-center">Registrarse</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -33,18 +33,8 @@ import { RegisterFormDataService } from '../services/register-form-data.service'
           placeholder="Email"
           type="text"
         ></ion-input>
-        <ion-input
-          class="ui-form-input"
-          formControlName="password"
-          placeholder="Contraseña"
-          type="password"
-        ></ion-input>
-        <ion-input
-          class="ui-form-input"
-          formControlName="repeatPassword"
-          placeholder="Repetir Contraseña"
-          type="password"
-        ></ion-input>
+        <app-password-input placeholder="Contraseña" controlName="password"> </app-password-input>
+        <app-password-input placeholder="Repetir contraseña" controlName="repeatPassword"> </app-password-input>
       </form>
     </ion-content>
     <ion-footer class="footer__light">
@@ -108,7 +98,7 @@ export class UserDataPage implements OnInit {
     const toast = await this.toast.create({
       message: this.translate.instant(`register.errors.${code}`),
       duration: 5000,
-      color:'danger',
+      color: 'danger',
     });
     await toast.present();
   }

@@ -31,8 +31,12 @@ const routes: Routes = [
     path: 'tabs',
     loadChildren: () =>
       import('./views/tabs/tabs.module').then((m) => m.TabsPageModule),
-    canActivate: [AuthGuard],
-  },  {
+  },
+  {
+    path: 'profile',
+    loadChildren: () => import('./views/profile/profile.module').then( m => m.ProfilePageModule)
+  },
+  {
     path: 'new-group',
     loadChildren: () => import('./views/new-group/new-group.module').then( m => m.NewGroupPageModule)
   },
