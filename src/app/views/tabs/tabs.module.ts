@@ -7,6 +7,7 @@ import { TabsPage } from './tabs.page';
 import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from '../home/home.page';
 import { SwiperModule } from 'swiper/angular';
+import { NewGroupPage } from '../new-group/new-group.page';
 
 const routes: Routes = [
   {
@@ -16,6 +17,10 @@ const routes: Routes = [
       {
         path:'home',
         component: HomePage
+      },
+      {
+        path:'new-group',
+        component: NewGroupPage
       },
       {
         path: '',

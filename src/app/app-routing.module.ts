@@ -32,7 +32,11 @@ const routes: Routes = [
     loadChildren: () =>
       import('./views/tabs/tabs.module').then((m) => m.TabsPageModule),
     canActivate: [AuthGuard],
+  },  {
+    path: 'new-group',
+    loadChildren: () => import('./views/new-group/new-group.module').then( m => m.NewGroupPageModule)
   },
+
 ];
 @NgModule({
   imports: [

@@ -35,7 +35,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           <ion-tab-button tab="clipboard">
             <ion-icon name="clipboard"></ion-icon>
           </ion-tab-button>
-          <ion-tab-button tab="people">
+          <ion-tab-button tab="new-group">
             <ion-icon name="people"></ion-icon>
           </ion-tab-button>
           <ion-tab-button tab="meds">
