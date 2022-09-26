@@ -8,6 +8,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from '../home/home.page';
 import { GroupsPage } from '../groups/groups.page';
 import { SwiperModule } from 'swiper/angular';
+import { SharedComponentsHomeModule } from '../home/components/shared-components-home.module';
 
 const routes: Routes = [
   {
@@ -31,7 +32,9 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     IonicModule,
-    SwiperModule
+    RouterModule.forChild(routes),
+    SwiperModule,
+    SharedComponentsHomeModule
   ],
   declarations: [TabsPage],
 })

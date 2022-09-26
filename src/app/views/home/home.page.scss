@@ -1,16 +1,5 @@
-.home {
-  &__swiper {
-    min-height: 300px;
-    height: 300px;
-    width: 300px;
-    min-width: 300px;
-    &__slide {
-      min-height: 300px;
-      height: 300px;
-      width: 300px;
-      min-width: 300px;
-      display: flex;
-      flex-direction: column;
-    }
+:host {
+  .home {
+    margin: 12px;
   }
 }
