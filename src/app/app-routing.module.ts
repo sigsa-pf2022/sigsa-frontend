@@ -1,10 +1,5 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import {
-  canActivate,
-  redirectLoggedInTo,
-} from '@angular/fire/compat/auth-guard';
-import { AuthGuard } from './guards/auth.guard';
 import { IsLoggedInGuard } from './guards/is-logged-in.guard';
 
 const routes: Routes = [

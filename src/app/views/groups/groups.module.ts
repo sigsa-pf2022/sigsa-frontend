@@ -14,12 +14,7 @@ export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
 }
 
-const routes: Routes = [
-  {
-    path: '',
-    component: GroupsPage,
-  },
-];
+const routes: Routes = [];
 @NgModule({
   imports: [
     RouterModule.forChild(routes),
@@ -38,4 +33,3 @@ const routes: Routes = [
   declarations: [GroupsPage],
 })
 export class GroupsPageModule {}
-
