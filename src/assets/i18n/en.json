@@ -3,6 +3,23 @@
     "login": "Login",
     "register": "Register"
   },
+  "login": {
+    "recovery-password":{
+      "success":"Password recovery email has been sent.",
+      "invalid-email":"The email address is incorrectly formatted or does not exist."
+    },
+    "errors": {
+      "user-not-found": "The email/password combination is incorrect.",
+      "wrong-password": "The email/password combination is incorrect.",
+      "too-many-request": "Access to this account has been temporarily disabled due to many failed login attempts. You can restore it immediately by resetting your password or you can try again later."
+    }
+  },
+  "register": {
+    "errors": {
+      "email-already-in-use": "The email address is invalid.",
+      "invalid-email":"The email address is invalid."
+    }
+  },
   "tabs": {
     "groups": {
       "title": "My Groups"

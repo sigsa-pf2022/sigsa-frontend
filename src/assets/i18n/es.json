@@ -5,12 +5,12 @@
   },
   "login": {
     "recovery-password":{
-      "success":"El email para recuperar la contraseña ha sido enviado",
+      "success":"El email para recuperar la contraseña ha sido enviado.",
       "invalid-email":"La dirección de correo electrónico tiene un formato incorrecto o no existe."
     },
     "errors": {
-      "user-not-found": "No se encontro el email y/o contraseña ingresado.",
-      "wrong-password": "La contraseña ingresada es incorrecta.",
+      "user-not-found": "La combinación email/contraseña es incorrecta.",
+      "wrong-password": "La combinación email/contraseña es incorrecta.",
       "too-many-request": "El acceso a esta cuenta se ha desactivado temporalmente debido a muchos intentos fallidos de inicio de sesión. Puede restablecerlo inmediatamente restableciendo su contraseña o puede volver a intentarlo más tarde."
     }
   },

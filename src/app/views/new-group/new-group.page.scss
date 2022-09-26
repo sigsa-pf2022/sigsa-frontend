@@ -1,0 +1,14 @@
+.pd {
+  background-color: var(--ion-color-white);
+  &__img {
+    margin-top: 35px;
+  }
+  &__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 35px 16px 0;
+  }
+}
