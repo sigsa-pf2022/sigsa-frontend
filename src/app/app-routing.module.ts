@@ -1,10 +1,5 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import {
-  canActivate,
-  redirectLoggedInTo,
-} from '@angular/fire/compat/auth-guard';
-import { AuthGuard } from './guards/auth.guard';
 import { IsLoggedInGuard } from './guards/is-logged-in.guard';
 
 const routes: Routes = [
@@ -31,12 +26,16 @@ const routes: Routes = [
     path: 'tabs',
     loadChildren: () =>
       import('./views/tabs/tabs.module').then((m) => m.TabsPageModule),
-    canActivate: [AuthGuard],
   },
   {
     path: 'profile',
     loadChildren: () => import('./views/profile/profile.module').then( m => m.ProfilePageModule)
   },
+  {
+    path: 'new-group',
+    loadChildren: () => import('./views/new-group/new-group.module').then( m => m.NewGroupPageModule)
+  },
+
 ];
 @NgModule({
   imports: [

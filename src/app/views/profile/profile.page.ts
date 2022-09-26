@@ -8,7 +8,7 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
     <ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-back-button defaultHref="/welcome"></ion-back-button>
+          <ion-back-button defaultHref="/tabs/home"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">Mi Perfil</ion-title>
       </ion-toolbar>
