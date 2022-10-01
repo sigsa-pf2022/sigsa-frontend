@@ -17,11 +17,9 @@ export class AuthenticationService {
         if (user.emailVerified) {
           this.userData = user;
           localStorage.setItem('user', JSON.stringify(this.userData));
-          this.navController.navigateRoot(['tabs/home']);
         }
       } else {
         localStorage.setItem('user', null);
-        this.navController.navigateRoot(['welcome']);
       }
     });
   }

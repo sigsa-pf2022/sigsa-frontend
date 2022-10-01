@@ -10,41 +10,6 @@
         flex-direction: column;
         height: 100%;
       }
-      &__item {
-        display: flex;
-        align-items: center;
-        height: 70px;
-        border: 1px solid rgba(0, 0, 0, 0.15);
-        border-radius: 17px;
-        --inner-padding-end: 0;
-        &__wrap {
-          display: flex;
-          width: 100%;
-          align-items: center;
-          &__avatar {
-            width: 50px;
-            height: 50px;
-          }
-          &__description {
-            margin-left: 18px;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            &__title {
-              font-size: 18px;
-            }
-            &__subtitle {
-              font-size: 12px;
-            }
-          }
-          &__icon {
-            width: 20px;
-            height: 20px;
-            color: purple;
-            margin-left: auto;
-          }
-        }
-      }
     }
     &__fab {
       --box-shadow: none;

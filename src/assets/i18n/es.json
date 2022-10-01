@@ -16,8 +16,9 @@
   },
   "register": {
     "errors": {
-      "email-already-in-use": "La dirección de correo electrónico ya está siendo utilizada por otra cuenta.",
-      "invalid-email":"La dirección de correo electrónico tiene un formato incorrecto."
+      "weak-password": "La contraseña debe ser de al menos 6 caracteres",
+      "email-already-in-use": "La dirección de correo es inválida.",
+      "invalid-email":"La dirección de correo es inválida."
     }
   },
   "tabs":{

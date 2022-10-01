@@ -7,6 +7,7 @@ import { SharedComponentsModule } from 'src/app/components/shared-components.mod
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
+import { SharedComponentsGroupsModule } from './components/shared-components-group.module';
 
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function createTranslateLoader(http: HttpClient) {
@@ -18,6 +19,7 @@ export function createTranslateLoader(http: HttpClient) {
     CommonModule,
     FormsModule,
     IonicModule,
+    SharedComponentsGroupsModule,
     TranslateModule.forChild({
       loader: {
         provide: TranslateLoader,

@@ -24,7 +24,7 @@ export class GroupsService {
     formData.append('bloodType', data.bloodType);
     formData.append('birthday', data.birthday);
     formData.append('createdBy', user);
-    return this.http.post(`${environment.apiUrl}create-group`, formData);
+    return this.http.post(`${environment.apiUrl}create-group`, formData).toPromise();
   }
 
   getGroupImage(url: string) {

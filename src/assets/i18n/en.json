@@ -16,6 +16,7 @@
   },
   "register": {
     "errors": {
+      "weak-password": "Password must be at least 6 characters",
       "email-already-in-use": "The email address is invalid.",
       "invalid-email":"The email address is invalid."
     }

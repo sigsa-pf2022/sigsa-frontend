@@ -113,6 +113,8 @@ export class LoginPage implements OnInit {
       .then(async (user) => {
         if (!user.emailVerified) {
           this.sendVerificationEmailModal();
+        }else{
+          this.navController.navigateRoot(['/tabs/home']);
         }
       })
       .catch((error) => {

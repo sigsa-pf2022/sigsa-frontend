@@ -1,41 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,  } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { FamilyGroup } from './interfaces/familyGroup';
 import { GroupsService } from './services/groups.service';
 
 @Component({
   selector: 'app-groups',
   template: `
-    <ion-content class="g">
+    <ion-content class="g" *ngIf="this.groups">
       <div class="g__content">
         <ion-label class="g__content__title">{{
           'tabs.groups.title' | translate
         }}</ion-label>
-        <ion-item
-          *ngFor="let group of groups"
-          lines="none"
-          class="g__content__item"
-        >
-          <div class="g__content__item__wrap">
-            <ion-avatar slot="start" class="g__content__item__wrap__avatar">
-              <ion-img [src]="group.imgUrl"></ion-img>
-            </ion-avatar>
-            <div class="g__content__item__wrap__description">
-              <ion-label
-                class="g__content__item__wrap__description__title titulo"
-                >{{ group.name }}</ion-label
-              >
-              <ion-label
-                class="g__content__item__wrap__description__subtitle subtitulo"
-                >{{ group.members.length }} miembros</ion-label
-              >
-            </div>
-            <ion-icon
-              name="chevron-forward-outline"
-              class="g__content__item__wrap__icon"
-            ></ion-icon>
-          </div>
-        </ion-item>
+        <app-group-item *ngFor="let group of this.groups" [group]="group"></app-group-item>
       </div>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="navigateTo()" class="g__fab">
@@ -51,7 +28,8 @@ export class GroupsPage implements OnInit {
   constructor(
     private groupsService: GroupsService,
     private navController: NavController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private authService: AuthenticationService
   ) {}
 
   ngOnInit() {}
@@ -64,15 +42,16 @@ export class GroupsPage implements OnInit {
     if (!this.groups) {
       await this.showLoading();
       await this.groupsService
-        .getFamilyGroupsByUserId('fIgMDiWRLBf9loIyIzGEvnK3zQ52')
-        .then(async (res: FamilyGroup[]) => {
+      .getFamilyGroupsByUserId(this.authService.user().uid)
+      .then(async (res: FamilyGroup[]) => {
+        if(res){
           for (const fg of res) {
-            console.log(fg);
             fg.imgUrl = URL.createObjectURL(
               await this.groupsService.getGroupImage(fg.imgUrl)
-            );
+              );
+            }
+            this.groups = res;
           }
-          this.groups = res;
         });
       this.closeLoading();
     }
@@ -91,6 +70,6 @@ export class GroupsPage implements OnInit {
   }
 
   navigateTo() {
-    this.navController.navigateForward(['/new-group']);
+    this.navController.navigateRoot(['/new-group']);
   }
 }

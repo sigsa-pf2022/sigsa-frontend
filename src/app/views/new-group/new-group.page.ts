@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { IonDatetime, ModalController, ToastController } from '@ionic/angular';
+import { IonDatetime, ModalController, NavController, ToastController } from '@ionic/angular';
 import { DateFormatterService } from 'src/app/services/shared/date-formatter.service';
 import { format, parseISO } from 'date-fns';
 import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
@@ -81,6 +81,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
               <ion-datetime
                 #bdt
                 [value]="date"
+                [max]="this.maxDate"
                 locale="es-ES"
                 presentation="date"
                 (ionChange)="dateChanged(bdt.value)"
@@ -96,7 +97,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
         </ion-modal>
         <ion-button
           (click)="onSubmit()"
-          [disabled]="!this.form.valid"
+          [disabled]="!isFormValid()"
           color="primary"
         >
           Confirmar grupo
@@ -112,6 +113,7 @@ export class NewGroupPage implements OnInit {
   showCalendar = false;
   date = format(new Date(), 'yyyy-MM-dd');
   src = '';
+  maxDate = format(new Date(), 'yyyy-MM-dd');
   file;
   form = this.fb.group({
     name: ['', Validators.required],
@@ -128,15 +130,19 @@ export class NewGroupPage implements OnInit {
     private toast: ToastController,
     private translate: TranslateService,
     private groupsService: GroupsService,
-    private authService: AuthenticationService
+    private authService: AuthenticationService,
+    private navController: NavController
   ) {}
 
   ngOnInit() {}
 
+  isFormValid(){
+    return this.form.valid && this.file;
+  }
   async onSubmit() {
-    this.groupsService
+    await this.groupsService
       .createGroup(this.form.value, this.authService.user().uid, this.file)
-      .subscribe((res) => console.log(res));
+      .then((res) => this.navController.navigateRoot(['/tabs/groups']));
   }
   ionViewWillEnter() {
   }
