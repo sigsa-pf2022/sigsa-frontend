@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { REMINDERS_TYPE } from '../../constants/remindersType';
+import { REMINDERS_TYPE } from 'src/app/views/home/constants/remindersType';
 
 @Component({
   selector: 'app-reminders',
@@ -28,7 +28,7 @@ import { REMINDERS_TYPE } from '../../constants/remindersType';
         <ion-label>Documentos</ion-label>
       </ion-segment-button>
     </ion-segment>
-    <ion-list class="rem__list">
+    <ion-list class="rem__list" [ngStyle]="{'min-height': [this.height]}">
       <ion-item
         *ngFor="let reminder of this.reminders"
         class="rem__list__item"
@@ -53,6 +53,7 @@ import { REMINDERS_TYPE } from '../../constants/remindersType';
 })
 export class RemindersComponent implements OnInit {
   @Input() reminders;
+  @Input() height = '350px';
   @Output() changeReminders = new EventEmitter<string>();
   remindersTypes = REMINDERS_TYPE;
   activeSegment: string;

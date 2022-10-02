@@ -33,7 +33,11 @@ const routes: Routes = [
   },
   {
     path: 'new-group',
-    loadChildren: () => import('./views/new-group/new-group.module').then( m => m.NewGroupPageModule)
+    loadChildren: () => import('./views/groups/new-group/new-group.module').then( m => m.NewGroupPageModule)
+  },
+  {
+    path: 'groups-home/:id',
+    loadChildren: () => import('./views/groups/group-home/group-home.module').then( m => m.GroupHomePageModule)
   },
 
 ];

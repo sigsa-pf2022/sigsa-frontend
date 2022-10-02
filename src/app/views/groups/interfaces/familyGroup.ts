@@ -1,7 +1,10 @@
+import { Dependent } from './Dependent';
+
 export interface FamilyGroup {
-  createdBy: object; // Replace to user
-  dependent: object; // Replace to dependent
+  createdBy: any; // Replace to user
+  dependent: Dependent; // Replace to dependent
   imgUrl: any;
   members: object[];
   name: string;
+  id?: string;
 }

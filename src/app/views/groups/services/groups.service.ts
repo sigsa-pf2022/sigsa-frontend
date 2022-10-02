@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
+import { FamilyGroup } from '../interfaces/FamilyGroup';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,13 @@ export class GroupsService {
 
   getFamilyGroupsByUserId(id: string) {
     return this.http
-      .get(`${environment.apiUrl}family-groups?id=${id}`)
+      .get(`${environment.apiUrl}family-groups?userId=${id}`)
+      .toPromise();
+  }
+
+  getFamilyGroupById(id: string) {
+    return this.http
+      .get<FamilyGroup>(`${environment.apiUrl}family-group?id=${id}`)
       .toPromise();
   }
 

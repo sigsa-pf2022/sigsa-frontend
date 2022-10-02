@@ -1,0 +1,57 @@
+:host {
+  ion-content {
+    --background: var(--ion-color-light);
+  }
+  .gh {
+    &__item {
+      margin: 8px;
+      border-radius: 10px;
+      box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.21);
+      &__wrapper {
+        display: flex;
+        width: 100%;
+        --inner-padding-end: 0;
+        &__img {
+          height: 100px;
+          min-width: 100px;
+          ion-img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+          }
+        }
+        &__data {
+          padding: 5px 0 5px 10px;
+          display: flex;
+          flex-direction: column;
+          font-family: var(--ui-font-roboto);
+          font-style: normal;
+          gap: 4px;
+          justify-content: center;
+          &__title {
+            font-size: 20px;
+          }
+          &__info {
+            font-weight: 400;
+            font-size: 14px;
+          }
+        }
+      }
+    }
+    &__fab {
+      &__list {
+        min-width: 150px;
+        gap: 16px;
+        align-items: flex-start;
+        &__button {
+          display: flex;
+          padding: 8px;
+          gap: 4px;
+          align-items: center;
+          border-radius: 10px;
+          background-color: var(--ion-color-primary);
+        }
+      }
+    }
+  }
+}

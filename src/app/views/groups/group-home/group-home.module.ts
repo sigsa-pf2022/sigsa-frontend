@@ -2,27 +2,14 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { TabsPage } from './tabs.page';
+import { GroupHomePage } from './group-home.page';
 import { RouterModule, Routes } from '@angular/router';
-import { HomePage } from '../home/home.page';
-import { GroupsPage } from '../groups/groups.page';
-import { SwiperModule } from 'swiper/angular';
+import { SharedComponentsGroupsModule } from '../components/shared-components-group.module';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
-
 const routes: Routes = [
   {
     path: '',
-    component: TabsPage,
-    children: [
-      {
-        path: 'home',
-        component: HomePage,
-      },
-      {
-        path: 'groups',
-        component: GroupsPage,
-      },
-    ],
+    component: GroupHomePage,
   },
 ];
 @NgModule({
@@ -31,9 +18,9 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     IonicModule,
-    SwiperModule,
-    SharedComponentsModule,
+    SharedComponentsGroupsModule,
+    SharedComponentsModule
   ],
-  declarations: [TabsPage],
+  declarations: [GroupHomePage],
 })
-export class TabsPageModule {}
+export class GroupHomePageModule {}

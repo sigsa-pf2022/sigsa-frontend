@@ -1,12 +1,17 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { IonDatetime, ModalController, NavController, ToastController } from '@ionic/angular';
+import {
+  IonDatetime,
+  ModalController,
+  NavController,
+  ToastController,
+} from '@ionic/angular';
 import { DateFormatterService } from 'src/app/services/shared/date-formatter.service';
 import { format, parseISO } from 'date-fns';
 import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
 import { TranslateService } from '@ngx-translate/core';
 import { Camera, CameraResultType, ImageOptions } from '@capacitor/camera';
-import { GroupsService } from '../groups/services/groups.service';
+import { GroupsService } from '../services/groups.service';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
 @Component({
@@ -136,7 +141,7 @@ export class NewGroupPage implements OnInit {
 
   ngOnInit() {}
 
-  isFormValid(){
+  isFormValid() {
     return this.form.valid && this.file;
   }
   async onSubmit() {
@@ -144,8 +149,7 @@ export class NewGroupPage implements OnInit {
       .createGroup(this.form.value, this.authService.user().uid, this.file)
       .then((res) => this.navController.navigateRoot(['/tabs/groups']));
   }
-  ionViewWillEnter() {
-  }
+  ionViewWillEnter() {}
 
   openCalendar() {
     this.showCalendar = !this.showCalendar;
