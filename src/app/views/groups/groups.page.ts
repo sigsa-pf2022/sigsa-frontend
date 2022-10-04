@@ -1,7 +1,7 @@
-import { Component, OnInit,  } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { FamilyGroup } from './interfaces/familyGroup';
+import { FamilyGroup } from './interfaces/FamilyGroup';
 import { GroupsService } from './services/groups.service';
 
 @Component({
@@ -12,7 +12,11 @@ import { GroupsService } from './services/groups.service';
         <ion-label class="g__content__title">{{
           'tabs.groups.title' | translate
         }}</ion-label>
-        <app-group-item *ngFor="let group of this.groups" [group]="group"></app-group-item>
+        <app-group-item
+          *ngFor="let group of this.groups"
+          [group]="group"
+          (click)="goToGroupHome(group.id)"
+        ></app-group-item>
       </div>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="navigateTo()" class="g__fab">
@@ -37,17 +41,21 @@ export class GroupsPage implements OnInit {
   ionViewWillEnter() {
     this.getGroups();
   }
+  goToGroupHome(groupId: string) {
+    return this.navController.navigateForward([`/groups-home/${groupId}`]);
+  }
 
   async getGroups() {
     if (!this.groups) {
       await this.showLoading();
       await this.groupsService
-      .getFamilyGroupsByUserId(this.authService.user().uid)
-      .then(async (res: FamilyGroup[]) => {
-        if(res){
-          for (const fg of res) {
-            fg.imgUrl = URL.createObjectURL(
-              await this.groupsService.getGroupImage(fg.imgUrl)
+        .getFamilyGroupsByUserId(this.authService.user().uid)
+        .then(async (res: FamilyGroup[]) => {
+          console.log(res);
+          if (res) {
+            for (const fg of res) {
+              fg.imgUrl = URL.createObjectURL(
+                await this.groupsService.getGroupImage(fg.imgUrl)
               );
             }
             this.groups = res;

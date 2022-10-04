@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { NextEvent } from 'src/app/views/home/interfaces/next-event';
 import SwiperCore, { Autoplay, Navigation, SwiperOptions } from 'swiper';
-import { NextEvent } from '../../interfaces/next-event';
 SwiperCore.use([Autoplay, Navigation]);
 @Component({
   selector: 'app-next-events',

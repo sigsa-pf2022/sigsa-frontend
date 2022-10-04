@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { HomePage } from './home.page';
 import { SwiperModule } from 'swiper/angular';
-import { SharedComponentsHomeModule } from './components/shared-components-home.module';
+import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 
 @NgModule({
   imports: [
@@ -12,7 +12,7 @@ import { SharedComponentsHomeModule } from './components/shared-components-home.
     FormsModule,
     IonicModule,
     SwiperModule,
-    SharedComponentsHomeModule,
+    SharedComponentsModule
   ],
   declarations: [HomePage],
 })
