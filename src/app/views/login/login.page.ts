@@ -5,7 +5,6 @@ import {
   NavController,
   ToastController,
 } from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
 import { RecoveryPasswordModalComponent } from 'src/app/components/recovery-password-modal/recovery-password-modal.component';
 import { SendVerificationEmailModalComponent } from 'src/app/components/send-verification-email-modal/send-verification-email-modal.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -100,7 +99,6 @@ export class LoginPage implements OnInit {
     private auth: AuthenticationService,
     private modalController: ModalController,
     private toast: ToastController,
-    private translate: TranslateService
   ) {}
 
   ngOnInit() {}
@@ -110,16 +108,20 @@ export class LoginPage implements OnInit {
   async onSubmit() {
     await this.auth
       .signIn(this.loginForm.value)
-      .then(async (user) => {
-        if (!user.emailVerified) {
-          this.sendVerificationEmailModal();
-        }else{
-          this.navController.navigateRoot(['/tabs/home']);
-        }
-      })
-      .catch((error) => {
-        this.showError(error);
-      });
+      .then(() => this.goHome())
+      .catch((error) => this.showError(error.error.message));
+    // await this.auth
+    //   .signIn(this.loginForm.value)
+    //   .then(async (user) => {
+    //     if (!user.emailVerified) {
+    //       this.sendVerificationEmailModal();
+    //     }else{
+    //       this.navController.navigateRoot(['/tabs/home']);
+    //     }
+    //   })
+    //   .catch((error) => {
+    //     this.showError(error);
+    //   });
   }
 
   goHome() {
@@ -153,7 +155,8 @@ export class LoginPage implements OnInit {
 
   async showError(code: string) {
     const toast = await this.toast.create({
-      message: this.translate.instant(`login.errors.${code}`),
+      // message: this.translate.instant(`login.errors.${code}`),
+      message: code,
       duration: 5000,
       color: 'danger',
     });

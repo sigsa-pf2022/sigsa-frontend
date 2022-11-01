@@ -11,7 +11,6 @@ import { SharedComponentsModule } from 'src/app/components/shared-components.mod
     CommonModule,
     FormsModule,
     IonicModule,
-    SwiperModule,
     SharedComponentsModule
   ],
   declarations: [HomePage],
