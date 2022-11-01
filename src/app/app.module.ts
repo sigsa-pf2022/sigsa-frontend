@@ -15,7 +15,7 @@ import { AuthenticationService } from './services/authentication/authentication.
 import { CommonModule } from '@angular/common';
 import { GroupsPageModule } from './views/groups/groups.module';
 import { HomePageModule } from './views/home/home.module';
-import { TabsPageModule } from './views/tabs/tabs.module';
+import { AppointmentsPageModule } from './views/appointments/appointments.module';
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -25,6 +25,7 @@ export function createTranslateLoader(http: HttpClient) {
   entryComponents: [],
   imports: [
     GroupsPageModule,
+    AppointmentsPageModule,
     HomePageModule,
     BrowserModule,
     CommonModule,

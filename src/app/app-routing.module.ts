@@ -39,7 +39,14 @@ const routes: Routes = [
     path: 'groups-home/:id',
     loadChildren: () => import('./views/groups/group-home/group-home.module').then( m => m.GroupHomePageModule)
   },
-
+  {
+    path: 'appointments',
+    loadChildren: () => import('./views/appointments/appointments.module').then( m => m.AppointmentsPageModule)
+  },
+  {
+    path: 'doctors',
+    loadChildren: () => import('./views/doctors/doctors.module').then( m => m.DoctorsPageModule)
+  },
 ];
 @NgModule({
   imports: [

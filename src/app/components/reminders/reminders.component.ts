@@ -28,26 +28,10 @@ import { REMINDERS_TYPE } from 'src/app/views/home/constants/remindersType';
         <ion-label>Documentos</ion-label>
       </ion-segment-button>
     </ion-segment>
-    <ion-list class="rem__list" [ngStyle]="{'min-height': [this.height]}">
-      <ion-item
-        *ngFor="let reminder of this.reminders"
-        class="rem__list__item"
-        lines="full"
-      >
-        <div class="rem__list__item__img">
-          <ion-img
-            [src]="'assets/images/reminders/' + reminder.type + '.svg'"
-          ></ion-img>
-        </div>
-        <div class="rem__list__item__description">
-          <ion-label>{{ reminder.title }}</ion-label>
-          <ion-label *ngIf="reminder.dosis">{{
-            'Proxima ingesta: ' + reminder.nextIngestion
-          }}</ion-label>
-        </div>
-        <ion-icon class="rem__list__item__action" name="chevron-forward-outline" color="primary"></ion-icon>
-      </ion-item>
-    </ion-list>
+    <app-items-list
+      [items]="this.reminders"
+      [height]="this.height"
+    ></app-items-list>
   </div>`,
   styleUrls: ['./reminders.component.scss'],
 })

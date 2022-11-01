@@ -1,0 +1,18 @@
+:host {
+  .dn {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 20px;
+    &__img {
+      display: flex;
+      margin: auto;
+      width: 200px;
+    }
+    &__form {
+      margin-top: 24px;
+      display: flex;
+      flex-direction: column;
+      row-gap: 24px;
+    }
+  }
+}

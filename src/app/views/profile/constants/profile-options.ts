@@ -6,6 +6,10 @@ export const PROFILE_OPTIONS = [
   {
     icon: 'accessibility-outline',
     title: 'Mis Profesionales',
+    action: {
+      type: 'navigate',
+      payload: '/doctors'
+    }
   },
   {
     icon: 'time-outline',

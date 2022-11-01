@@ -1,9 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-profile-item',
   template: `
-    <ion-item class="pi" lines="none">
+    <ion-item class="pi" lines="none" (click)="emitAction()">
       <div class="pi__wrapper">
         <div class="pi__wrapper__title">
           <ng-container *ngIf="this.profileIcon">
@@ -45,9 +45,14 @@ export class ProfileItemComponent implements OnInit {
   @Input() title: string;
   @Input() profileIcon: string;
   @Input() icon: string;
+  @Input() action: any;
   @Input() content: any[];
-
+  @Output() doAction = new EventEmitter<any>();
   constructor() {}
 
   ngOnInit() {}
+
+  emitAction(){
+    return this.doAction.emit(this.action);
+  }
 }

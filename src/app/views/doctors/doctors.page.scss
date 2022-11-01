@@ -1,0 +1,23 @@
+:host {
+  .drs {
+    --padding-end: 16px;
+    --padding-start: 16px;
+    &__title {
+      font-size: 20px;
+    }
+    &__search {
+      position: relative;
+      --padding-start: 30px;
+      margin-top: 12px;
+      margin-bottom: 24px;
+      &__icon {
+        position: absolute;
+        z-index: 100;
+        left: 5px;
+      }
+    }
+    &__fab {
+      --box-shadow: none;
+    }
+  }
+}

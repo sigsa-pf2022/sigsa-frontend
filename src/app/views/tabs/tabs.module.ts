@@ -8,6 +8,7 @@ import { HomePage } from '../home/home.page';
 import { GroupsPage } from '../groups/groups.page';
 import { SwiperModule } from 'swiper/angular';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
+import { AppointmentsPage } from '../appointments/appointments.page';
 
 const routes: Routes = [
   {
@@ -21,6 +22,10 @@ const routes: Routes = [
       {
         path: 'groups',
         component: GroupsPage,
+      },
+      {
+        path: 'appointment',
+        component: AppointmentsPage,
       },
     ],
   },

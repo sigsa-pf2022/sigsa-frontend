@@ -10,6 +10,9 @@ import { HeaderComponent } from './header/header.component';
 import { EventCardComponent } from './event-card/event-card.component';
 import { RemindersComponent } from './reminders/reminders.component';
 import { NextEventsComponent } from './next-events/next-events.component';
+import { SwiperModule } from 'swiper/angular';
+import { ItemsListComponent } from './items-list/items-list.component';
+import { SelectableItemsListComponent } from './selectable-items-list/selectable-items-list.component';
 @NgModule({
   declarations: [
     HeaderComponent,
@@ -20,8 +23,10 @@ import { NextEventsComponent } from './next-events/next-events.component';
     EventCardComponent,
     RemindersComponent,
     NextEventsComponent,
+    ItemsListComponent,
+    SelectableItemsListComponent,
   ],
-  imports: [CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
+  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
   exports: [
     HeaderComponent,
     SendVerificationEmailModalComponent,
@@ -31,6 +36,8 @@ import { NextEventsComponent } from './next-events/next-events.component';
     EventCardComponent,
     RemindersComponent,
     NextEventsComponent,
+    ItemsListComponent,
+    SelectableItemsListComponent,
   ],
 })
 export class SharedComponentsModule {}

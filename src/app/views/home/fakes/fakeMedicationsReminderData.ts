@@ -1,18 +1,18 @@
 export const FAKE_MEDICATIONS_REMINDERS_DATA = [
   {
     title: 'Ibuprofeno',
-    dosis: '400mg',
+    subtitle: '400mg',
     nextIngestion: new Date().getHours() + ':' + new Date().getMinutes(),
-    type: 'pill',
+    img: 'pill',
   },
   {
     title: 'Pulmosan',
     nextIngestion: new Date().getHours() + ':' + new Date().getMinutes(),
-    type: 'syrup',
+    img: 'syrup',
   },
   {
     title: 'Insulina',
     nextIngestion: new Date().getHours() + ':' + new Date().getMinutes(),
-    type: 'syrup',
+    img: 'syrup',
   },
 ];

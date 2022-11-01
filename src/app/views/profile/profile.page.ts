@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { PROFILE_OPTIONS } from './constants/profile-options';
 
@@ -21,6 +22,8 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
           [icon]="option.icon"
           [profileIcon]="option.profileIcon"
           [content]="option.content"
+          [action]="option.action"
+          (doAction)="this.doAction($event)"
         >
         </app-profile-item>
       </div>
@@ -30,7 +33,10 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
 })
 export class ProfilePage implements OnInit {
   options = PROFILE_OPTIONS;
-  constructor(private authenticationService: AuthenticationService) {}
+  constructor(
+    private authenticationService: AuthenticationService,
+    private navController: NavController
+  ) {}
 
   ngOnInit() {}
   ionViewWillEnter() {
@@ -38,5 +44,11 @@ export class ProfilePage implements OnInit {
   }
   setUserEmail() {
     this.options[0].title = this.authenticationService.user().email;
+  }
+
+  doAction(event) {
+    if (event.type === 'navigate') {
+      this.navController.navigateForward([event.payload]);
+    }
   }
 }
