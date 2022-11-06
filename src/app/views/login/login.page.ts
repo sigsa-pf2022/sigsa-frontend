@@ -1,14 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import {
-  ModalController,
-  NavController,
-  ToastController,
-} from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
+import { ModalController, NavController, ToastController } from '@ionic/angular';
 import { RecoveryPasswordModalComponent } from 'src/app/components/recovery-password-modal/recovery-password-modal.component';
 import { SendVerificationEmailModalComponent } from 'src/app/components/send-verification-email-modal/send-verification-email-modal.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
+import { UserValidationModalComponent } from './shared-login/components/user-validation-modal/user-validation-modal.component';
 
 @Component({
   selector: 'app-login',
@@ -23,30 +20,14 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 
     <ion-content class="login">
       <div class="login__logo ui-background__light">
-        <ion-img
-          class="ui-logo__small"
-          src="/assets/images/logos/logo-with-title.png"
-        ></ion-img>
+        <ion-img class="ui-logo__small" src="/assets/images/logos/logo-with-title.png"></ion-img>
       </div>
       <div class="login__content ui-background__light">
-        <form
-          class="login__content__form"
-          [formGroup]="this.loginForm"
-          (submit)="onSubmit()"
-        >
-          <ion-text
-            class="login__content__form__title ui-font-title"
-            color="complementary"
-            >Bienvenido</ion-text
-          >
+        <form class="login__content__form" [formGroup]="this.loginForm" (submit)="login()">
+          <ion-text class="login__content__form__title ui-font-title" color="complementary">Bienvenido</ion-text>
           <div class="login__content__form__items">
-            <ion-input
-              class="ui-form-input"
-              formControlName="email"
-              placeholder="Email"
-            ></ion-input>
-            <app-password-input controlName="password" placeholder="Contraseña">
-            </app-password-input>
+            <ion-input class="ui-form-input" formControlName="email" placeholder="Email"></ion-input>
+            <app-password-input controlName="password" placeholder="Contraseña"> </app-password-input>
             <ion-text
               class="login__content__form__items__forgot-password ui-font-text"
               color="complementary"
@@ -65,16 +46,8 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
               Ingresar
             </ion-button>
             <div class="login__content__form__actions__secondary">
-              <ion-text class="ui-font-text" color="medium"
-                >No tiene una cuenta?</ion-text
-              >
-              <ion-text
-                (click)="goToRegister()"
-                class="ui-font-text"
-                color="complementary"
-              >
-                Registrese</ion-text
-              >
+              <ion-text class="ui-font-text" color="medium">No tiene una cuenta?</ion-text>
+              <ion-text (click)="goToRegister()" class="ui-font-text" color="complementary"> Registrese</ion-text>
             </div>
           </div>
         </form>
@@ -85,41 +58,28 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 })
 export class LoginPage implements OnInit {
   loginForm = this.fb.group({
-    email: [
-      null,
-      [Validators.compose([Validators.email, Validators.required])],
-    ],
-    password: [
-      null,
-      [Validators.compose([Validators.minLength(6), Validators.required])],
-    ],
+    email: [null, [Validators.compose([Validators.email, Validators.required])]],
+    password: [null, [Validators.compose([Validators.minLength(6), Validators.required])]],
   });
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
     private auth: AuthenticationService,
     private modalController: ModalController,
-    private toast: ToastController,
-    private translate: TranslateService
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {}
 
   ionViewWillEnter() {}
 
-  async onSubmit() {
+  async login() {
     await this.auth
       .signIn(this.loginForm.value)
-      .then(async (user) => {
-        if (!user.emailVerified) {
-          this.sendVerificationEmailModal();
-        }else{
-          this.navController.navigateRoot(['/tabs/home']);
-        }
-      })
-      .catch((error) => {
-        this.showError(error);
-      });
+      .then(() => this.goHome())
+      .catch(({ error }) =>
+        error.status === 'email-not-verified' ? this.openValidationUserModal() : this.showError(error.message)
+      );
   }
 
   goHome() {
@@ -134,7 +94,7 @@ export class LoginPage implements OnInit {
     await modal.present();
     const { data } = await modal.onWillDismiss();
     if (data === 'resend') {
-      await this.auth.sendVerificationMail();
+      // await this.auth.sendVerificationMail();
     }
     await this.auth.signOut();
   }
@@ -147,16 +107,28 @@ export class LoginPage implements OnInit {
     await modal.present();
   }
 
+  async openValidationUserModal() {
+    const modal = await this.modalController.create({
+      component: UserValidationModalComponent,
+      cssClass: 'modal',
+      canDismiss: true,
+      backdropDismiss: true,
+      componentProps: { email: this.loginForm.get('email').value },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data.status === 'invalid-code') {
+      this.showError(data.message);
+    } else {
+      this.login();
+    }
+  }
+
   goToRegister() {
     this.navController.navigateForward(['/register/personal-data']);
   }
 
-  async showError(code: string) {
-    const toast = await this.toast.create({
-      message: this.translate.instant(`login.errors.${code}`),
-      duration: 5000,
-      color: 'danger',
-    });
-    await toast.present();
+  showError(code: string) {
+    this.toastService.showError(code);
   }
 }

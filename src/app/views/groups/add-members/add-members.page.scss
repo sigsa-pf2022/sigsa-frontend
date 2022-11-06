@@ -1,0 +1,41 @@
+:host {
+  .am {
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 16px;
+    &__member,
+    &__no-member {
+      height: 50px;
+      background: var(--ion-color-light);
+      --background: var(--ion-color-light);
+      border-bottom: 1px solid var(--ion-color-medium);
+      border-right: 1px solid var(--ion-color-medium);
+      border-left: 1px solid var(--ion-color-medium);
+      border-radius: 0 0 8px 8px;
+    }
+
+    &__members-list {
+      &__header {
+        padding-right: 16px;
+        ion-label {
+          font-size: 20px;
+        }
+        ion-icon {
+          font-size: 24px;
+          margin-left: auto;
+        }
+        &__container {
+          display: flex;
+          width: 100%;
+          gap: 6px;
+        }
+      }
+      &__item {
+        --border-width: 1px;
+        --border-color: var(--ion-color-primary);
+        --border-radius: 8px;
+        margin-bottom: 8px;
+      }
+    }
+  }
+}

@@ -34,7 +34,7 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
 export class ProfilePage implements OnInit {
   options = PROFILE_OPTIONS;
   constructor(
-    private authenticationService: AuthenticationService,
+    private auth: AuthenticationService,
     private navController: NavController
   ) {}
 
@@ -43,7 +43,7 @@ export class ProfilePage implements OnInit {
     this.setUserEmail();
   }
   setUserEmail() {
-    this.options[0].title = this.authenticationService.user().email;
+    this.options[0].title = `${this.auth.user().firstName}#${this.auth.user().username}`;
   }
 
   doAction(event) {

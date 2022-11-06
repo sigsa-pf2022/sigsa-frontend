@@ -4,31 +4,37 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { GroupsPage } from './groups.page';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
-import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
-import { HttpClient } from '@angular/common/http';
-import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { SharedComponentsGroupsModule } from './components/shared-components-group.module';
+import { SharedGroupsModule } from './shared/shared-groups.module';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
+import { RouterModule, Routes } from '@angular/router';
 
-// eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-export function createTranslateLoader(http: HttpClient) {
-  return new TranslateHttpLoader(http, './assets/i18n/', '.json');
-}
+const routes: Routes = [
+  {
+    path: 'home',
+    loadChildren: () => import('../../views/groups/group-home/group-home.module').then((m) => m.GroupHomePageModule),
+  },
+  {
+    path: 'create',
+    loadChildren: () => import('../../views/groups/new-group/new-group.module').then((m) => m.NewGroupPageModule),
+  },
+  {
+    path: 'add-members',
+    loadChildren: () => import('../../views/groups/add-members/add-members.module').then((m) => m.AddMembersModule),
+  },
+];
+
 
 @NgModule({
   imports: [
+    RouterModule.forChild(routes),
     CommonModule,
     FormsModule,
     IonicModule,
-    SharedComponentsGroupsModule,
-    TranslateModule.forChild({
-      loader: {
-        provide: TranslateLoader,
-        useFactory: createTranslateLoader,
-        deps: [HttpClient],
-      },
-    }),
+    SharedGroupsModule,
     SharedComponentsModule,
   ],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }],
   declarations: [GroupsPage],
 })
-export class GroupsPageModule {}
+export class GroupsModule {}

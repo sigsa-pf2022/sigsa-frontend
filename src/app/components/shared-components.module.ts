@@ -13,6 +13,7 @@ import { NextEventsComponent } from './next-events/next-events.component';
 import { SwiperModule } from 'swiper/angular';
 import { ItemsListComponent } from './items-list/items-list.component';
 import { SelectableItemsListComponent } from './selectable-items-list/selectable-items-list.component';
+import { MenuComponent } from './menu/menu.component';
 @NgModule({
   declarations: [
     HeaderComponent,
@@ -25,6 +26,7 @@ import { SelectableItemsListComponent } from './selectable-items-list/selectable
     NextEventsComponent,
     ItemsListComponent,
     SelectableItemsListComponent,
+    MenuComponent,
   ],
   imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
   exports: [
@@ -38,6 +40,7 @@ import { SelectableItemsListComponent } from './selectable-items-list/selectable
     NextEventsComponent,
     ItemsListComponent,
     SelectableItemsListComponent,
+    MenuComponent,
   ],
 })
 export class SharedComponentsModule {}

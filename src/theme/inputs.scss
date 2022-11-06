@@ -13,3 +13,23 @@
   --placeholder-font-style: var(--ui-fsize-16);
   --placeholder-font-weight: 700;
 }
+
+.ui-search-input {
+  --background: var(--ion-color-light);
+  border-top: 1px solid var(--ion-color-medium);
+  border-right: 1px solid var(--ion-color-medium);
+  border-left: 1px solid var(--ion-color-medium);
+  --box-shadow: none;
+  // --border-radius: 8px;
+  // border-radius: 8px;
+  --border-radius: 8px 8px 0 0;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0px 0px 0px rgba(0, 0, 0, 0.25);
+  font-size: var(--ui-fsize-16);
+  width: 100%;
+  padding: 0;
+  --placeholder-color: var(--ion-color-medium);
+  --placeholder-font-style: var(--ui-fsize-16);
+  --placeholder-font-weight: 700;
+}
+

@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { Routes, RouterModule } from '@angular/router';
-import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 
 const routes: Routes = [
   {
@@ -33,6 +32,5 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes),
   ],
-  declarations: [],
 })
 export class RegisterModule {}

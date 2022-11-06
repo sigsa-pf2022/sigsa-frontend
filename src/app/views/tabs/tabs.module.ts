@@ -5,10 +5,10 @@ import { IonicModule } from '@ionic/angular';
 import { TabsPage } from './tabs.page';
 import { RouterModule, Routes } from '@angular/router';
 import { HomePage } from '../home/home.page';
-import { GroupsPage } from '../groups/groups.page';
 import { SwiperModule } from 'swiper/angular';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 import { AppointmentsPage } from '../appointments/appointments.page';
+import { GroupsPage } from '../groups/groups.page';
 
 const routes: Routes = [
   {

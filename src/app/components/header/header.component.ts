@@ -9,9 +9,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
           <ion-button (click)="navigateToProfile()">
-            <ion-icon
-              src="./assets/images/home/personal-profile.svg"
-            ></ion-icon>
+            <ion-icon src="./assets/images/home/personal-profile.svg"></ion-icon>
           </ion-button>
         </ion-buttons>
         <ion-buttons slot="end">
@@ -20,10 +18,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           </ion-button>
         </ion-buttons>
         <div class="toolbar-content">
-          <ion-icon
-            (click)="logout()"
-            src="./assets/images/logos/logo-white.svg"
-          ></ion-icon>
+          <ion-icon (click)="logout()" src="./assets/images/logos/logo-white.svg"></ion-icon>
         </div>
       </ion-toolbar>
     </ion-header>
@@ -35,12 +30,11 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit() {}
 
-  async logout() {
-    await this.auth.signOut().then(() => {
-      this.navController.navigateRoot(['welcome']);
-    });
+  logout() {
+    this.auth.signOut();
+    return this.navController.navigateRoot(['welcome']);
   }
-  navigateToProfile(){
-    this.navController.navigateRoot(['profile']);
+  navigateToProfile() {
+    return this.navController.navigateRoot(['profile']);
   }
 }

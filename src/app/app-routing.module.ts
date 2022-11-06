@@ -1,39 +1,38 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { IsLoggedInGuard } from './guards/is-logged-in.guard';
-
+import { AlreadyLoggedGuard } from './guards/alreadyLogged/already-logged.guard';
+import { AuthGuard } from './guards/auth.guard';
 const routes: Routes = [
   { path: '', redirectTo: 'welcome', pathMatch: 'full' },
   {
     path: 'register',
-    loadChildren: () =>
-      import('./views/register/register.module').then((m) => m.RegisterModule),
-      canActivate: [IsLoggedInGuard],
+    loadChildren: () => import('./views/register/register.module').then((m) => m.RegisterModule),
+    canActivate: [AlreadyLoggedGuard],
   },
   {
     path: 'welcome',
-    loadChildren: () =>
-      import('./views/welcome/welcome.module').then((m) => m.WelcomePageModule),
-    canActivate: [IsLoggedInGuard],
+    loadChildren: () => import('./views/welcome/welcome.module').then((m) => m.WelcomePageModule),
+    canActivate: [AlreadyLoggedGuard],
   },
   {
     path: 'login',
-    loadChildren: () =>
-      import('./views/login/login.module').then((m) => m.LoginPageModule),
-      canActivate: [IsLoggedInGuard],
+    loadChildren: () => import('./views/login/login.module').then((m) => m.LoginPageModule),
+    canActivate: [AlreadyLoggedGuard],
   },
   {
     path: 'tabs',
-    loadChildren: () =>
-      import('./views/tabs/tabs.module').then((m) => m.TabsPageModule),
+    loadChildren: () => import('./views/tabs/tabs.module').then((m) => m.TabsPageModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'profile',
-    loadChildren: () => import('./views/profile/profile.module').then( m => m.ProfilePageModule)
+    loadChildren: () => import('./views/profile/profile.module').then((m) => m.ProfilePageModule),
+    canActivate: [AuthGuard],
   },
   {
-    path: 'new-group',
-    loadChildren: () => import('./views/groups/new-group/new-group.module').then( m => m.NewGroupPageModule)
+    path: 'groups',
+    loadChildren: () => import('./views/groups/groups.module').then((m) => m.GroupsModule),
+    canActivate: [AuthGuard],
   },
   {
     path: 'groups-home/:id',
@@ -49,9 +48,7 @@ const routes: Routes = [
   },
 ];
 @NgModule({
-  imports: [
-    RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules }),
-  ],
+  imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],
   exports: [RouterModule],
 })
 export class AppRoutingModule {}
