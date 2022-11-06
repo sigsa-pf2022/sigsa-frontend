@@ -1,17 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
-import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { FamilyGroup } from './interfaces/FamilyGroup';
-import { GroupsService } from './services/groups.service';
+import { GroupsService } from './shared/services/groups/groups.service';
+import { FamilyGroup } from './shared/interfaces/FamilyGroup';
 
 @Component({
   selector: 'app-groups',
   template: `
-    <ion-content class="g" *ngIf="this.groups">
+    <ion-content class="g">
       <div class="g__content">
-        <ion-label class="g__content__title">{{
-          'tabs.groups.title' | translate
-        }}</ion-label>
+        <ion-label class="g__content__title"> Mis Grupos</ion-label>
         <app-group-item
           *ngFor="let group of this.groups"
           [group]="group"
@@ -32,8 +29,7 @@ export class GroupsPage implements OnInit {
   constructor(
     private groupsService: GroupsService,
     private navController: NavController,
-    private loadingController: LoadingController,
-    private authService: AuthenticationService
+    private loadingController: LoadingController
   ) {}
 
   ngOnInit() {}
@@ -42,27 +38,18 @@ export class GroupsPage implements OnInit {
     this.getGroups();
   }
   goToGroupHome(groupId: string) {
-    return this.navController.navigateForward([`/groups-home/${groupId}`]);
+    return this.navController.navigateForward([`/groups/home/${groupId}`]);
   }
 
   async getGroups() {
-    if (!this.groups) {
-      await this.showLoading();
-      await this.groupsService
-        .getFamilyGroupsByUserId(this.authService.user().uid)
-        .then(async (res: FamilyGroup[]) => {
-          console.log(res);
-          if (res) {
-            for (const fg of res) {
-              fg.imgUrl = URL.createObjectURL(
-                await this.groupsService.getGroupImage(fg.imgUrl)
-              );
-            }
-            this.groups = res;
-          }
-        });
-      this.closeLoading();
-    }
+    await this.showLoading();
+    await this.groupsService
+      .getFamilyGroupsByUser()
+      .then((res) => {
+        this.groups = res;
+      })
+      .catch((err) => console.log(err));
+    this.closeLoading();
   }
   async showLoading() {
     const loading = await this.loadingController.create({
@@ -78,6 +65,6 @@ export class GroupsPage implements OnInit {
   }
 
   navigateTo() {
-    this.navController.navigateRoot(['/new-group']);
+    this.navController.navigateRoot(['/groups/create']);
   }
 }
