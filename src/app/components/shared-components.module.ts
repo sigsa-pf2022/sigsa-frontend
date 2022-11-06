@@ -10,6 +10,7 @@ import { HeaderComponent } from './header/header.component';
 import { EventCardComponent } from './event-card/event-card.component';
 import { RemindersComponent } from './reminders/reminders.component';
 import { NextEventsComponent } from './next-events/next-events.component';
+import { MenuComponent } from './menu/menu.component';
 import { SwiperModule } from 'swiper/angular';
 @NgModule({
   declarations: [
@@ -21,6 +22,7 @@ import { SwiperModule } from 'swiper/angular';
     EventCardComponent,
     RemindersComponent,
     NextEventsComponent,
+    MenuComponent,
   ],
   imports: [CommonModule, IonicModule, SwiperModule, FormsModule, ReactiveFormsModule],
   exports: [
@@ -32,6 +34,7 @@ import { SwiperModule } from 'swiper/angular';
     EventCardComponent,
     RemindersComponent,
     NextEventsComponent,
+    MenuComponent,
   ],
 })
 export class SharedComponentsModule {}

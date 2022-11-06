@@ -11,15 +11,15 @@ import {
   template: `
     <ion-item lines="none" class="gi">
       <div class="gi__wrap">
-        <ion-avatar slot="start" class="gi__wrap__avatar">
+        <!-- <ion-avatar slot="start" class="gi__wrap__avatar">
           <ion-img [src]="this.group.imgUrl"></ion-img>
-        </ion-avatar>
+        </ion-avatar> -->
         <div class="gi__wrap__description">
           <ion-label class="gi__wrap__description__title titulo">{{
             this.group.name
           }}</ion-label>
           <ion-label class="gi__wrap__description__subtitle subtitulo"
-            >{{ this.group.members.length }} miembros</ion-label
+            >{{ this.group.members.length + ' miembro/s' }} </ion-label
           >
         </div>
         <ion-icon
@@ -35,6 +35,8 @@ export class GroupItemComponent implements OnInit {
   @Input() group;
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log(this.group);
+  }
 
 }

@@ -30,13 +30,13 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
 })
 export class ProfilePage implements OnInit {
   options = PROFILE_OPTIONS;
-  constructor(private authenticationService: AuthenticationService) {}
+  constructor(private auth: AuthenticationService) {}
 
   ngOnInit() {}
   ionViewWillEnter() {
     this.setUserEmail();
   }
   setUserEmail() {
-    this.options[0].title = this.authenticationService.user().email;
+    this.options[0].title = `${this.auth.user().firstName}#${this.auth.user().username}`;
   }
 }

@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { NewGroupPage } from './new-group.page';
 import { RouterModule, Routes } from '@angular/router';
+import { SharedGroupsModule } from '../shared/shared-groups.module';
 
 const routes: Routes = [
   {
@@ -19,6 +20,7 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     ReactiveFormsModule,
+    SharedGroupsModule,
   ],
   declarations: [NewGroupPage],
 })

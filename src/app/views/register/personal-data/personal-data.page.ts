@@ -2,9 +2,9 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonDatetime, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
-import { DateFormatterService } from 'src/app/services/shared/date-formatter.service';
-import { RegisterFormDataService } from '../services/register-form-data.service';
+import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { Gesture, GestureController } from '@ionic/angular';
+import { RegisterFormDataService } from '../shared-register/services/register-form-data/register-form-data.service';
 
 @Component({
   selector: 'app-personal-data',
