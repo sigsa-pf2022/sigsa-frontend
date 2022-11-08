@@ -8,19 +8,19 @@ import { FAKE_APPOINTMENTS_DATA } from 'src/app/data/appointmentsData';
   template: `<ion-content class="apts">
     <ion-label class="apts__title"> Mis Turnos </ion-label>
     <form [formGroup]="this.searchForm">
-      <ion-input
-        class="ui-form-input apts__search"
-        placeholder="Buscar turno ..."
-        formControlName="input"
-      >
+      <ion-input class="ui-form-input apts__search" placeholder="Buscar turno ..." formControlName="input">
         <ion-icon class="apts__search__icon" name="search"></ion-icon>
       </ion-input>
     </form>
-    <app-items-list
-      class="apts__list"
-      [items]="this.appointments"
-      height="70%"
-    ></app-items-list>
+    <ion-list class="apts__list">
+      <app-items-list
+        *ngFor="let appointment of this.appointments"
+        [title]="appointment.title"
+        [subtitle]="appointment.subtitle"
+        [img]="appointment.img"
+        height="70%"
+      ></app-items-list>
+    </ion-list>
     <ion-fab vertical="bottom" horizontal="center" slot="fixed">
       <ion-fab-button (click)="newAppointment()" class="apts__fab">
         <ion-icon name="add"></ion-icon>
@@ -48,7 +48,7 @@ export class AppointmentsPage implements OnInit {
     );
   }
 
-  newAppointment(){
-    return this.navController.navigateForward(['/appointments/new']);
+  newAppointment() {
+    return this.navController.navigateForward(['/appointments/pick-doctor']);
   }
 }

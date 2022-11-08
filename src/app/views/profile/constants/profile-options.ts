@@ -8,8 +8,8 @@ export const PROFILE_OPTIONS = [
     title: 'Mis Profesionales',
     action: {
       type: 'navigate',
-      payload: '/doctors'
-    }
+      payload: '/doctors',
+    },
   },
   {
     icon: 'time-outline',
@@ -20,29 +20,29 @@ export const PROFILE_OPTIONS = [
     title: 'Ayuda',
     content: [
       {
-        title:'Preguntas frecuentes'
+        title: 'Preguntas frecuentes',
       },
       {
-        title:'Hablar con soporte'
-      }
-    ]
+        title: 'Hablar con soporte',
+      },
+    ],
   },
   {
     icon: 'lock-closed-outline',
     title: 'Seguridad',
     content: [
       {
-        title:'Cambiar contraseña'
+        title: 'Cambiar contraseña',
       },
-    ]
+    ],
   },
   {
     icon: 'settings-outline',
     title: 'Preferencias',
     content: [
       {
-        title:'Notificaciones push'
+        title: 'Notificaciones push',
       },
-    ]
+    ],
   },
 ];

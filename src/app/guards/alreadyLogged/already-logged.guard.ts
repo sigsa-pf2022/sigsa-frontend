@@ -15,6 +15,7 @@ export class AlreadyLoggedGuard implements CanActivate {
     state: RouterStateSnapshot
   ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     const userLogged = this.auth.user() !== null;
+    console.log(userLogged);
     if (userLogged) {
       this.navController.navigateRoot(['/tabs/home']);
       return userLogged;

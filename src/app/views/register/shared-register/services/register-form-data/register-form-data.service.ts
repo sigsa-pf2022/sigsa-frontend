@@ -31,6 +31,7 @@ export class RegisterFormDataService {
       ],
       gender: [null, Validators.required],
       birthday: [null, Validators.required],
+      dni: [null, Validators.required],
       email: [
         null,
         [Validators.compose([Validators.required, Validators.email])],
@@ -52,6 +53,7 @@ export class RegisterFormDataService {
     return (
       this.registerForm.get('firstName').valid &&
       this.registerForm.get('lastName').valid &&
+      this.registerForm.get('dni').valid &&
       this.registerForm.get('gender').valid &&
       this.registerForm.get('birthday').valid
     );

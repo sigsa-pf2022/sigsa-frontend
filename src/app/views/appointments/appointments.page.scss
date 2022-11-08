@@ -1,6 +1,10 @@
 :host {
   padding: 16px;
   .apts {
+    &__list{
+      border: 1px solid #a3a3a3;
+      padding: 0;
+    }
     &__title{
       font-size: 20px;
 

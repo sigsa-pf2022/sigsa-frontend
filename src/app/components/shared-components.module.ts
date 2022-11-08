@@ -12,7 +12,6 @@ import { RemindersComponent } from './reminders/reminders.component';
 import { NextEventsComponent } from './next-events/next-events.component';
 import { SwiperModule } from 'swiper/angular';
 import { ItemsListComponent } from './items-list/items-list.component';
-import { SelectableItemsListComponent } from './selectable-items-list/selectable-items-list.component';
 import { MenuComponent } from './menu/menu.component';
 @NgModule({
   declarations: [
@@ -25,7 +24,6 @@ import { MenuComponent } from './menu/menu.component';
     RemindersComponent,
     NextEventsComponent,
     ItemsListComponent,
-    SelectableItemsListComponent,
     MenuComponent,
   ],
   imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
@@ -39,7 +37,6 @@ import { MenuComponent } from './menu/menu.component';
     RemindersComponent,
     NextEventsComponent,
     ItemsListComponent,
-    SelectableItemsListComponent,
     MenuComponent,
   ],
 })

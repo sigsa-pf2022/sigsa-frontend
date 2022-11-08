@@ -37,7 +37,8 @@ export class ProfileItemComponent implements OnInit {
   @Output() doAction = new EventEmitter<any>();
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
 
   emitAction(){
     return this.doAction.emit(this.action);

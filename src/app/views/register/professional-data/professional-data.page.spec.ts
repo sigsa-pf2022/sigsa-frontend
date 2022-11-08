@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { SelectableItemsListComponent } from './selectable-items-list.component';
+import { ProfessionalDataPage } from './professional-data.page';
 
-describe('SelectableItemsListComponent', () => {
-  let component: SelectableItemsListComponent;
-  let fixture: ComponentFixture<SelectableItemsListComponent>;
+describe('ProfessionalDataPage', () => {
+  let component: ProfessionalDataPage;
+  let fixture: ComponentFixture<ProfessionalDataPage>;
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ SelectableItemsListComponent ],
+      declarations: [ ProfessionalDataPage ],
       imports: [IonicModule.forRoot()]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SelectableItemsListComponent);
+    fixture = TestBed.createComponent(ProfessionalDataPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

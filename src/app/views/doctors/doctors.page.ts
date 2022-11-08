@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { NavController } from '@ionic/angular';
-import { FAKE_APPOINTMENTS_DATA } from 'src/app/data/appointmentsData';
+import { Professional } from './shared/interfaces/Professional.interface';
+import { ProfessionalsService } from './shared/services/professionals.service';
 
 @Component({
   selector: 'app-doctors',
@@ -16,19 +17,18 @@ import { FAKE_APPOINTMENTS_DATA } from 'src/app/data/appointmentsData';
     </ion-header>
     <ion-content class="drs">
       <form [formGroup]="this.searchForm">
-        <ion-input
-          class="ui-form-input drs__search"
-          placeholder="Buscar doctor ..."
-          formControlName="input"
-        >
+        <ion-input class="ui-form-input drs__search" placeholder="Buscar doctor ..." formControlName="input">
           <ion-icon class="drs__search__icon" name="search"></ion-icon>
         </ion-input>
       </form>
-      <app-items-list
-        class="drs__list"
-        [items]="this.doctors"
-        height="70%"
-      ></app-items-list>
+      <ion-list class="drs__list">
+        <app-items-list
+          *ngFor="let doctor of this.doctors"
+          [title]="doctor.firstName + ' ' + doctor.lastName"
+          [subtitle]="doctor.field"
+          img="doctor"
+        ></app-items-list>
+      </ion-list>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="newDoctor()" class="drs__fab">
           <ion-icon name="add"></ion-icon>
@@ -40,10 +40,19 @@ import { FAKE_APPOINTMENTS_DATA } from 'src/app/data/appointmentsData';
 })
 export class DoctorsPage implements OnInit {
   searchForm = this.fb.group({ input: '' });
-  doctors = FAKE_APPOINTMENTS_DATA;
-  constructor(private navController: NavController, private fb: FormBuilder) {}
+  doctors: Professional[];
+  constructor(
+    private navController: NavController,
+    private fb: FormBuilder,
+    private professionalsService: ProfessionalsService
+  ) {}
 
   ngOnInit() {}
+
+  ionViewWillEnter() {
+    this.professionalsService.getMyProfessionals().then((res: Professional[]) => (this.doctors = res));
+    console.log(this.doctors);
+  }
   newDoctor() {
     return this.navController.navigateForward(['/doctors/new']);
   }

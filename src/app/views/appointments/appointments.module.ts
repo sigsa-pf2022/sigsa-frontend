@@ -4,22 +4,35 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { AppointmentsPage } from './appointments.page';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
-import { AppointmentsNewPage } from './appointments-new/appointments-new.page';
+import { PickProfessionalPage } from './pick-professional/pick-professional.page';
 import { RouterModule, Routes } from '@angular/router';
+import { CreateAppointmentPage } from './create-appointment/create-appointment.page';
+import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 const routes: Routes = [
+
   {
-    path: '',
-    component: AppointmentsPage,
+    path: 'pick-doctor',
+    component: PickProfessionalPage,
   },
   {
-    path: 'new',
-    component: AppointmentsNewPage,
+    path: 'create',
+    component: CreateAppointmentPage,
   },
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes), CommonModule, FormsModule, ReactiveFormsModule, IonicModule, SharedComponentsModule],
-  declarations: [AppointmentsPage, AppointmentsNewPage],
+  imports: [
+    RouterModule.forChild(routes),
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule,
+    IonicModule,
+    SharedComponentsModule,
+  ],
+  declarations: [AppointmentsPage, PickProfessionalPage, CreateAppointmentPage],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }],
+
 })
 export class AppointmentsPageModule {}

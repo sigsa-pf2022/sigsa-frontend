@@ -20,6 +20,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('./user-data/user-data.module').then((m) => m.UserDataModule),
       },
+      {
+        path: 'professional-data',
+        loadChildren: () =>
+          import('./professional-data/professional-data.module').then((m) => m.ProfessionalDataModule),
+      },
     ],
   },
 ];

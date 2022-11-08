@@ -6,6 +6,8 @@ import { DoctorsPage } from './doctors.page';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 import { DoctorsNewPage } from './doctors-new/doctors-new.page';
+import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 const routes: Routes = [
   {
@@ -28,5 +30,7 @@ const routes: Routes = [
     SharedComponentsModule,
   ],
   declarations: [DoctorsPage,DoctorsNewPage],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }],
+
 })
 export class DoctorsPageModule {}
