@@ -24,7 +24,7 @@ const routes: Routes = [
         component: GroupsPage,
       },
       {
-        path: 'appointment',
+        path: 'appointments',
         component: AppointmentsPage,
       },
     ],

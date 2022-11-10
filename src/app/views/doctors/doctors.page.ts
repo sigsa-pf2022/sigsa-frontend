@@ -21,7 +21,7 @@ import { ProfessionalsService } from './shared/services/professionals.service';
           <ion-icon class="drs__search__icon" name="search"></ion-icon>
         </ion-input>
       </form>
-      <ion-list class="drs__list">
+      <ion-list class="drs__list" *ngIf="this.doctors.length>0">
         <app-items-list
           *ngFor="let doctor of this.doctors"
           [title]="doctor.firstName + ' ' + doctor.lastName"
@@ -40,7 +40,7 @@ import { ProfessionalsService } from './shared/services/professionals.service';
 })
 export class DoctorsPage implements OnInit {
   searchForm = this.fb.group({ input: '' });
-  doctors: Professional[];
+  doctors: Professional[] = [];
   constructor(
     private navController: NavController,
     private fb: FormBuilder,
@@ -51,7 +51,6 @@ export class DoctorsPage implements OnInit {
 
   ionViewWillEnter() {
     this.professionalsService.getMyProfessionals().then((res: Professional[]) => (this.doctors = res));
-    console.log(this.doctors);
   }
   newDoctor() {
     return this.navController.navigateForward(['/doctors/new']);

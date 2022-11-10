@@ -47,11 +47,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
             </div>
           </ion-item>
           <app-next-events [events]="this.events"></app-next-events>
-          <app-reminders
-            [height]="'250px'"
-            [reminders]="this.reminders"
-            (changeReminders)="changeReminders($event)"
-          ></app-reminders>
+          <app-reminders height="37vh" [reminders]="this.reminders" (changeReminders)="changeReminders($event)"></app-reminders>
           <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
             <ion-fab-button (click)="openFabList($event)">
               <ion-icon name="add"></ion-icon>
@@ -79,7 +75,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
 })
 export class GroupHomePage implements OnInit {
   @ViewChild('fabList', { read: ElementRef }) fabListRef: ElementRef;
-  events = FAKE_EVENTS_DATA;
+  events = [];
   opened = false;
   group: FamilyGroup;
   reminders: any = FAKE_MEDICATIONS_REMINDERS_DATA;

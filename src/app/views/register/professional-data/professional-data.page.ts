@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, Validators } from '@angular/forms';
 import { NavController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { ProfessionalsService } from '../../doctors/shared/services/professionals.service';
@@ -9,7 +9,7 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
   template: `<ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-back-button defaultHref="/register/personal-data"></ion-back-button>
+          <ion-back-button defaultHref="/welcome"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">Nuevo Profesional</ion-title>
       </ion-toolbar>
@@ -19,27 +19,28 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
       <form class="pd__form" [formGroup]="form">
         <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre"> </ion-input>
         <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="field" placeholder="Especialidad"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="clinic" placeholder="Clinica"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="streetName" placeholder="Calle"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="streetNumber" placeholder="Altura"> </ion-input>
+        <ion-input class="ui-form-input" formControlName="title" placeholder="Titulo"> </ion-input>
+        <ion-input class="ui-form-input" formControlName="licenseNumber" placeholder="Numero de licencia"> </ion-input>
+        <ion-input class="ui-form-input" formControlName="jurisdiction" placeholder="Provincia"> </ion-input>
       </form>
     </ion-content>
     <ion-footer class="footer__light">
+      <ion-button class="ui-button-outlined" expand="block" (click)="goToCreateUser()"
+        >Registrese como usuario</ion-button
+      >
       <ion-button (click)="onSubmit()" expand="block" [disabled]="!this.form.valid" color="primary">
-        Confirmar
+        Siguiente
       </ion-button>
     </ion-footer>`,
   styleUrls: ['./professional-data.page.scss'],
 })
 export class ProfessionalDataPage implements OnInit {
   form = this.fb.group({
-    firstName: '',
-    lastName: '',
-    field: '',
-    clinic: '',
-    streetName: '',
-    streetNumber: null,
+    firstName: ['', Validators.required],
+    lastName: ['', Validators.required],
+    title: ['', Validators.required],
+    licenseNumber: [null, Validators.required],
+    jurisdiction: ['', Validators.required],
   });
   constructor(
     private fb: FormBuilder,
@@ -48,7 +49,9 @@ export class ProfessionalDataPage implements OnInit {
     private navController: NavController
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log('hola');
+  }
 
   onSubmit() {
     return this.professionalsService.createMyProfessional(this.form.value).then(() => {
@@ -59,5 +62,9 @@ export class ProfessionalDataPage implements OnInit {
   successCreation() {
     this.toastService.showSuccess('Profesional creado correctamente.');
     this.navController.pop();
+  }
+
+  goToCreateUser() {
+    this.navController.navigateRoot(['/register/personal-data']);
   }
 }

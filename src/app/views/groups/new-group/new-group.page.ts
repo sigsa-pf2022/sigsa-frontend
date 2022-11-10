@@ -83,12 +83,9 @@ import { ToastService } from 'src/app/services/toast/toast.service';
 })
 export class NewGroupPage implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
-  camera = Camera;
   showCalendar = false;
   date = format(new Date(), 'yyyy-MM-dd');
-  // src = '';
   maxDate = format(new Date(), 'yyyy-MM-dd');
-  // file;
   form = this.fb.group({
     name: ['', Validators.required],
     firstName: ['', Validators.required],
@@ -101,36 +98,20 @@ export class NewGroupPage implements OnInit {
     private dateFormatterService: DateFormatterService,
     private fb: FormBuilder,
     private modalController: ModalController,
-    private toastService: ToastService,
-    private translate: TranslateService,
-    private groupsService: GroupsService,
     private navController: NavController,
     private newGroupDataService: NewGroupDataService
   ) {}
 
   ngOnInit() {}
-  ionViewWillEnter() {
-    this.form.patchValue({
-      birthday: '02/11/2022',
-      bloodType: 'A+',
-      dni: 40042124,
-      firstName: 'Pedro',
-      lastName: 'Martinez',
-      name: 'Amigos',
-    });
-  }
+
+  ionViewWillEnter() {}
 
   isFormValid() {
-    // return this.form.valid && this.file;
     return this.form.valid;
   }
   async onSubmit() {
-    // await this.groupsService
-    //   .createGroup(this.form.value, this.authService.user().uid, this.file)
-    //   .then((res) => this.navController.navigateRoot(['/tabs/groups']));
     this.saveData();
     this.navController.navigateForward(['/groups/add-members']);
-    // await this.groupsService.createGroup(this.form.value);
   }
 
   saveData() {
@@ -163,14 +144,4 @@ export class NewGroupPage implements OnInit {
   confirmDateSelection() {
     this.datetime.confirm(true);
   }
-
-  // async getPicture() {
-  //   const image = await this.camera.getPhoto({
-  //     quality: 90,
-  //     allowEditing: true,
-  //     resultType: CameraResultType.Uri,
-  //   });
-  //   this.src = image.webPath;
-  //   this.file = await fetch(image.webPath).then((res) => res.blob());
-  // }
 }

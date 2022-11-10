@@ -39,6 +39,10 @@ export class AuthenticationService {
     return res;
   }
 
+  userStatus(email: string) {
+    return this.http.get(`${environment.apiUrl}/users/status?email=${email}`).toPromise();
+  }
+
   validateCode(data) {
     return this.http.post(`${environment.apiUrl}/users/validate`, data).toPromise();
   }

@@ -19,8 +19,8 @@ import { FAKE_MEDICATIONS_REMINDERS_DATA } from './fakes/fakeMedicationsReminder
   styleUrls: ['./home.page.scss'],
 })
 export class HomePage implements OnInit {
-  events = FAKE_EVENTS_DATA;
-  reminders: any = FAKE_MEDICATIONS_REMINDERS_DATA;
+  events = [];
+  reminders = [];
   constructor() {}
 
   ngOnInit() {}

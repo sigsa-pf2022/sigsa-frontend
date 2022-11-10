@@ -1,0 +1,19 @@
+:host {
+  .eec {
+    display: flex;
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid black;
+    font-family: var(--ui-font-roboto);
+    height: 120px;
+    &__description {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      &__title {
+        font-weight: 700;
+        font-size: 18px;
+      }
+    }
+  }
+}

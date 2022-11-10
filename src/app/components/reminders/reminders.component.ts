@@ -15,19 +15,22 @@ import { REMINDERS_TYPE } from 'src/app/views/home/constants/remindersType';
         <ion-label>Documentos</ion-label>
       </ion-segment-button>
     </ion-segment>
-    <ion-list>
-      <app-items-list
-        *ngFor="let reminder of this.reminders"
-        [title]="reminder.title"
-        [subtitle]="reminder.subtitle"
-        [img]="reminder.img"
-      ></app-items-list>
-    </ion-list>
+    <cdk-virtual-scroll-viewport [ngStyle]="{'height': this.height}" minBufferPx="900" maxBufferPx="1350" itemSize="3">
+      <!-- <ion-list> -->
+        <app-items-list
+          *cdkVirtualFor="let reminder of this.reminders"
+          [title]="reminder.title"
+          [subtitle]="reminder.subtitle"
+          [img]="reminder.img"
+        ></app-items-list>
+      <!-- </ion-list> -->
+    </cdk-virtual-scroll-viewport>
   </div>`,
   styleUrls: ['./reminders.component.scss'],
 })
 export class RemindersComponent implements OnInit {
   @Input() reminders;
+  @Input() height: string;
   @Output() changeReminders = new EventEmitter<string>();
   remindersTypes = REMINDERS_TYPE;
   activeSegment: string;

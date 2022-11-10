@@ -36,7 +36,6 @@ export class GroupItemComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    console.log(this.group);
   }
 
 }

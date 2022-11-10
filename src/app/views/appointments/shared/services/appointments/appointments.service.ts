@@ -10,7 +10,10 @@ export class AppointmentsService {
   constructor(private http: HttpClient) {}
 
   createAppointment(data){
-    data.date = data.date.split('/').reverse().join('-');
     return this.http.post(`${environment.apiUrl}/appointments/create`, data).toPromise();
+  }
+
+  getAppointmentsByUser(){
+    return this.http.get<any[]>(`${environment.apiUrl}/appointments`).toPromise();
   }
 }

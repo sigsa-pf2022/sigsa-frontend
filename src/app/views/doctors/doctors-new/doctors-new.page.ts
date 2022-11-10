@@ -19,10 +19,6 @@ import { ProfessionalsService } from '../shared/services/professionals.service';
       <form class="dn__form" [formGroup]="form">
         <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre"> </ion-input>
         <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="field" placeholder="Especialidad"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="clinic" placeholder="Clinica"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="streetName" placeholder="Calle"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="streetNumber" placeholder="Altura"> </ion-input>
       </form>
     </ion-content>
     <ion-footer class="footer__light">
@@ -36,10 +32,6 @@ export class DoctorsNewPage implements OnInit {
   form = this.fb.group({
     firstName: '',
     lastName: '',
-    field: '',
-    clinic: '',
-    streetName: '',
-    streetNumber: null,
   });
   constructor(
     private fb: FormBuilder,

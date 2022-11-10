@@ -2,24 +2,27 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { NavController } from '@ionic/angular';
 import { FAKE_APPOINTMENTS_DATA } from 'src/app/data/appointmentsData';
+import { AppointmentsService } from './shared/services/appointments/appointments.service';
 
 @Component({
   selector: 'app-appointments',
   template: `<ion-content class="apts">
     <ion-label class="apts__title"> Mis Turnos </ion-label>
-    <form [formGroup]="this.searchForm">
-      <ion-input class="ui-form-input apts__search" placeholder="Buscar turno ..." formControlName="input">
-        <ion-icon class="apts__search__icon" name="search"></ion-icon>
-      </ion-input>
+    <form [formGroup]="this.searchForm" class="apts__search">
+      <ion-searchbar
+        formControlName="search"
+        placeholder="Buscar turno ..."
+        class="ui-search-input  ui-search-input__no-show"
+        debounce="400"
+        type="string"
+        (ionChange)="handleChange($event)"
+      ></ion-searchbar>
     </form>
-    <ion-list class="apts__list">
-      <app-items-list
+    <ion-list class="apts__list" *ngIf="this.appointments.length > 0">
+      <app-appointments-item-list
         *ngFor="let appointment of this.appointments"
-        [title]="appointment.title"
-        [subtitle]="appointment.subtitle"
-        [img]="appointment.img"
-        height="70%"
-      ></app-items-list>
+        [appointment]="appointment"
+      ></app-appointments-item-list>
     </ion-list>
     <ion-fab vertical="bottom" horizontal="center" slot="fixed">
       <ion-fab-button (click)="newAppointment()" class="apts__fab">
@@ -30,21 +33,28 @@ import { FAKE_APPOINTMENTS_DATA } from 'src/app/data/appointmentsData';
   styleUrls: ['./appointments.page.scss'],
 })
 export class AppointmentsPage implements OnInit {
-  appointments = FAKE_APPOINTMENTS_DATA;
+  appointments: any[] = [];
+  filteredAppointments: any[] = [];
   searchForm = this.fb.group({
-    input: '',
+    search: '',
   });
-  constructor(private fb: FormBuilder, private navController: NavController) {}
+  constructor(
+    private fb: FormBuilder,
+    private navController: NavController,
+    private appointmentsService: AppointmentsService
+  ) {}
 
-  ngOnInit() {
-    this.searchForm.valueChanges.subscribe((value) => this.search(value));
+  ngOnInit() {}
+
+  async ionViewWillEnter() {
+    this.appointments = await this.appointmentsService.getAppointmentsByUser();
+    this.filteredAppointments = this.appointments;
   }
 
-  search(value) {
-    this.appointments = FAKE_APPOINTMENTS_DATA.filter(
-      (app) =>
-        app.title.toUpperCase().includes(value.input.toUpperCase()) ||
-        app.subtitle.toUpperCase().includes(value.input.toUpperCase())
+  async handleChange(event) {
+    const search = event.detail.value;
+    this.filteredAppointments = this.appointments.filter(
+      (d) => d.professional.firstName.includes(search) || d.professional.lastName.includes(search)
     );
   }
 

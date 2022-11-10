@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, CanActivate, RouterStateSnapshot, UrlTree } fro
 import { NavController } from '@ionic/angular';
 import { Observable } from 'rxjs';
 import { User } from 'src/app/interfaces/user';
-import { AuthenticationService } from '../services/authentication/authentication.service';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
 @Injectable({
   providedIn: 'root',

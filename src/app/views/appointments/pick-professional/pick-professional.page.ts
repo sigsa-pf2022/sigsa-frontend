@@ -73,7 +73,7 @@ export class PickProfessionalPage implements OnInit {
     private fb: FormBuilder,
     private navController: NavController,
     private professionalsService: ProfessionalsService,
-    private appointmentDataService: AppointmentDataService,
+    private appointmentDataService: AppointmentDataService
   ) {}
 
   ngOnInit() {}
@@ -84,7 +84,6 @@ export class PickProfessionalPage implements OnInit {
 
   setDoctor(value: Professional) {
     this.doctor = value;
-    console.log(this.doctor);
   }
 
   async handleChange(event) {

@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormGroup } from '@angular/forms';
 import { IonDatetime, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
@@ -20,14 +20,13 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
 
     <ion-content class="pd">
       <ion-img class="pd__img" src="/assets/images/register/personal-data.svg"></ion-img>
+      <div class="pd__notice">
+        <ion-text class=" ui-font-profile-text">Atencion: Usted se esta registrando como</ion-text
+        ><ion-text class="pd__notice__type">{{ this.userType | uppercase }}</ion-text>
+      </div>
+
       <form class="pd__form" [formGroup]="registerForm">
-        <ion-input
-          class="ui-form-input"
-          formControlName="firstName"
-          placeholder="Nombre"
-          type="text"
-          (ionChange)="change()"
-        ></ion-input>
+        <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="dni" placeholder="DNI" type="text"></ion-input>
         <ion-select class="ui-form-input" formControlName="gender" placeholder="Genero" interface="alert">
@@ -64,7 +63,9 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
       </form>
     </ion-content>
     <ion-footer class="footer__light">
-      <ion-button class="ui-button-outlined" (click)="goToCreateProfessional()">Registrese como profesional</ion-button>
+      <ion-button class="ui-button-outlined" expand="block" (click)="changeUserType()"
+        >Registrese como {{ this.userType === 'usuario' ? 'profesional' : 'usuario' }}</ion-button
+      >
       <ion-button (click)="navigate()" expand="block" [disabled]="!this.formValid()" color="primary">
         Siguiente
       </ion-button>
@@ -75,6 +76,8 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
 export class PersonalDataPage implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
   registerForm: FormGroup;
+  userType: 'profesional' | 'usuario' = 'usuario';
+  url = '/register/user-data';
   showCalendar = false;
   maxDate = format(new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDay()), 'yyyy-MM-dd');
   // timeout;
@@ -135,9 +138,6 @@ export class PersonalDataPage implements OnInit {
   //   }
   // }
 
-  change() {
-    console.log(this.registerForm.get('firstName').errors);
-  }
   openCalendar() {
     this.showCalendar = !this.showCalendar;
   }
@@ -166,10 +166,20 @@ export class PersonalDataPage implements OnInit {
   }
 
   navigate() {
-    this.navController.navigateForward(['/register/user-data']);
+    return this.navController.navigateForward([this.url]);
   }
 
-  goToCreateProfessional() {
-    this.navController.navigateForward(['/register/professional-data']);
+  changeUserType() {
+    return this.userType === 'profesional' ? this.setUserType() : this.setProfessionalType();
+  }
+
+  setUserType() {
+    this.userType = 'usuario';
+    this.url = '/register/user-data';
+  }
+
+  setProfessionalType() {
+    this.userType = 'profesional';
+    this.url = '/register/professional-data';
   }
 }

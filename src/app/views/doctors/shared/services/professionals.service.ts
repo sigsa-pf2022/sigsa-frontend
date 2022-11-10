@@ -14,6 +14,6 @@ export class ProfessionalsService {
   }
 
   createMyProfessional(data): Promise<Professional> {
-    return this.http.post<Professional>(`${environment.apiUrl}/professionals/create`, data).toPromise();
+    return this.http.post<Professional>(`${environment.apiUrl}/professionals/create-my-professional`, data).toPromise();
   }
 }

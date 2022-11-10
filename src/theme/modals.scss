@@ -6,6 +6,14 @@
     height: 390px;
   }
 }
+.calendar-modal-time {
+  --width: 290px;
+  --height: 440px;
+  --border-radius: 8px;
+  ion-datetime {
+    height: 440px;
+  }
+}
 
 .modal{
   --background:transparent;

@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavController, Platform } from '@ionic/angular';
-import {
-  AvailableResult,
-  BiometryType,
-  NativeBiometric,
-} from 'capacitor-native-biometric';
+import { AvailableResult, BiometryType, NativeBiometric } from 'capacitor-native-biometric';
+import { PlatformService } from 'src/app/services/platform/platform.service';
 
 @Component({
   selector: 'app-welcome',
@@ -34,12 +31,12 @@ import {
   styleUrls: ['./welcome.page.scss'],
 })
 export class WelcomePage implements OnInit {
-  constructor(
-    private navController: NavController,
-    public platform: Platform
-  ) {}
+  constructor(private navController: NavController) {}
 
   ngOnInit() {}
+
+  ionViewWillEnter() {
+  }
 
   goToRegister() {
     this.navController.navigateForward(['/register/personal-data']);

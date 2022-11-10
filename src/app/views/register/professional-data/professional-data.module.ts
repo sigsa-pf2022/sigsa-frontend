@@ -5,7 +5,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { ProfessionalDataPage } from './professional-data.page';
-import { Routes } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 
 const routes: Routes = [
   {
@@ -17,6 +17,7 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
+    RouterModule.forChild(routes),
     CommonModule,
     FormsModule,
     IonicModule,

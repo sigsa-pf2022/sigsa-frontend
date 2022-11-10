@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
-import { IonDatetime } from '@ionic/angular';
-import { format, parseISO } from 'date-fns';
+import { FormBuilder, FormControl } from '@angular/forms';
+import { IonDatetime, NavController } from '@ionic/angular';
+import { format, formatISO, parse, parseISO, parseJSON } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
@@ -45,7 +46,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
             id="open-modal"
           >
           </ion-input>
-          <ion-modal trigger="open-modal" class="calendar-modal">
+          <ion-modal trigger="open-modal" class="calendar-modal-time">
             <ng-template>
               <ion-content>
                 <ion-datetime
@@ -53,9 +54,10 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
                   [value]="this.minDate"
                   [min]="this.minDate"
                   locale="es-ES"
-                  presentation="date"
                   (ionChange)="dateChanged(bdt.value)"
+                  [showDefaultButtons]="true"
                 >
+                  <span slot="time-label">Tiempo</span>
                   <ion-buttons slot="buttons">
                     <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
                   </ion-buttons>
@@ -84,34 +86,30 @@ export class CreateAppointmentPage implements OnInit {
   form = this.fb.group({
     date: null,
     comments: '',
-    doctorId: null
   });
   showCalendar = false;
-  minDate = format(new Date(), 'yyyy-MM-dd');
+  minDate = formatISO(new Date());
   doctor: Professional;
+  appointmentDate;
   constructor(
     private dateFormatterService: DateFormatterService,
     private fb: FormBuilder,
     private appointmentDataService: AppointmentDataService,
     private appointmentsService: AppointmentsService,
+    private toastService: ToastService,
+    private navController: NavController
   ) {}
 
   ngOnInit() {}
 
   ionViewWillEnter() {
     this.doctor = this.appointmentDataService.data;
-    this.form.get('doctorId').setValue(this.doctor.id);
+    this.form.addControl('myProfessional', new FormControl(this.doctor));
   }
 
   dateChanged(date: string) {
-    this.form
-      .get('date')
-      .setValue(
-        format(
-          parseISO(format(this.dateFormatterService.createDateFromCalendarStringDate(date), 'yyyy-MM-dd')),
-          'dd/MM/yyyy'
-        )
-      );
+    this.appointmentDate = date;
+    this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(date));
   }
 
   confirmDateSelection() {
@@ -119,6 +117,12 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   onSubmit() {
-    this.appointmentsService.createAppointment(this.form.value);
+    this.form.get('date').setValue(this.appointmentDate);
+    this.appointmentsService.createAppointment(this.form.value).then(()=>this.successCreation());
+  }
+
+  successCreation() {
+    this.toastService.showSuccess('Turno creado correctamente.');
+    this.navController.navigateRoot(['/tabs/appointments']);
   }
 }

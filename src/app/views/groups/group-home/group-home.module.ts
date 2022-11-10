@@ -6,6 +6,7 @@ import { GroupHomePage } from './group-home.page';
 import { SharedGroupsModule } from '../shared/shared-groups.module';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 import { RouterModule, Routes } from '@angular/router';
+
 const routes: Routes = [
   {
     path: ':id',
@@ -19,7 +20,7 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     SharedGroupsModule,
-    SharedComponentsModule
+    SharedComponentsModule,
   ],
   declarations: [GroupHomePage],
 

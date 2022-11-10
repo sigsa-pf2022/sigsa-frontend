@@ -13,7 +13,14 @@ SwiperCore.use([Autoplay, Navigation]);
           swiperSlide
           class="ne__swiper__slide"
         >
-          <app-event-card [event]="this.event"></app-event-card>
+          <app-event-card [event]="event"></app-event-card>
+        </ng-template>
+        <ng-template
+          *ngIf="this.events.length === 0"
+          swiperSlide
+          class="ne__swiper__slide"
+        >
+          <app-empty-event-card></app-empty-event-card>
         </ng-template>
       </swiper>
     </div>

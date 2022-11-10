@@ -1,14 +1,25 @@
-.pd{
-    background-color: var(--ion-color-white);
-    &__img{
-        margin-top: 35px;
+.pd {
+  background-color: var(--ion-color-white);
+  &__img {
+    margin-top: 25px;
+    display: flex;
+    height: 140px;
+    justify-content: center;
+  }
+  &__notice {
+    margin: 16px;
+    &__type{
+        font-weight: bold;
+        margin-left: 4px;
+        color: var(--ion-color-primary);
     }
-    &__form{
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 16px;
-        margin: 35px 16px 0;
-    }
+  }
+  &__form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin: 35px 16px 0;
+  }
 }

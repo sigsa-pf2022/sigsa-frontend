@@ -48,15 +48,6 @@ export class UserDataPage implements OnInit {
 
   ngOnInit() {
     this.registerForm = this.registerFormDataService.form;
-    this.registerForm.patchValue({
-      firstName: 'pedro',
-      lastName: 'mar',
-      gender: 'F',
-      birthday: '11/01/1998',
-      email: 'pedromar@gmail.com',
-      password: '123456',
-      repeatPassword: '123456',
-    });
   }
 
   async onSubmit() {

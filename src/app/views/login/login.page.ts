@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ModalController, NavController, ToastController } from '@ionic/angular';
+import { ModalController, NavController, Platform, ToastController } from '@ionic/angular';
 import { RecoveryPasswordModalComponent } from 'src/app/components/recovery-password-modal/recovery-password-modal.component';
 import { SendVerificationEmailModalComponent } from 'src/app/components/send-verification-email-modal/send-verification-email-modal.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { PlatformService } from 'src/app/services/platform/platform.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserValidationModalComponent } from './shared-login/components/user-validation-modal/user-validation-modal.component';
 
@@ -17,7 +18,6 @@ import { UserValidationModalComponent } from './shared-login/components/user-val
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
-
     <ion-content class="login">
       <div class="login__logo ui-background__light">
         <ion-img class="ui-logo__small" src="/assets/images/logos/logo-with-title.png"></ion-img>
@@ -66,7 +66,8 @@ export class LoginPage implements OnInit {
     private navController: NavController,
     private auth: AuthenticationService,
     private modalController: ModalController,
-    private toastService: ToastService
+    private toastService: ToastService,
+    public platformService: PlatformService
   ) {}
 
   ngOnInit() {}
@@ -74,12 +75,19 @@ export class LoginPage implements OnInit {
   ionViewWillEnter() {}
 
   async login() {
+    const isValidatedUser = await this.auth.userStatus(this.loginForm.get('email').value);
+    if (isValidatedUser) {
+      await this.signIn();
+    } else {
+      this.openValidationUserModal();
+    }
+  }
+
+  async signIn() {
     await this.auth
       .signIn(this.loginForm.value)
       .then(() => this.goHome())
-      .catch(({ error }) =>
-        error.status === 'email-not-verified' ? this.openValidationUserModal() : this.showError(error.message)
-      );
+      .catch(({ error }) => this.showError(error.message));
   }
 
   goHome() {
@@ -96,7 +104,7 @@ export class LoginPage implements OnInit {
     if (data === 'resend') {
       // await this.auth.sendVerificationMail();
     }
-    await this.auth.signOut();
+    // await this.auth.signOut();
   }
 
   async openRecoveryPassword() {
@@ -116,11 +124,11 @@ export class LoginPage implements OnInit {
       componentProps: { email: this.loginForm.get('email').value },
     });
     await modal.present();
-    const { data } = await modal.onWillDismiss();
+    const { data } = await modal.onDidDismiss();
     if (data.status === 'invalid-code') {
       this.showError(data.message);
     } else {
-      this.login();
+      await this.signIn();
     }
   }
 

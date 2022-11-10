@@ -13,6 +13,9 @@ import { NextEventsComponent } from './next-events/next-events.component';
 import { SwiperModule } from 'swiper/angular';
 import { ItemsListComponent } from './items-list/items-list.component';
 import { MenuComponent } from './menu/menu.component';
+import { EmptyEventCardComponent } from './empty-event-card/empty-event-card.component';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+
 @NgModule({
   declarations: [
     HeaderComponent,
@@ -25,8 +28,9 @@ import { MenuComponent } from './menu/menu.component';
     NextEventsComponent,
     ItemsListComponent,
     MenuComponent,
+    EmptyEventCardComponent,
   ],
-  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule],
+  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule],
   exports: [
     HeaderComponent,
     SendVerificationEmailModalComponent,
@@ -38,6 +42,7 @@ import { MenuComponent } from './menu/menu.component';
     NextEventsComponent,
     ItemsListComponent,
     MenuComponent,
+    EmptyEventCardComponent,
   ],
 })
 export class SharedComponentsModule {}
