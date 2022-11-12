@@ -134,13 +134,18 @@ export class CreateAppointmentPage implements OnInit {
   createNotification(appointment) {
     this.localNotificationsService.requestPermissions();
     this.localNotificationsService.registerActionTypes();
-    this.localNotificationsService.addEventListener((res) => {
-      this.confirmAppointment(res);
+    this.localNotificationsService.addEventListener((notification) => {
+      this.dispatch(notification);
     });
     this.localNotificationsService.schedule(appointment.date, appointment.professional);
   }
 
-  confirmAppointment(data) {
-    console.log(data);
+  dispatch(notification) {
+    if(notification.actionId === 'confirm'){
+      this.confirmAppointment();
+    }
+  }
+
+  confirmAppointment(){
   }
 }
