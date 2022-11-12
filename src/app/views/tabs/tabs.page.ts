@@ -9,7 +9,7 @@ import { Component, OnInit } from '@angular/core';
           <ion-tab-button tab="home">
             <ion-icon name="home"></ion-icon>
           </ion-tab-button>
-          <ion-tab-button tab="appointment">
+          <ion-tab-button tab="appointments">
             <ion-icon name="calendar-number"></ion-icon>
           </ion-tab-button>
           <ion-tab-button tab="clipboard">

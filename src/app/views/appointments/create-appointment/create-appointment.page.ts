@@ -1,8 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { IonDatetime, NavController } from '@ionic/angular';
-import { format, formatISO, parse, parseISO, parseJSON } from 'date-fns';
+import { formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
+import { LocalNotificationsService } from 'src/app/services/local-notifications/local-notifications.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
@@ -97,7 +98,8 @@ export class CreateAppointmentPage implements OnInit {
     private appointmentDataService: AppointmentDataService,
     private appointmentsService: AppointmentsService,
     private toastService: ToastService,
-    private navController: NavController
+    private navController: NavController,
+    private localNotificationsService: LocalNotificationsService
   ) {}
 
   ngOnInit() {}
@@ -116,13 +118,29 @@ export class CreateAppointmentPage implements OnInit {
     this.datetime.confirm(true);
   }
 
-  onSubmit() {
+  async onSubmit() {
     this.form.get('date').setValue(this.appointmentDate);
-    this.appointmentsService.createAppointment(this.form.value).then(()=>this.successCreation());
+    await this.appointmentsService
+      .createAppointment(this.form.value)
+      .then((res: any) => this.successCreation(res.appointment));
   }
 
-  successCreation() {
+  successCreation(appointment) {
+    this.createNotification(appointment);
     this.toastService.showSuccess('Turno creado correctamente.');
     this.navController.navigateRoot(['/tabs/appointments']);
+  }
+
+  createNotification(appointment) {
+    this.localNotificationsService.requestPermissions();
+    this.localNotificationsService.registerActionTypes();
+    this.localNotificationsService.addEventListener((res) => {
+      this.confirmAppointment(res);
+    });
+    this.localNotificationsService.schedule(appointment.date, appointment.professional);
+  }
+
+  confirmAppointment(data) {
+    console.log(data);
   }
 }

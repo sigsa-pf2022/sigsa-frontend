@@ -18,12 +18,14 @@ import { AppointmentsService } from './shared/services/appointments/appointments
         (ionChange)="handleChange($event)"
       ></ion-searchbar>
     </form>
-    <ion-list class="apts__list" *ngIf="this.appointments.length > 0">
+    <!-- <ion-list class="apts__list" *ngIf="this.appointments.length > 0"> -->
+    <cdk-virtual-scroll-viewport [ngStyle]="{ height: '65vh' }" minBufferPx="900" maxBufferPx="1350" itemSize="3">
       <app-appointments-item-list
         *ngFor="let appointment of this.appointments"
         [appointment]="appointment"
       ></app-appointments-item-list>
-    </ion-list>
+    </cdk-virtual-scroll-viewport>
+    <!-- </ion-list> -->
     <ion-fab vertical="bottom" horizontal="center" slot="fixed">
       <ion-fab-button (click)="newAppointment()" class="apts__fab">
         <ion-icon name="add"></ion-icon>

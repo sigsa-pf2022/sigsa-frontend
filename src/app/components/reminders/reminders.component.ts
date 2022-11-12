@@ -16,14 +16,12 @@ import { REMINDERS_TYPE } from 'src/app/views/home/constants/remindersType';
       </ion-segment-button>
     </ion-segment>
     <cdk-virtual-scroll-viewport [ngStyle]="{'height': this.height}" minBufferPx="900" maxBufferPx="1350" itemSize="3">
-      <!-- <ion-list> -->
         <app-items-list
           *cdkVirtualFor="let reminder of this.reminders"
           [title]="reminder.title"
           [subtitle]="reminder.subtitle"
           [img]="reminder.img"
         ></app-items-list>
-      <!-- </ion-list> -->
     </cdk-virtual-scroll-viewport>
   </div>`,
   styleUrls: ['./reminders.component.scss'],

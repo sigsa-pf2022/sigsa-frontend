@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "Sigsa",
   "version": "0.0.1",
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
@@ -30,7 +30,7 @@
     "@capacitor/core": "^4.0.0",
     "@capacitor/filesystem": "^4.0.0",
     "@capacitor/haptics": "^4.0.0",
-    "@capacitor/ios": "^4.0.0",
+    "@capacitor/ios": "4.4.0",
     "@capacitor/keyboard": "^4.0.0",
     "@capacitor/local-notifications": "^4.1.2",
     "@capacitor/preferences": "^4.0.1",

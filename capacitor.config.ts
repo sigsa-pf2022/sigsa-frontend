@@ -7,9 +7,9 @@ const config: CapacitorConfig = {
   bundledWebRuntime: false,
   plugins: {
     LocalNotifications: {
-      smallIcon: 'ic_stat_icon_config_sample',
-      iconColor: '#488AFF',
-      sound: 'beep.wav',
+      smallIcon: 'sigsa_logo',
+      iconColor: '#9c59e8',
+      sound: 'alert.wav',
     },
   },
 };

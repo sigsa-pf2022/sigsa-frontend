@@ -1323,10 +1323,10 @@
   dependencies:
     "tslib" "^2.1.0"
 
-"@capacitor/core@^4.0.0", "@capacitor/core@^4.1.0":
-  "integrity" "sha512-kHKn6693Yt9TWfuJ0Q+fyxYCpYAvVMKdu3t500seMEfdgNlF6BGaX5GbOnXkU4cnM9p+sIhRiwXv8Iqwm0E+NA=="
-  "resolved" "https://registry.npmjs.org/@capacitor/core/-/core-4.2.0.tgz"
-  "version" "4.2.0"
+"@capacitor/core@^4.0.0", "@capacitor/core@^4.3.0":
+  "integrity" "sha512-9k6EJTCMlHhr6g2oGo2FJM2byRyX5GEfB24Bv2e4fnemiiHrQEeAKdg++6Hj7jNNZtI1q+5EImTrcpXzPkiX7Q=="
+  "resolved" "https://registry.npmjs.org/@capacitor/core/-/core-4.4.0.tgz"
+  "version" "4.4.0"
   dependencies:
     "tslib" "^2.1.0"
 
@@ -1340,10 +1340,10 @@
   "resolved" "https://registry.npmjs.org/@capacitor/haptics/-/haptics-4.0.1.tgz"
   "version" "4.0.1"
 
-"@capacitor/ios@^4.0.0":
-  "integrity" "sha512-YOncOJHMB1QhgmWBk3Ml8IT+KoN131zlmtCBtx9Szzc6/LvzG/NMojVqfl996k37gRw9sYHrvNP01sn22IijSA=="
-  "resolved" "https://registry.npmjs.org/@capacitor/ios/-/ios-4.2.0.tgz"
-  "version" "4.2.0"
+"@capacitor/ios@4.4.0":
+  "integrity" "sha512-x1i9WgaeUANBgXmCHcXoMrqZC49Ef0eu+kaRmcQ0/UkI2r31/PMGr3BVTlHRJLeBsodzwR4TiEeKRK044WX+Hw=="
+  "resolved" "https://registry.npmjs.org/@capacitor/ios/-/ios-4.4.0.tgz"
+  "version" "4.4.0"
 
 "@capacitor/keyboard@^4.0.0":
   "integrity" "sha512-JZVci2v9jAKH0sIoNNZzmw/cWGXWf+KneLt0yDr/6YSs/2/tfuH10yOrUOhgrKFkR+fFj/rddTClQXUQ8Rqcrg=="
