@@ -15,6 +15,7 @@ import { ItemsListComponent } from './items-list/items-list.component';
 import { MenuComponent } from './menu/menu.component';
 import { EmptyEventCardComponent } from './empty-event-card/empty-event-card.component';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { AppointmentsItemListComponent } from './appointments-item-list/appointments-item-list.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     ItemsListComponent,
     MenuComponent,
     EmptyEventCardComponent,
+    AppointmentsItemListComponent
   ],
   imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule],
   exports: [
@@ -43,6 +45,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     ItemsListComponent,
     MenuComponent,
     EmptyEventCardComponent,
+    AppointmentsItemListComponent
   ],
 })
 export class SharedComponentsModule {}

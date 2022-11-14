@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { ModalController, ToastController } from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
-import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-recovery-password-modal',
@@ -20,7 +18,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           formControlName="email"
         ></ion-input>
         <div class="body__actions">
-          <ion-button (click)="close()">Cerrar</ion-button>
+          <ion-button color='medium' (click)="close()">Cerrar</ion-button>
           <ion-button (click)="send()" [disabled]="!this.form.valid"
             >Enviar</ion-button
           >
@@ -37,9 +35,6 @@ export class RecoveryPasswordModalComponent implements OnInit {
   constructor(
     private modalController: ModalController,
     private fb: FormBuilder,
-    private auth: AuthenticationService,
-    private toast: ToastController,
-    private translate: TranslateService
   ) {}
 
   ngOnInit() {}
@@ -48,24 +43,7 @@ export class RecoveryPasswordModalComponent implements OnInit {
     return this.modalController.dismiss();
   }
 
-  async send() {
-    await this.auth
-      .sendPasswordResetEmail(this.form.value)
-      .then((res) => {
-        this.showMessage('success', 'success');
-        this.close();
-      })
-      .catch((err) => {
-        this.showMessage('danger', err);
-      });
-  }
-
-  async showMessage(color: string, code: string) {
-    const toast = await this.toast.create({
-      message: this.translate.instant(`login.recovery-password.${code}`),
-      duration: 5000,
-      color,
-    });
-    await toast.present();
+  send() {
+    return this.modalController.dismiss(this.form.value);
   }
 }

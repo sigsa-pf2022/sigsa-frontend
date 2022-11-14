@@ -47,14 +47,12 @@ export class AuthenticationService {
     return this.http.post(`${environment.apiUrl}/users/validate`, data).toPromise();
   }
 
-  // TODO: Page to reset password
-  async sendPasswordResetEmail(formValue) {
-    // return await this.afAuth
-    //   .sendPasswordResetEmail(formValue.email)
-    //   .then((result) => result)
-    //   .catch((error) => {
-    //     throw error.code.split('/')[1];
-    //   });
+  sendPasswordResetEmail(email) {
+    return this.http.post(`${environment.apiUrl}/users/recovery-password-email`, { email }).toPromise();
+  }
+
+  resetPassword(data) {
+    return this.http.post(`${environment.apiUrl}/users/reset-password`, data).toPromise();
   }
 
   async signIn(params) {

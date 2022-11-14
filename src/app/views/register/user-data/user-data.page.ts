@@ -1,8 +1,6 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { IonDatetime, ModalController, NavController, ToastController } from '@ionic/angular';
-import { TranslateService } from '@ngx-translate/core';
-import { format } from 'date-fns';
+import { ModalController, NavController } from '@ionic/angular';
 import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 import { ToastService } from 'src/app/services/toast/toast.service';

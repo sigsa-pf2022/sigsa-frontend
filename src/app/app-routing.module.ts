@@ -44,6 +44,10 @@ const routes: Routes = [
     loadChildren: () => import('./views/doctors/doctors.module').then((m) => m.DoctorsPageModule),
     canActivate: [AuthGuard],
   },
+  {
+    path: 'recovery-password',
+    loadChildren: () => import('./views/recovery-password/recovery-password.module').then( m => m.RecoveryPasswordModule)
+  },
 ];
 @NgModule({
   imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],

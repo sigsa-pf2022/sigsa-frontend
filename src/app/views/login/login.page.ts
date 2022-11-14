@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ModalController, NavController, Platform, ToastController } from '@ionic/angular';
 import { RecoveryPasswordModalComponent } from 'src/app/components/recovery-password-modal/recovery-password-modal.component';
 import { SendVerificationEmailModalComponent } from 'src/app/components/send-verification-email-modal/send-verification-email-modal.component';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
-import { PlatformService } from 'src/app/services/platform/platform.service';
+import { RecoveryPasswordFormDataService } from 'src/app/services/recovery-password-form-data/recovery-password-form-data.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { UserValidationModalComponent } from './shared-login/components/user-validation-modal/user-validation-modal.component';
 
@@ -14,7 +15,7 @@ import { UserValidationModalComponent } from './shared-login/components/user-val
     <ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__transparent">
         <ion-buttons slot="start">
-          <ion-back-button></ion-back-button>
+          <ion-back-button defaultHref="/welcome"></ion-back-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -67,7 +68,8 @@ export class LoginPage implements OnInit {
     private auth: AuthenticationService,
     private modalController: ModalController,
     private toastService: ToastService,
-    public platformService: PlatformService
+    private router: Router,
+    private recoveryPasswordFormDataService: RecoveryPasswordFormDataService
   ) {}
 
   ngOnInit() {}
@@ -113,6 +115,13 @@ export class LoginPage implements OnInit {
       cssClass: 'modal',
     });
     await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data.email) {
+      await this.auth.sendPasswordResetEmail(data.email).then(() => {
+        this.recoveryPasswordFormDataService.tokenForm.patchValue({ email: data.email });
+        this.router.navigateByUrl('/recovery-password/token-verification');
+      });
+    }
   }
 
   async openValidationUserModal() {

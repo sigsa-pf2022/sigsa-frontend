@@ -1,4 +1,3 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { CustomValidators } from 'src/app/validators/custom-validators';
@@ -43,7 +42,7 @@ export class RegisterFormDataService {
       validators: [CustomValidators.passwordMatchValidator],
     }
   );
-  constructor(private fb: FormBuilder, private http: HttpClient) {}
+  constructor(private fb: FormBuilder) {}
 
   get form() {
     return this.registerForm;

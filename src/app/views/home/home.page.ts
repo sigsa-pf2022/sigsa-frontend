@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { AppointmentsService } from '../appointments/shared/services/appointments/appointments.service';
 import { REMINDERS_TYPE } from './constants/remindersType';
 import { FAKE_APPOINTMENTS_REMINDERS_DATA } from './fakes/fakeAppointmentsReminderData';
 import { FAKE_DOCUMENTS_REMINDERS_DATA } from './fakes/fakeDocumentsReminderData';
-import { FAKE_EVENTS_DATA } from './fakes/fakeEventsData';
 import { FAKE_MEDICATIONS_REMINDERS_DATA } from './fakes/fakeMedicationsReminderData';
 
 @Component({
@@ -11,30 +11,40 @@ import { FAKE_MEDICATIONS_REMINDERS_DATA } from './fakes/fakeMedicationsReminder
     <ion-content class="home">
       <app-next-events [events]="this.events"></app-next-events>
       <app-reminders
+        [activeTab]="this.activeTab"
         [reminders]="this.reminders"
-        (changeReminders)="changeReminders($event)"
+        (tabChanged)="this.changeReminders($event)"
       ></app-reminders>
     </ion-content>
   `,
   styleUrls: ['./home.page.scss'],
 })
-export class HomePage implements OnInit {
+export class HomePage {
+  remindersTypes = REMINDERS_TYPE;
+  activeTab = null;
   events = [];
   reminders = [];
-  constructor() {}
+  appointments = [];
+  constructor(private appointmentsService: AppointmentsService) {}
 
-  ngOnInit() {}
+  ionViewWillEnter() {
+    this.setData();
+  }
 
-  changeReminders(value: string) {
+  async setData() {
+    this.appointments = await this.appointmentsService.getAppointmentsByUser();
+  }
+  changeReminders(value) {
+    this.activeTab = value;
     switch (value) {
-      case REMINDERS_TYPE.appointments:
-        this.reminders = FAKE_APPOINTMENTS_REMINDERS_DATA;
+      case this.remindersTypes.appointments:
+        this.reminders = this.appointments;
         break;
-      case REMINDERS_TYPE.medications:
-        this.reminders = FAKE_MEDICATIONS_REMINDERS_DATA;
+      case this.remindersTypes.medications:
+        this.reminders = [];
         break;
-      case REMINDERS_TYPE.documents:
-        this.reminders = FAKE_DOCUMENTS_REMINDERS_DATA;
+      case this.remindersTypes.documents:
+        this.reminders = [];
         break;
     }
   }

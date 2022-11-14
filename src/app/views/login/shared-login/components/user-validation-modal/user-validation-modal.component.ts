@@ -13,7 +13,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
             >Le hemos enviado un código de validación a su correo electrónico</ion-label
           >
           <ion-img class="uv__img" src="/assets/images/register/user-validation.svg"></ion-img>
-          <ion-input class="ui-form-input" formControlName="verificationCode" type="string"></ion-input>
+          <ion-input class="ui-form-input" formControlName="verificationCode" type="number"></ion-input>
           <div class="body__actions">
             <ion-button expand="block" (click)="onSubmit()" [disabled]="!this.form.valid">Validar</ion-button>
           </div>
@@ -32,15 +32,15 @@ export class UserValidationModalComponent implements OnInit {
   ngOnInit() {
     this.form = this.fb.group({
       email: this.email,
-      verificationCode: [
+      code: [
         null,
         Validators.compose([
           Validators.required,
-          Validators.maxLength(6),
-          Validators.minLength(6),
-          Validators.pattern(/^[0-9]\d*$/),
+          Validators.min(100000),
+          Validators.max(999999),
         ]),
       ],
+      field: 'verificationCode'
     });
   }
 

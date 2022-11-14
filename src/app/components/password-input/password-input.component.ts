@@ -13,6 +13,7 @@ import {
       class="ui-form-input pi__input"
       [formControlName]="this.controlName"
       [placeholder]="this.placeholder"
+      [clearOnEdit]="false"
     ></ion-input>
     <ion-icon
       class="pi__icon"

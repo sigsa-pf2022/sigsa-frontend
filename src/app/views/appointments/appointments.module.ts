@@ -10,6 +10,7 @@ import { CreateAppointmentPage } from './create-appointment/create-appointment.p
 import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { SharedAppointmentsModule } from './shared/shared-appointments.module';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 const routes: Routes = [
 
@@ -32,6 +33,7 @@ const routes: Routes = [
     IonicModule,
     SharedComponentsModule,
     SharedAppointmentsModule,
+    ScrollingModule,
   ],
   declarations: [AppointmentsPage, PickProfessionalPage, CreateAppointmentPage],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }],

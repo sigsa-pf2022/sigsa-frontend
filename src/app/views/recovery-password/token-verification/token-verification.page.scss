@@ -1,0 +1,13 @@
+.tv{
+    --padding-start: 16px;
+    --padding-end: 16px;
+    &__img{
+        width: 300px;
+        margin: auto;
+    }
+
+    &__title{
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+}
