@@ -1,9 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { Component, ViewChild } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { IonDatetime, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
-import { Gesture, GestureController } from '@ionic/angular';
 import { RegisterFormDataService } from '../shared-register/services/register-form-data/register-form-data.service';
 
 @Component({
@@ -25,7 +24,7 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
         ><ion-text class="pd__notice__type">{{ this.userType | uppercase }}</ion-text>
       </div>
 
-      <form class="pd__form" [formGroup]="registerForm">
+      <form class="pd__form" [formGroup]="this.form">
         <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="dni" placeholder="DNI" type="text"></ion-input>
@@ -66,16 +65,22 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
       <ion-button class="ui-button-outlined" expand="block" (click)="changeUserType()"
         >Registrese como {{ this.userType === 'usuario' ? 'profesional' : 'usuario' }}</ion-button
       >
-      <ion-button (click)="navigate()" expand="block" [disabled]="!this.formValid()" color="primary">
+      <ion-button (click)="navigate()" expand="block" [disabled]="!this.form.valid" color="primary">
         Siguiente
       </ion-button>
     </ion-footer>
   `,
   styleUrls: ['./personal-data.page.scss'],
 })
-export class PersonalDataPage implements OnInit {
+export class PersonalDataPage {
   @ViewChild(IonDatetime) datetime: IonDatetime;
-  registerForm: FormGroup;
+  form = this.fb.group({
+    firstName: [null, [Validators.compose([Validators.required, Validators.maxLength(50)])]],
+    lastName: [null, [Validators.compose([Validators.required, Validators.maxLength(50)])]],
+    gender: [null, Validators.required],
+    birthday: [null, Validators.required],
+    dni: [null, Validators.required],
+  });
   userType: 'profesional' | 'usuario' = 'usuario';
   url = '/register/user-data';
   showCalendar = false;
@@ -86,68 +91,18 @@ export class PersonalDataPage implements OnInit {
   constructor(
     private dateFormatterService: DateFormatterService,
     private navController: NavController,
+    private fb: FormBuilder,
     private registerFormDataService: RegisterFormDataService // private gestureCtrl: GestureController
   ) {}
 
-  ngOnInit() {
-    this.registerForm = this.registerFormDataService.form;
-  }
-
-  ionViewWillEnter() {
-    //   this.el = document.getElementById('register');
-    //   const gesture: Gesture = this.gestureCtrl.create({
-    //     el: this.el,
-    //     gestureName: 'asd',
-    //     threshold: 0,
-    //     onStart: () => {
-    //       this.onStart();
-    //     },
-    //     onMove: (detail) => {
-    //       this.onMove(detail);
-    //     },
-    //     onEnd: () => {
-    //       this.clearGestureTimeout();
-    //     },
-    //   });
-    //   gesture.enable(true);
-  }
-
-  // onStart() {
-  //   const TIMEOUT = 500;
-  //   this.clearGestureTimeout();
-
-  //   this.timeout = setTimeout(() => {
-  //     console.log('longPress');
-  //     this.timeout = undefined;
-  //   }, TIMEOUT);
-  // }
-
-  // onMove(detail) {
-  //   // Allow a little bit of movement
-  //   if (detail.deltaX <= 10 && detail.deltaY <= 10) {
-  //     return;
-  //   }
-
-  //   this.clearGestureTimeout();
-  // }
-
-  // clearGestureTimeout() {
-  //   if (this.timeout) {
-  //     clearTimeout(this.timeout);
-  //     this.timeout = undefined;
-  //   }
-  // }
+  ionViewWillEnter() {}
 
   openCalendar() {
     this.showCalendar = !this.showCalendar;
   }
 
-  // itemPressed() {
-  //   console.log('itemPressed');
-  // }
-
   dateChanged(date: string) {
-    this.registerForm
+    this.form
       .get('birthday')
       .setValue(
         format(
@@ -161,11 +116,8 @@ export class PersonalDataPage implements OnInit {
     this.datetime.confirm(true);
   }
 
-  formValid() {
-    return this.registerFormDataService.personalDataValid();
-  }
-
   navigate() {
+    this.registerFormDataService.setData(this.form.value);
     return this.navController.navigateForward([this.url]);
   }
 
@@ -176,10 +128,12 @@ export class PersonalDataPage implements OnInit {
   setUserType() {
     this.userType = 'usuario';
     this.url = '/register/user-data';
+    this.registerFormDataService.setUserType('usuario');
   }
 
   setProfessionalType() {
     this.userType = 'profesional';
     this.url = '/register/professional-data';
+    this.registerFormDataService.setUserType('profesional');
   }
 }

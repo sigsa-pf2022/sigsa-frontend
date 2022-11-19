@@ -1,15 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { NavController } from '@ionic/angular';
+import { GeographyService } from 'src/app/services/geography/geography.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { ProfessionalsService } from '../../doctors/shared/services/professionals.service';
+import { RegisterFormDataService } from '../shared-register/services/register-form-data/register-form-data.service';
 
 @Component({
   selector: 'app-professional-data',
   template: `<ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-back-button defaultHref="/welcome"></ion-back-button>
+          <ion-back-button defaultHref="/register/personal-data"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">Nuevo Profesional</ion-title>
       </ion-toolbar>
@@ -17,54 +19,55 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
     <ion-content class="pd">
       <ion-img class="pd__img" src="assets/images/doctors/new-doctor.svg"></ion-img>
       <form class="pd__form" [formGroup]="form">
-        <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="title" placeholder="Titulo"> </ion-input>
         <ion-input class="ui-form-input" formControlName="licenseNumber" placeholder="Numero de licencia"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="jurisdiction" placeholder="Provincia"> </ion-input>
+        <ion-select
+          class="ui-form-input"
+          placeholder="Provincias con jurisdiccion"
+          [multiple]="true"
+          formControlName="jurisdiction"
+        >
+          <ion-select-option *ngFor="let state of this.states" [value]="state">{{ state.name }}</ion-select-option>
+        </ion-select>
+        <ion-select
+          class="ui-form-input"
+          placeholder="Especialidades"
+          [multiple]="true"
+          formControlName="specialization"
+        >
+          <ion-select-option *ngFor="let specialization of this.specializations" [value]="specialization">{{
+            specialization.name
+          }}</ion-select-option>
+        </ion-select>
       </form>
     </ion-content>
     <ion-footer class="footer__light">
-      <ion-button class="ui-button-outlined" expand="block" (click)="goToCreateUser()"
-        >Registrese como usuario</ion-button
-      >
-      <ion-button (click)="onSubmit()" expand="block" [disabled]="!this.form.valid" color="primary">
-        Siguiente
-      </ion-button>
+      <ion-button (click)="onSubmit()" expand="block" color="primary"> Siguiente </ion-button>
     </ion-footer>`,
   styleUrls: ['./professional-data.page.scss'],
 })
-export class ProfessionalDataPage implements OnInit {
+export class ProfessionalDataPage {
+  states = [];
+  specializations = [];
   form = this.fb.group({
-    firstName: ['', Validators.required],
-    lastName: ['', Validators.required],
-    title: ['', Validators.required],
+    specialization: [null, Validators.required],
     licenseNumber: [null, Validators.required],
-    jurisdiction: ['', Validators.required],
+    jurisdiction: [null, Validators.required],
   });
   constructor(
     private fb: FormBuilder,
     private professionalsService: ProfessionalsService,
-    private toastService: ToastService,
-    private navController: NavController
+    private navController: NavController,
+    private registerFormDataService: RegisterFormDataService,
+    private geographyService: GeographyService
   ) {}
 
-  ngOnInit() {
-    console.log('hola');
+  async ionViewWillEnter() {
+    this.states = await this.geographyService.getStates();
+    this.specializations = await this.professionalsService.getProfessionalsSpecializations();
   }
 
-  onSubmit() {
-    return this.professionalsService.createMyProfessional(this.form.value).then(() => {
-      this.successCreation();
-    });
-  }
-
-  successCreation() {
-    this.toastService.showSuccess('Profesional creado correctamente.');
-    this.navController.pop();
-  }
-
-  goToCreateUser() {
-    this.navController.navigateRoot(['/register/personal-data']);
+  async onSubmit() {
+    this.registerFormDataService.setData(this.form.value);
+    this.navController.navigateForward('/register/user-data');
   }
 }

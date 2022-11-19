@@ -10,10 +10,9 @@ import { AppointmentDataService } from '../shared/services/appointment-data/appo
   template: `<ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
         <ion-buttons slot="start">
-          <ion-back-button defaultHref="/tabs/appointment"></ion-back-button>
+          <ion-back-button defaultHref="/tabs/appointments"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">Nuevo Turno</ion-title>
-
         <ion-label class="ui-header__counter" slot="end">1 de 2</ion-label>
       </ion-toolbar>
     </ion-header>
@@ -28,15 +27,7 @@ import { AppointmentDataService } from '../shared/services/appointment-data/appo
           (ionChange)="handleChange($event)"
         ></ion-searchbar>
       </form>
-      <ion-segment class="apn__segment" [value]="'created_doctors'">
-        <ion-segment-button disabled class="apn__segment__button" [value]="'doctors'">
-          <ion-label>Profesionales</ion-label>
-        </ion-segment-button>
-        <ion-segment-button class="apn__segment__button" [value]="'created_doctors'">
-          <ion-label>Mis Profesionales</ion-label>
-        </ion-segment-button>
-      </ion-segment>
-      <ion-list>
+      <ion-list *ngIf="this.filteredDoctors?.length > 0">
         <ion-radio-group [value]="this.doctor">
           <app-items-list
             class="apn__list"
@@ -52,6 +43,9 @@ import { AppointmentDataService } from '../shared/services/appointment-data/appo
           ></app-items-list>
         </ion-radio-group>
       </ion-list>
+      <div *ngIf="this.filteredDoctors?.length === 0">
+        <ion-text>No se encontraron doctores con los filtros solicitados. Crea el tuyo!</ion-text>
+      </div>
     </ion-content>
     <ion-footer class="footer__light">
       <div class="apn__actions">
@@ -98,7 +92,8 @@ export class PickProfessionalPage implements OnInit {
   }
 
   async getProfessionals() {
-    this.doctors = await this.professionalsService.getMyProfessionals();
+    this.doctors = await this.professionalsService.getProfessionals();
+    console.log(this.doctors);
     this.filteredDoctors = this.doctors;
   }
 
