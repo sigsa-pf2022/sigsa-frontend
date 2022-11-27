@@ -1,0 +1,10 @@
+:host{
+    justify-content: center;
+    .body{
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        align-items: center;
+    }
+}

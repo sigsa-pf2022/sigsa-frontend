@@ -49,13 +49,13 @@ import { NewGroupDataService } from '../shared/services/new-group-data/new-group
             <ion-label>
               {{ member.firstName + ' ' + member.lastName }}
             </ion-label>
-            <ion-icon color="complementary" (click)="removeMember(member.username)" name="close"></ion-icon>
+            <ion-icon color="complementary" (click)="removeMember(member.dni)" name="close"></ion-icon>
           </ion-item>
         </ion-list>
       </div>
     </ion-content>
     <ion-footer class="footer__light">
-      <ion-button (click)="onSubmit()" expand="block" [disabled]="!isFormValid()" color="primary">
+      <ion-button (click)="onSubmit()" expand="block" color="primary">
         Confirmar
       </ion-button>
     </ion-footer>
@@ -63,8 +63,8 @@ import { NewGroupDataService } from '../shared/services/new-group-data/new-group
   styleUrls: ['./add-members.page.scss'],
 })
 export class AddMembersPage implements OnInit {
-  memberToAdd: { firstName: string; lastName: string; username: number };
-  members: { firstName: string; lastName: string; username: number }[] = [];
+  memberToAdd: { firstName: string; lastName: string; dni: number };
+  members: { firstName: string; lastName: string; dni: number }[] = [];
   form = this.fb.group({
     search: null,
   });
@@ -80,16 +80,16 @@ export class AddMembersPage implements OnInit {
   ngOnInit() {}
 
   async handleChange(event) {
-    const username = event.detail.value;
-    if (username.length === 6 && !this.memberAlreadyAdded(username) && !this.isNotMe(username)) {
-      this.memberToAdd = await this.auth.getUserByUsername(username);
+    const dni = event.detail.value;
+    if (dni.length > 0 && !this.memberAlreadyAdded(dni) && !this.isNotMe(dni)) {
+      this.memberToAdd = await this.auth.getUserByDni(dni);
     } else {
       this.memberToAdd = null;
     }
   }
 
-  memberAlreadyAdded(username: number) {
-    return this.members.some((m) => m.username === Number(username));
+  memberAlreadyAdded(dni: number) {
+    return this.members.some((m) => m.dni === Number(dni));
   }
 
   clearMembers() {
@@ -100,17 +100,13 @@ export class AddMembersPage implements OnInit {
     this.members.push(this.memberToAdd);
     this.memberToAdd = null;
   }
-  removeMember(username: number) {
-    this.members = this.members.filter((m) => m.username !== username);
+  removeMember(dni: number) {
+    this.members = this.members.filter((m) => m.dni !== dni);
     this.form.reset();
   }
 
-  isNotMe(username: number) {
-    return Number(username) === this.auth.user().username;
-  }
-
-  isFormValid() {
-    return this.members.length > 0;
+  isNotMe(dni: number) {
+    return Number(dni) === this.auth.user().dni;
   }
 
   async onSubmit() {

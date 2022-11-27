@@ -5,6 +5,14 @@
   font-size: 32px;
 }
 
+.ui-link {
+  font-family: var(--ui-font-roboto);
+  font-style: normal;
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--ion-color-secondary);
+}
+
 .ui-font-modal-title {
   font-family: var(--ui-font-roboto);
   font-style: normal;
@@ -20,22 +28,21 @@
   letter-spacing: -0.3px;
 }
 
-.ui-font-profile-title{
+.ui-font-profile-title {
   font-family: var(--ui-font-roboto);
   font-style: normal;
   font-weight: 600;
   font-size: 18px;
 }
 
-
-.ui-font-profile-label{
+.ui-font-profile-label {
   font-family: var(--ui-font-roboto);
   font-style: normal;
   font-weight: 400;
   font-size: 16px;
 }
 
-.ui-font-profile-email-title{
+.ui-font-profile-email-title {
   font-family: var(--ui-font-roboto);
   font-style: normal;
   font-weight: 600;

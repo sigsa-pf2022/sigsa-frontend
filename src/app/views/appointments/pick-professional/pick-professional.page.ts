@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { format, formatISO, setDefaultOptions } from 'date-fns';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { ProfessionalsService } from '../../doctors/shared/services/professionals.service';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
+import { AppointmentsService } from '../shared/services/appointments/appointments.service';
 
 @Component({
   selector: 'app-pick-professional',
@@ -12,7 +15,7 @@ import { AppointmentDataService } from '../shared/services/appointment-data/appo
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/tabs/appointments"></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">Nuevo Turno</ion-title>
+        <ion-title class="ui-header__title-center">{{this.isEditMode ?'Editar' : 'Crear'}} turno</ion-title>
         <ion-label class="ui-header__counter" slot="end">1 de 2</ion-label>
       </ion-toolbar>
     </ion-header>
@@ -28,29 +31,28 @@ import { AppointmentDataService } from '../shared/services/appointment-data/appo
         ></ion-searchbar>
       </form>
       <ion-list *ngIf="this.filteredDoctors?.length > 0">
-        <ion-radio-group [value]="this.doctor">
+        <ion-radio-group [value]="this.doctor?.id">
           <app-items-list
             class="apn__list"
             *ngFor="let doctor of this.filteredDoctors"
             (click)="setDoctor(doctor)"
             [showIcon]="false"
             [isSelectable]="true"
-            [value]="doctor"
-            [title]="doctor.firstName + ' ' + doctor.lastName"
-            [subtitle]="doctor.field"
+            [value]="doctor.id"
+            [title]="'Dr/a ' + doctor.firstName + ' ' + doctor.lastName"
             img="doctor"
             height="60%"
           ></app-items-list>
         </ion-radio-group>
       </ion-list>
-      <div *ngIf="this.filteredDoctors?.length === 0">
-        <ion-text>No se encontraron doctores con los filtros solicitados. Crea el tuyo!</ion-text>
+      <div class="apn__empty-list" *ngIf="this.filteredDoctors?.length === 0">
+        <ion-text>No se encontraron doctores con los filtros solicitados.</ion-text>
+        <ion-button color="secondary" fill="outline">Crea el tuyo</ion-button>
       </div>
     </ion-content>
     <ion-footer class="footer__light">
       <div class="apn__actions">
-        <ion-button class="ui-button-outlined" (click)="newDoctor()">Cargar Nuevo Profesional</ion-button>
-        <ion-button [disabled]="!this.doctor" (click)="goToCreateAppointment()">Siguiente</ion-button>
+        <ion-button [disabled]="!this.doctor" (click)="nextStep()">Siguiente</ion-button>
       </div>
     </ion-footer>`,
   styleUrls: ['./pick-professional.page.scss'],
@@ -62,18 +64,36 @@ export class PickProfessionalPage implements OnInit {
   doctor: any;
   doctors: Professional[];
   filteredDoctors: Professional[];
-
+  isEditMode = false;
+  appointmentId: number;
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
     private professionalsService: ProfessionalsService,
-    private appointmentDataService: AppointmentDataService
+    private appointmentsService: AppointmentsService,
+    private appointmentDataService: AppointmentDataService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {}
 
   ionViewWillEnter() {
     this.getProfessionals();
+    this.setMode();
+  }
+
+  setMode() {
+    this.appointmentId = Number(this.route.snapshot.paramMap.get('id'));
+    if (this.appointmentId) {
+      this.isEditMode = true;
+      this.setAppointmentInfo();
+    }
+  }
+
+  async setAppointmentInfo() {
+    const appointment = await this.appointmentsService.getAppointment(this.appointmentId);
+    this.setDoctor(appointment.professional);
+    this.appointmentDataService.update(appointment);
   }
 
   setDoctor(value: Professional) {
@@ -83,22 +103,22 @@ export class PickProfessionalPage implements OnInit {
   async handleChange(event) {
     const search = event.detail.value;
     this.filteredDoctors = this.doctors.filter(
-      (d: Professional) => d.firstName.includes(search) || d.lastName.includes(search) || d.field.includes(search)
+      (d: Professional) => d.firstName.includes(search) || d.lastName.includes(search)
     );
-  }
-
-  newDoctor() {
-    return this.navController.navigateForward(['doctors/new']);
   }
 
   async getProfessionals() {
     this.doctors = await this.professionalsService.getProfessionals();
-    console.log(this.doctors);
     this.filteredDoctors = this.doctors;
   }
 
-  goToCreateAppointment() {
-    this.appointmentDataService.update(this.doctor);
-    return this.navController.navigateForward(['/appointments/create']);
+  nextStep() {
+    if (!this.isEditMode) {
+      this.appointmentDataService.update(this.doctor);
+    }
+    const url = this.isEditMode
+      ? `/appointments/edit/${this.appointmentId}/appointment`
+      : '/appointments/create/appointment';
+    return this.navController.navigateForward([url]);
   }
 }

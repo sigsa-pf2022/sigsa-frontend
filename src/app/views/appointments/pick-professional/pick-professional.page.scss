@@ -8,5 +8,11 @@
       flex-direction: column;
       margin-top: 16px;
     }
+    &__empty-list{
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
   }
 }

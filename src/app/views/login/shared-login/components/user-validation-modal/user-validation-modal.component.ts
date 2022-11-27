@@ -13,7 +13,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
             >Le hemos enviado un código de validación a su correo electrónico</ion-label
           >
           <ion-img class="uv__img" src="/assets/images/register/user-validation.svg"></ion-img>
-          <ion-input class="ui-form-input" formControlName="verificationCode" type="number"></ion-input>
+          <ion-input class="ui-form-input" formControlName="code" type="number"></ion-input>
           <div class="body__actions">
             <ion-button expand="block" (click)="onSubmit()" [disabled]="!this.form.valid">Validar</ion-button>
           </div>

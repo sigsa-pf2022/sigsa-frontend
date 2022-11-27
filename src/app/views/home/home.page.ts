@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { isBefore } from 'date-fns';
+import { EventsService } from 'src/app/services/events/events.service';
 import { AppointmentsService } from '../appointments/shared/services/appointments/appointments.service';
 import { REMINDERS_TYPE } from './constants/remindersType';
 import { FAKE_APPOINTMENTS_REMINDERS_DATA } from './fakes/fakeAppointmentsReminderData';
@@ -25,15 +27,25 @@ export class HomePage {
   events = [];
   reminders = [];
   appointments = [];
-  constructor(private appointmentsService: AppointmentsService) {}
+  constructor(private appointmentsService: AppointmentsService, private eventsService: EventsService) {}
 
-  ionViewWillEnter() {
+  async ionViewWillEnter() {
     this.setData();
   }
 
   async setData() {
     this.appointments = await this.appointmentsService.getAppointmentsByUser();
+    const nextAppointments = this.appointments.filter((a) => isBefore(a.createdAt, new Date()));
+    this.events = [
+      ...nextAppointments.map((a) => ({
+        title: 'Dr.' + a.professional.lastName,
+        subtitle: '',
+        date: a.date,
+        type: 'appointment',
+      })),
+    ];
   }
+
   changeReminders(value) {
     this.activeTab = value;
     switch (value) {

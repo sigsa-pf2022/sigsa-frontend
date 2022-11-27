@@ -91,6 +91,7 @@ export class UserDataPage {
 
   successRegister() {
     this.navController.navigateForward(['login']);
+    this.registerFormDataService.cleanData();
     this.showSuccessModal();
   }
 

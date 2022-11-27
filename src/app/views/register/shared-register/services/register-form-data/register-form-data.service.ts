@@ -24,4 +24,8 @@ export class RegisterFormDataService {
   getData() {
     return this.data;
   }
+
+  cleanData(){
+    this.data = null;
+  }
 }

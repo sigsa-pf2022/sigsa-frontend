@@ -15,11 +15,19 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 const routes: Routes = [
 
   {
-    path: 'pick-doctor',
+    path: 'create/pick-doctor',
     component: PickProfessionalPage,
   },
   {
-    path: 'create',
+    path: 'create/appointment',
+    component: CreateAppointmentPage,
+  },
+  {
+    path: 'edit/:id/pick-doctor',
+    component: PickProfessionalPage,
+  },
+  {
+    path: 'edit/:id/appointment',
     component: CreateAppointmentPage,
   },
 ];

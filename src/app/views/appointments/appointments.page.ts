@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { NavController } from '@ionic/angular';
-import { FAKE_APPOINTMENTS_DATA } from 'src/app/data/appointmentsData';
+import { ModalController, NavController } from '@ionic/angular';
+import { isBefore, parseISO } from 'date-fns';
+import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
+import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 import { AppointmentsService } from './shared/services/appointments/appointments.service';
 
 @Component({
@@ -18,14 +21,13 @@ import { AppointmentsService } from './shared/services/appointments/appointments
         (ionChange)="handleChange($event)"
       ></ion-searchbar>
     </form>
-    <!-- <ion-list class="apts__list" *ngIf="this.appointments.length > 0"> -->
     <cdk-virtual-scroll-viewport itemSize="1">
-        <app-appointments-item-list
-          *cdkVirtualFor="let appointment of this.appointments"
-          [appointment]="appointment"
-        ></app-appointments-item-list>
-      </cdk-virtual-scroll-viewport>
-    <!-- </ion-list> -->
+      <app-appointments-item-list
+        *ngFor="let appointment of this.appointments"
+        [appointment]="appointment"
+        (click)="presentActionSheet(appointment)"
+      ></app-appointments-item-list>
+    </cdk-virtual-scroll-viewport>
     <div>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="newAppointment()" class="apts__fab">
@@ -45,14 +47,70 @@ export class AppointmentsPage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
-    private appointmentsService: AppointmentsService
+    private appointmentsService: AppointmentsService,
+    private actionSheetService: ActionSheetService,
+    private modalController: ModalController,
+    private toastService: ToastService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log('on init');
+  }
 
   async ionViewWillEnter() {
-    this.appointments = await this.appointmentsService.getAppointmentsByUser();
+    console.log('will entre');
+    this.setAppointments();
+  }
+
+  ionViewDidEnter() {
+    console.log('did entre');
+  }
+
+  async setAppointments() {
+    this.appointments = [...(await this.appointmentsService.getAppointmentsByUser())];
     this.filteredAppointments = this.appointments;
+    console.log(this.appointments);
+  }
+
+  async presentActionSheet(appointment) {
+    const actionSheet = isBefore(parseISO(appointment.date), new Date())
+      ? await this.actionSheetService.createOnlyView('Mi Turno')
+      : await this.actionSheetService.createDefault('Mi Turno');
+    await actionSheet.present();
+    const { role } = await actionSheet.onDidDismiss();
+    this.doActionByRole(role, appointment.id);
+  }
+
+  doActionByRole(value: string, id: number) {
+    switch (value) {
+      case 'destructive':
+        this.cancelAppointment(id);
+        break;
+      case 'edit':
+        this.editAppointment(id);
+        break;
+      default:
+        break;
+    }
+  }
+
+  async cancelAppointment(id: number) {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        text: '¿Desea cancelar el turno?',
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.appointmentsService
+        .cancelAppointment(id)
+        .then(() => this.toastService.showSuccess('Turno cancelado correctamente.'))
+        .then(() => this.setAppointments())
+        .catch(() => {});
+    }
   }
 
   async handleChange(event) {
@@ -63,6 +121,10 @@ export class AppointmentsPage implements OnInit {
   }
 
   newAppointment() {
-    return this.navController.navigateForward(['/appointments/pick-doctor']);
+    return this.navController.navigateForward(['/appointments/create/pick-doctor']);
+  }
+
+  editAppointment(id) {
+    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`]);
   }
 }

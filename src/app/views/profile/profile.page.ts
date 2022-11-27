@@ -43,7 +43,7 @@ export class ProfilePage implements OnInit {
     this.setUserEmail();
   }
   setUserEmail() {
-    this.options[0].title = `${this.auth.user().firstName}#${this.auth.user().username}`;
+    this.options[0].title = `${this.auth.user().firstName}`;
   }
 
   doAction(event) {
