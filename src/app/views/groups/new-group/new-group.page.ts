@@ -9,6 +9,7 @@ import { Camera, CameraResultType, ImageOptions } from '@capacitor/camera';
 import { GroupsService } from '../shared/services/groups/groups.service';
 import { NewGroupDataService } from '../shared/services/new-group-data/new-group-data.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
 
 @Component({
   selector: 'app-new-group',
@@ -43,14 +44,9 @@ import { ToastService } from 'src/app/services/toast/toast.service';
           placeholder="Grupo sanguineo"
           interface="alert"
         >
-          <ion-select-option value="A+">A positivo (A +)</ion-select-option>
-          <ion-select-option value="A-">A negativo (A-)</ion-select-option>
-          <ion-select-option value="B+">B positivo (B +)</ion-select-option>
-          <ion-select-option value="B-">B negativo (B-)</ion-select-option>
-          <ion-select-option value="AB+">AB positivo (AB+)</ion-select-option>
-          <ion-select-option value="AB-">AB negativo (AB-)</ion-select-option>
-          <ion-select-option value="0+">O positivo (O+)</ion-select-option>
-          <ion-select-option value="0-">O negativo (O-)</ion-select-option>
+          <ion-select-option *ngFor="let bloodtype of bloodtypes" [value]="bloodtype.value">{{
+            bloodtype.text
+          }}</ion-select-option>
         </ion-select>
         <ion-input
           class="ui-form-input"
@@ -93,6 +89,7 @@ export class NewGroupPage implements OnInit {
   showCalendar = false;
   date = format(new Date(), 'yyyy-MM-dd');
   maxDate = format(new Date(), 'yyyy-MM-dd');
+  bloodtypes = BLOODTYPES;
   form = this.fb.group({
     name: ['', Validators.required],
     firstName: ['', Validators.required],

@@ -12,8 +12,8 @@ export class AppointmentsService {
     return this.http.post(`${environment.apiUrl}/appointments/create`, data).toPromise();
   }
 
-  editAppointment(data) {
-    return this.http.put(`${environment.apiUrl}/appointments/update`, data).toPromise();
+  editAppointment(id, data) {
+    return this.http.put(`${environment.apiUrl}/appointments/${id}`, data).toPromise();
   }
 
   cancelAppointment(id) {

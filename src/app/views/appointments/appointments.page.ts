@@ -23,7 +23,7 @@ import { AppointmentsService } from './shared/services/appointments/appointments
     </form>
     <cdk-virtual-scroll-viewport itemSize="1">
       <app-appointments-item-list
-        *ngFor="let appointment of this.appointments"
+        *ngFor="let appointment of this.filteredAppointments"
         [appointment]="appointment"
         (click)="presentActionSheet(appointment)"
       ></app-appointments-item-list>
@@ -61,7 +61,6 @@ export class AppointmentsPage implements OnInit {
 
   async setAppointments() {
     this.appointments = [...(await this.appointmentsService.getAppointmentsByUser())];
-    console.log(this.appointments);
     this.filteredAppointments = this.appointments;
   }
 
@@ -75,12 +74,16 @@ export class AppointmentsPage implements OnInit {
   }
 
   doActionByRole(value: string, id: number) {
+    console.log(value);
     switch (value) {
       case 'destructive':
         this.cancelAppointment(id);
         break;
       case 'edit':
         this.editAppointment(id);
+        break;
+      case 'view':
+        this.viewAppointment(id);
         break;
       default:
         break;
@@ -120,4 +123,9 @@ export class AppointmentsPage implements OnInit {
   editAppointment(id) {
     return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`]);
   }
+
+  viewAppointment(id) {
+    return this.navController.navigateForward([`/appointments/view/${id}`]);
+  }
+
 }

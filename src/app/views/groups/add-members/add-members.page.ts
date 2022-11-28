@@ -55,9 +55,7 @@ import { NewGroupDataService } from '../shared/services/new-group-data/new-group
       </div>
     </ion-content>
     <ion-footer class="footer__light">
-      <ion-button (click)="onSubmit()" expand="block" color="primary">
-        Confirmar
-      </ion-button>
+      <ion-button (click)="onSubmit()" expand="block" color="primary"> Confirmar </ion-button>
     </ion-footer>
   `,
   styleUrls: ['./add-members.page.scss'],
@@ -81,8 +79,9 @@ export class AddMembersPage implements OnInit {
 
   async handleChange(event) {
     const dni = event.detail.value;
-    if (dni.length > 0 && !this.memberAlreadyAdded(dni) && !this.isNotMe(dni)) {
+    if (dni.length >= 7 && !this.memberAlreadyAdded(dni) && !this.isNotMe(dni)) {
       this.memberToAdd = await this.auth.getUserByDni(dni);
+      console.log(this.memberToAdd);
     } else {
       this.memberToAdd = null;
     }

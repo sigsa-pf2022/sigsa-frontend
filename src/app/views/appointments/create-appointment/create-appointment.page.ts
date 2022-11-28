@@ -131,6 +131,7 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   setAppointmentInfo() {
+    console.log(this.appointmentDataService.data);
     this.form.patchValue({ description: this.appointmentDataService.data.description });
     this.dateChanged(this.appointmentDataService.data.date);
     this.setProfessionalAndType(this.appointmentDataService.data.professional);
@@ -152,8 +153,8 @@ export class CreateAppointmentPage implements OnInit {
 
   async editAppointment() {
     await this.appointmentsService
-      .editAppointment(this.form.value)
-      .then((res: any) => this.successCreation(res.appointment));
+      .editAppointment(this.appointmentId, this.form.value)
+      .then(() => this.successEdition());
   }
 
   async createAppointment() {
@@ -165,6 +166,11 @@ export class CreateAppointmentPage implements OnInit {
   successCreation(appointment) {
     this.createNotification(appointment);
     this.toastService.showSuccess('Turno creado correctamente.');
+    return this.navController.navigateForward(['/tabs/appointments']);
+  }
+
+  successEdition() {
+    this.toastService.showSuccess('Turno editado correctamente.');
     return this.navController.navigateForward(['/tabs/appointments']);
   }
 

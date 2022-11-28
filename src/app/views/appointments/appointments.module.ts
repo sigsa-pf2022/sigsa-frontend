@@ -12,6 +12,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { SharedAppointmentsModule } from './shared/shared-appointments.module';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { DoctorsPage } from '../doctors/doctors.page';
+import { ViewAppointmentComponent } from './view-appointment/view-appointment.component';
 
 const routes: Routes = [
 
@@ -35,6 +36,14 @@ const routes: Routes = [
     path: 'edit/:id/appointment',
     component: CreateAppointmentPage,
   },
+  {
+    path: 'edit/:id/my-doctors',
+    component: DoctorsPage,
+  },
+  {
+    path: 'view/:id',
+    component: ViewAppointmentComponent,
+  },
 ];
 
 @NgModule({
@@ -48,7 +57,7 @@ const routes: Routes = [
     SharedAppointmentsModule,
     ScrollingModule,
   ],
-  declarations: [AppointmentsPage, PickProfessionalPage, CreateAppointmentPage],
+  declarations: [AppointmentsPage, PickProfessionalPage, CreateAppointmentPage, ViewAppointmentComponent],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }],
 
 })

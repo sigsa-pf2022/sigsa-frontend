@@ -14,7 +14,9 @@ import { ProfessionalsService } from './shared/services/professionals.service';
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/profile"></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">{{isAppointmentCreation ? 'Crear turno' : 'Mis Profesionales'}}</ion-title>
+        <ion-title class="ui-header__title-center">{{
+          isAppointmentCreation ? 'Crear turno' : this.isAppointmentEdition ? 'Editar turno' : 'Mis Profesionales'
+        }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="drs">
@@ -24,14 +26,16 @@ import { ProfessionalsService } from './shared/services/professionals.service';
         </ion-input>
       </form>
       <ion-list class="drs__list" *ngIf="this.doctors.length > 0">
-        <app-items-list
-          *ngFor="let doctor of this.doctors"
-          [title]="doctor.firstName + ' ' + doctor.lastName"
-          img="doctor"
-          [isSelectable]="this.isAppointmentCreation"
-          [showIcon]="!this.isAppointmentCreation"
-          (click)="doAction(doctor)"
-        ></app-items-list>
+        <ion-radio-group [value]="this.doctor?.id">
+          <app-items-list
+            *ngFor="let doctor of this.doctors"
+            [title]="doctor.firstName + ' ' + doctor.lastName"
+            img="doctor"
+            [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
+            [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
+            (click)="doAction(doctor)"
+          ></app-items-list>
+        </ion-radio-group>
       </ion-list>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="newDoctor()" class="drs__fab">
@@ -39,7 +43,7 @@ import { ProfessionalsService } from './shared/services/professionals.service';
         </ion-fab-button>
       </ion-fab>
     </ion-content>
-    <ion-footer class="footer__light" *ngIf="this.isAppointmentCreation">
+    <ion-footer class="footer__light" *ngIf="this.isAppointmentCreation || this.isAppointmentEdition">
       <div class="apn__actions">
         <ion-button [disabled]="!this.doctor" expand="block" (click)="nextStep()">Siguiente</ion-button>
       </div>
@@ -51,7 +55,9 @@ export class DoctorsPage implements OnInit {
   searchForm = this.fb.group({ input: '' });
   doctors: Professional[] = [];
   isAppointmentCreation = false;
+  isAppointmentEdition = false;
   doctor: Professional;
+  appointmentId: number;
   constructor(
     private navController: NavController,
     private fb: FormBuilder,
@@ -64,20 +70,27 @@ export class DoctorsPage implements OnInit {
 
   ionViewWillEnter() {
     this.professionalsService.getMyProfessionals().then((res: Professional[]) => (this.doctors = res));
+    console.log(this.route.snapshot.url);
     if (this.route.snapshot.url[0].path === 'create') {
       this.isAppointmentCreation = true;
+    } else if (this.route.snapshot.url[0].path === 'edit') {
+      this.isAppointmentEdition = true;
+      this.appointmentId = Number(this.route.snapshot.url[1].path);
     }
   }
   newDoctor() {
     return this.navController.navigateForward(['/doctors/new']);
   }
   doAction(doctor) {
-    if (this.isAppointmentCreation) {
+    if (this.isAppointmentCreation || this.isAppointmentEdition) {
       this.doctor = doctor;
     }
   }
   nextStep() {
-    this.appointmentDataService.update(this.doctor);
-    return this.navController.navigateForward(['/appointments/create/appointment']);
+    this.appointmentDataService.update({ professional: this.doctor, isMyProfessional: true });
+    const url = this.isAppointmentCreation
+      ? '/appointments/create/appointment'
+      : `/appointments/edit/${this.appointmentId}/appointment`;
+    return this.navController.navigateForward([url]);
   }
 }

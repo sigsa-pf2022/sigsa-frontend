@@ -111,9 +111,7 @@ export class PickProfessionalPage implements OnInit {
   }
 
   nextStep() {
-    if (!this.isEditMode) {
-      this.appointmentDataService.update(this.doctor);
-    }
+    this.appointmentDataService.update({ professional: this.doctor, isMyProfessional: false });
     const url = this.isEditMode
       ? `/appointments/edit/${this.appointmentId}/appointment`
       : '/appointments/create/appointment';
@@ -123,6 +121,9 @@ export class PickProfessionalPage implements OnInit {
   goToMyProfessionals() {
     this.doctor = null;
     this.searchForm.reset();
-    return this.navController.navigateForward([`/appointments/create/my-doctors`]);
+    const url = this.isEditMode
+      ? `/appointments/edit/${this.appointmentId}/my-doctors`
+      : '/appointments/create/my-doctors';
+    return this.navController.navigateForward([url]);
   }
 }
