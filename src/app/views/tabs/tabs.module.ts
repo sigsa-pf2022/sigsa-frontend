@@ -11,6 +11,7 @@ import { AppointmentsPage } from '../appointments/appointments.page';
 import { GroupsPage } from '../groups/groups.page';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
+import { MedsPage } from '../meds/meds.page';
 
 const routes: Routes = [
   {
@@ -28,6 +29,10 @@ const routes: Routes = [
       {
         path: 'appointments',
         component: AppointmentsPage,
+      },
+      {
+        path: 'meds',
+        component: MedsPage,
       },
     ],
   },

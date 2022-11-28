@@ -1,0 +1,19 @@
+:host {
+    .apm{
+      --padding-start: 16px;
+      --padding-end: 16px;
+      --padding-top: 20px;
+      &__actions {
+        display: flex;
+        flex-direction: column;
+        margin-top: 16px;
+      }
+      &__empty-list{
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  }
+  

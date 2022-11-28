@@ -17,6 +17,7 @@ import { EmptyEventCardComponent } from './empty-event-card/empty-event-card.com
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { AppointmentsItemListComponent } from './appointments-item-list/appointments-item-list.component';
 import { YesNoModalComponent } from './yes-no-modal/yes-no-modal.component';
+import { MedsEventsItemListComponent } from './meds-event-item-list/meds-event-item-list.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { YesNoModalComponent } from './yes-no-modal/yes-no-modal.component';
     EmptyEventCardComponent,
     AppointmentsItemListComponent,
     YesNoModalComponent,
+    MedsEventsItemListComponent
   ],
   imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule],
   exports: [
@@ -49,6 +51,7 @@ import { YesNoModalComponent } from './yes-no-modal/yes-no-modal.component';
     EmptyEventCardComponent,
     AppointmentsItemListComponent,
     YesNoModalComponent,
+    MedsEventsItemListComponent
   ],
 })
 export class SharedComponentsModule {}
