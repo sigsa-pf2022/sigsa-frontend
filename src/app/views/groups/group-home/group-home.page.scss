@@ -20,6 +20,18 @@
             object-fit: cover;
           }
         }
+        &__icon {
+          height: 100px;
+          min-width: 100px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          ion-icon {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+          }
+        }
         &__data {
           padding: 5px 0 5px 10px;
           display: flex;

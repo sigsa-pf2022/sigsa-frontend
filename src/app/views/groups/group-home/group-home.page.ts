@@ -28,8 +28,11 @@ import { GroupsService } from '../shared/services/groups/groups.service';
         <div>
           <ion-item lines="none" class="gh__item ion-no-padding">
             <div class="gh__item__wrapper">
-              <div class="gh__item__wrapper__img">
-                <ion-img [src]="this.group.imgUrl"></ion-img>
+              <!-- <div class="gh__item__wrapper__img"> -->
+              <!-- <ion-img [src]="this.group.imgUrl"></ion-img> -->
+              <!-- </div> -->
+              <div class="gh__item__wrapper__icon">
+                <ion-icon color="primary" name="person-circle"></ion-icon>
               </div>
               <div class="gh__item__wrapper__data">
                 <ion-text class="item__wrapper__data__title"
@@ -46,7 +49,11 @@ import { GroupsService } from '../shared/services/groups/groups.service';
             </div>
           </ion-item>
           <app-next-events [events]="this.events"></app-next-events>
-          <app-reminders height="37vh" [reminders]="this.reminders" (changeReminders)="changeReminders($event)"></app-reminders>
+          <app-reminders
+            height="37vh"
+            [reminders]="this.reminders"
+            (changeReminders)="changeReminders($event)"
+          ></app-reminders>
           <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
             <ion-fab-button (click)="openFabList($event)">
               <ion-icon name="add"></ion-icon>
