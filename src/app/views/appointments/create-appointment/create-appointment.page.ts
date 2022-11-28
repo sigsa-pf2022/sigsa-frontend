@@ -125,16 +125,15 @@ export class CreateAppointmentPage implements OnInit {
     }
   }
 
-  setProfessionalAndType(doctor: any) {
-    this.doctor = doctor;
-    this.form.addControl(this.doctor.licenseNumber ? 'professional' : 'myProfessional', new FormControl(this.doctor));
+  setProfessionalAndType(data: any) {
+    this.doctor = data.professional;
+    this.form.addControl(data.isMyProfessional ? 'myProfessional' : 'professional', new FormControl(this.doctor));
   }
 
   setAppointmentInfo() {
-    console.log(this.appointmentDataService.data);
     this.form.patchValue({ description: this.appointmentDataService.data.description });
     this.dateChanged(this.appointmentDataService.data.date);
-    this.setProfessionalAndType(this.appointmentDataService.data.professional);
+    this.setProfessionalAndType(this.appointmentDataService.data);
   }
 
   dateChanged(date: string) {
@@ -179,17 +178,26 @@ export class CreateAppointmentPage implements OnInit {
     if (!this.platformService.isMobileWeb) {
       this.localNotificationsService.registerActionTypes();
       this.localNotificationsService.addEventListener((notification) => {
-        this.dispatch(notification);
+        this.dispatch(notification, appointment.id);
       });
     }
     this.localNotificationsService.schedule(appointment.date, appointment.professional);
   }
 
-  dispatch(notification) {
+  dispatch(notification, id) {
+    console.log(notification);
     if (notification.actionId === 'confirm') {
-      this.confirmAppointment();
+      this.confirmAppointment(id);
+    } else if (notification.actionId === 'tap') {
+      this.viewAppointment(id);
     }
   }
 
-  confirmAppointment() {}
+  viewAppointment(id) {
+    return this.navController.navigateForward([`/appointments/view/${id}`]);
+  }
+
+  confirmAppointment(id) {
+    this.appointmentsService.confirmAppointment(id);
+  }
 }

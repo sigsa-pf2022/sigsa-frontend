@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ModalController, NavController } from '@ionic/angular';
+import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
+import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
 
@@ -38,13 +41,23 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         </div>
       </div>
     </ion-content>
+    <ion-footer class="footer__light">
+      <ion-button (click)="confirmAppointment()" expand="block" color="primary"> Confirmar </ion-button>
+      <ion-button (click)="cancelAppointment()" expand="block" color="danger"> Cancelar </ion-button>
+    </ion-footer>
   `,
   styleUrls: ['./view-appointment.component.scss'],
 })
 export class ViewAppointmentComponent implements OnInit {
   appointmentId: number;
   appointment: any;
-  constructor(private appointmentsService: AppointmentsService, private route: ActivatedRoute) {}
+  constructor(
+    private appointmentsService: AppointmentsService,
+    private route: ActivatedRoute,
+    private modalController: ModalController,
+    private navController: NavController,
+    private toastService: ToastService
+  ) {}
 
   ngOnInit() {}
   ionViewWillEnter() {
@@ -54,6 +67,44 @@ export class ViewAppointmentComponent implements OnInit {
 
   async getAppointment() {
     this.appointment = await this.appointmentsService.getAppointment(this.appointmentId);
-    console.log(this.appointment);
+  }
+
+  async confirmAppointment() {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        text: '¿Desea confirmar el turno?',
+        yesColor: 'success'
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.appointmentsService
+        .confirmAppointment(this.appointmentId)
+        .then(() => this.toastService.showSuccess('Turno confirmado correctamente.'))
+        .then(() => this.navController.navigateForward('/tabs/appointments'))
+        .catch(() => {});
+    }
+  }
+
+  async cancelAppointment() {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        text: '¿Desea cancelar el turno?',
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.appointmentsService
+        .cancelAppointment(this.appointmentId)
+        .then(() => this.toastService.showSuccess('Turno cancelado correctamente.'))
+        .then(() => this.navController.navigateForward('/tabs/appointments'))
+        .catch(() => {});
+    }
   }
 }

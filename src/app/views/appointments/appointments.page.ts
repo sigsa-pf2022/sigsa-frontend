@@ -56,7 +56,12 @@ export class AppointmentsPage implements OnInit {
   ngOnInit() {}
 
   async ionViewWillEnter() {
+    console.log('fasfafs');
     this.setAppointments();
+  }
+
+  ionViewDidEnter() {
+    console.log('asdasd');
   }
 
   async setAppointments() {
@@ -117,15 +122,14 @@ export class AppointmentsPage implements OnInit {
   }
 
   newAppointment() {
-    return this.navController.navigateForward(['/appointments/create/pick-doctor']);
+    return this.navController.navigateRoot(['/appointments/create/pick-doctor']);
   }
 
   editAppointment(id) {
-    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`]);
+    return this.navController.navigateRoot([`/appointments/edit/${id}/pick-doctor`]);
   }
 
   viewAppointment(id) {
-    return this.navController.navigateForward([`/appointments/view/${id}`]);
+    return this.navController.navigateRoot([`/appointments/view/${id}`]);
   }
-
 }

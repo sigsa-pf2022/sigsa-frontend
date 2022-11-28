@@ -20,6 +20,10 @@ export class AppointmentsService {
     return this.http.delete(`${environment.apiUrl}/appointments/cancel/${id}`).toPromise();
   }
 
+  confirmAppointment(id) {
+    return this.http.put(`${environment.apiUrl}/appointments/confirm/${id}`, {}).toPromise();
+  }
+
   getAppointmentsByUser() {
     return this.http.get<any[]>(`${environment.apiUrl}/appointments`).toPromise();
   }
