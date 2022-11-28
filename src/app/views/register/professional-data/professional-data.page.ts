@@ -56,7 +56,7 @@ export class ProfessionalDataPage {
   specializations = [];
   form = this.fb.group({
     specialization: [null],
-    licenseNumber: [null, Validators.required],
+    licenseNumber: [null, Validators.compose([Validators.required, Validators.pattern('[0-9]*')])],
     jurisdiction: [null, Validators.required],
   });
   constructor(

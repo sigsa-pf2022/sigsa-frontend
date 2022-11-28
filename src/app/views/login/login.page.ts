@@ -77,12 +77,17 @@ export class LoginPage implements OnInit {
   ionViewWillEnter() {}
 
   async login() {
-    const isValidatedUser = await this.auth.userStatus(this.loginForm.get('email').value);
-    if (isValidatedUser) {
-      await this.signIn();
-    } else {
-      this.openValidationUserModal();
-    }
+    await this.auth
+      .userStatus(this.loginForm.get('email').value)
+      .then(async (isValidatedUser) => {
+        console.log(isValidatedUser);
+        if (isValidatedUser) {
+          await this.signIn();
+        } else {
+          this.openValidationUserModal();
+        }
+      })
+      .catch(({ error }) => this.toastService.showError(error.message));
   }
 
   async signIn() {
