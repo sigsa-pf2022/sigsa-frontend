@@ -11,6 +11,7 @@ import { TokenInterceptor } from 'src/app/services/interceptors/token-intercepto
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { SharedAppointmentsModule } from './shared/shared-appointments.module';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { DoctorsPage } from '../doctors/doctors.page';
 
 const routes: Routes = [
 
@@ -21,6 +22,10 @@ const routes: Routes = [
   {
     path: 'create/appointment',
     component: CreateAppointmentPage,
+  },
+  {
+    path: 'create/my-doctors',
+    component: DoctorsPage,
   },
   {
     path: 'edit/:id/pick-doctor',

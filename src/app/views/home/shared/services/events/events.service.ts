@@ -7,7 +7,7 @@ import { environment } from 'src/environments/environment';
 })
 export class EventsService {
   constructor(private http: HttpClient) {}
-  getEvents(): Promise<any[]> {
+  getNextEvents(): Promise<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/events`).toPromise();
   }
 }

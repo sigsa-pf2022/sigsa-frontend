@@ -76,16 +76,16 @@ export class UserDataPage {
     await this.auth
       .signUp(this.registerFormDataService.getData())
       .then(() => this.successRegister())
-      .catch((err) => {
-        this.toastService.showError(err.message);
+      .catch(({error}) => {
+        this.toastService.showError(error.message);
       });
   }
   async createProfessional() {
     await this.professionalsService
       .createProfessional(this.registerFormDataService.getData())
       .then(() => this.successRegister())
-      .catch((err) => {
-        this.toastService.showError(err.message);
+      .catch(({error}) => {
+        this.toastService.showError(error.message);
       });
   }
 

@@ -1,11 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { isBefore } from 'date-fns';
-import { EventsService } from 'src/app/services/events/events.service';
+import { Component } from '@angular/core';
+import { EventsService } from 'src/app/views/home/shared/services/events/events.service';
 import { AppointmentsService } from '../appointments/shared/services/appointments/appointments.service';
-import { REMINDERS_TYPE } from './constants/remindersType';
-import { FAKE_APPOINTMENTS_REMINDERS_DATA } from './fakes/fakeAppointmentsReminderData';
-import { FAKE_DOCUMENTS_REMINDERS_DATA } from './fakes/fakeDocumentsReminderData';
-import { FAKE_MEDICATIONS_REMINDERS_DATA } from './fakes/fakeMedicationsReminderData';
+import { REMINDERS_TYPE } from './shared/constants/remindersType';
 
 @Component({
   selector: 'app-home',
@@ -30,14 +26,19 @@ export class HomePage {
   constructor(private appointmentsService: AppointmentsService, private eventsService: EventsService) {}
 
   async ionViewWillEnter() {
-    this.setData();
+    this.setAppointments();
+    this.setNextEvents();
   }
 
-  async setData() {
+  async setAppointments() {
     this.appointments = await this.appointmentsService.getAppointmentsByUser();
-    const nextAppointments = this.appointments.filter((a) => isBefore(a.createdAt, new Date()));
+    this.changeReminders(this.remindersTypes.appointments);
+  }
+  async setNextEvents() {
+    const events = await this.eventsService.getNextEvents();
+
     this.events = [
-      ...nextAppointments.map((a) => ({
+      ...events.map((a) => ({
         title: 'Dr.' + a.professional.lastName,
         subtitle: '',
         date: a.date,

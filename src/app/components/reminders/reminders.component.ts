@@ -1,11 +1,11 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { REMINDERS_TYPE } from 'src/app/views/home/constants/remindersType';
+import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersType';
 
 @Component({
   selector: 'app-reminders',
   template: `
     <div class="rem">
-      <ion-segment class="rem__segment" (ionChange)="changeReminders($event)" [value]="remindersTypes.medications">
+      <ion-segment class="rem__segment" (ionChange)="changeReminders($event)" [value]="remindersTypes.appointments">
         <ion-segment-button class="rem__segment__button" [value]="remindersTypes.medications">
           <ion-label>Medicamentos</ion-label>
         </ion-segment-button>

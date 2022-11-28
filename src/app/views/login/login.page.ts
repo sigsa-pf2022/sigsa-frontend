@@ -116,7 +116,7 @@ export class LoginPage implements OnInit {
     });
     await modal.present();
     const { data } = await modal.onWillDismiss();
-    if (data.email) {
+    if (data?.email) {
       await this.auth.sendPasswordResetEmail(data.email).then(() => {
         this.recoveryPasswordFormDataService.tokenForm.patchValue({ email: data.email });
         this.router.navigateByUrl('/recovery-password/token-verification');

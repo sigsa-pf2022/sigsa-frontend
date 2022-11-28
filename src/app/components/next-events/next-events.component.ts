@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { NextEvent } from 'src/app/views/home/interfaces/next-event';
+import { NextEvent } from 'src/app/views/home/shared/interfaces/next-event';
 import SwiperCore, { Autoplay, Navigation, SwiperOptions } from 'swiper';
 SwiperCore.use([Autoplay, Navigation]);
 @Component({

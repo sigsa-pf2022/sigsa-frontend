@@ -1,11 +1,10 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { AnimationController, NavController } from '@ionic/angular';
-import { REMINDERS_TYPE } from '../../home/constants/remindersType';
-import { FAKE_APPOINTMENTS_REMINDERS_DATA } from '../../home/fakes/fakeAppointmentsReminderData';
-import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/fakes/fakeDocumentsReminderData';
-import { FAKE_EVENTS_DATA } from '../../home/fakes/fakeEventsData';
-import { FAKE_MEDICATIONS_REMINDERS_DATA } from '../../home/fakes/fakeMedicationsReminderData';
+import { REMINDERS_TYPE } from '../../home/shared/constants/remindersType';
+import { FAKE_APPOINTMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeAppointmentsReminderData';
+import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeDocumentsReminderData';
+import { FAKE_MEDICATIONS_REMINDERS_DATA } from '../../home/shared/fakes/fakeMedicationsReminderData';
 import { FamilyGroup } from '../shared/interfaces/FamilyGroup';
 import { GroupsService } from '../shared/services/groups/groups.service';
 
@@ -78,7 +77,7 @@ export class GroupHomePage implements OnInit {
   events = [];
   opened = false;
   group: FamilyGroup;
-  reminders: any = FAKE_MEDICATIONS_REMINDERS_DATA;
+  reminders: any;
   constructor(
     private animationCtrl: AnimationController,
     private route: ActivatedRoute,
@@ -133,18 +132,18 @@ export class GroupHomePage implements OnInit {
       .play();
   }
 
-  changeReminders(value: string) {
-    switch (value) {
-      case REMINDERS_TYPE.appointments:
-        this.reminders = FAKE_APPOINTMENTS_REMINDERS_DATA;
-        break;
-      case REMINDERS_TYPE.medications:
-        this.reminders = FAKE_MEDICATIONS_REMINDERS_DATA;
-        break;
-      case REMINDERS_TYPE.documents:
-        this.reminders = FAKE_DOCUMENTS_REMINDERS_DATA;
-        break;
-    }
+  changeReminders(value) {
+    // switch (value) {
+    //   case REMINDERS_TYPE.appointments:
+    //     this.reminders = FAKE_APPOINTMENTS_REMINDERS_DATA;
+    //     break;
+    //   case REMINDERS_TYPE.medications:
+    //     this.reminders = FAKE_MEDICATIONS_REMINDERS_DATA;
+    //     break;
+    //   case REMINDERS_TYPE.documents:
+    //     this.reminders = FAKE_DOCUMENTS_REMINDERS_DATA;
+    //     break;
+    // }
   }
 
   exitGroup() {

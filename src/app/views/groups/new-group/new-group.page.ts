@@ -35,7 +35,14 @@ import { ToastService } from 'src/app/services/toast/toast.service';
         <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="dni" placeholder="Dni" type="number"></ion-input>
-        <ion-select class="ui-form-input" formControlName="bloodType" placeholder="Grupo sanguineo" interface="alert">
+        <ion-select
+          okText="Confirmar"
+          cancelText="Cancelar"
+          class="ui-form-input"
+          formControlName="bloodType"
+          placeholder="Grupo sanguineo"
+          interface="alert"
+        >
           <ion-select-option value="A+">A positivo (A +)</ion-select-option>
           <ion-select-option value="A-">A negativo (A-)</ion-select-option>
           <ion-select-option value="B+">B positivo (B +)</ion-select-option>

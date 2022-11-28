@@ -18,7 +18,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           </ion-button>
         </ion-buttons>
         <div class="toolbar-content">
-          <ion-icon (click)="logout()" src="./assets/images/logos/logo-white.svg"></ion-icon>
+          <ion-icon src="./assets/images/logos/logo-white.svg"></ion-icon>
         </div>
       </ion-toolbar>
     </ion-header>
@@ -30,10 +30,6 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit() {}
 
-  logout() {
-    this.auth.signOut();
-    return this.navController.navigateRoot(['welcome']);
-  }
   navigateToProfile() {
     return this.navController.navigateRoot(['profile']);
   }

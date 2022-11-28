@@ -26,6 +26,10 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
           (doAction)="this.doAction($event)"
         >
         </app-profile-item>
+        <div class="p__items__logout" (click)="logout()">
+          <ion-icon color="danger" name="log-out-outline"></ion-icon>
+          <ion-text>Salir</ion-text>
+        </div>
       </div>
     </ion-content>
   `,
@@ -33,14 +37,15 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
 })
 export class ProfilePage implements OnInit {
   options = PROFILE_OPTIONS;
-  constructor(
-    private auth: AuthenticationService,
-    private navController: NavController
-  ) {}
+  constructor(private auth: AuthenticationService, private navController: NavController) {}
 
   ngOnInit() {}
   ionViewWillEnter() {
     this.setUserEmail();
+  }
+  logout() {
+    this.auth.signOut();
+    return this.navController.navigateRoot(['welcome']);
   }
   setUserEmail() {
     this.options[0].title = `${this.auth.user().firstName}`;

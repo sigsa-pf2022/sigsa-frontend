@@ -25,6 +25,8 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
           placeholder="Provincias con jurisdiccion"
           [multiple]="true"
           formControlName="jurisdiction"
+          okText="Confirmar"
+          cancelText="Cancelar"
         >
           <ion-select-option *ngFor="let state of this.states" [value]="state">{{ state.name }}</ion-select-option>
         </ion-select>
@@ -33,6 +35,8 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
           placeholder="Especialidades"
           [multiple]="true"
           formControlName="specialization"
+          okText="Confirmar"
+          cancelText="Cancelar"
         >
           <ion-select-option *ngFor="let specialization of this.specializations" [value]="specialization">{{
             specialization.name
@@ -41,7 +45,9 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
       </form>
     </ion-content>
     <ion-footer class="footer__light">
-      <ion-button (click)="onSubmit()" expand="block" color="primary"> Siguiente </ion-button>
+      <ion-button (click)="onSubmit()" expand="block" color="primary" [disabled]="!this.form.valid">
+        Siguiente
+      </ion-button>
     </ion-footer>`,
   styleUrls: ['./professional-data.page.scss'],
 })
@@ -49,7 +55,7 @@ export class ProfessionalDataPage {
   states = [];
   specializations = [];
   form = this.fb.group({
-    specialization: [null, Validators.required],
+    specialization: [null],
     licenseNumber: [null, Validators.required],
     jurisdiction: [null, Validators.required],
   });

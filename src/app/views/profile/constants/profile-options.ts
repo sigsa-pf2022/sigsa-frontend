@@ -14,6 +14,10 @@ export const PROFILE_OPTIONS = [
   {
     icon: 'time-outline',
     title: 'Mis Turnos',
+    action: {
+      type: 'navigate',
+      payload: '/tabs/appointments',
+    },
   },
   {
     icon: 'help-circle-outline',

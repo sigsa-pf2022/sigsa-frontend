@@ -32,11 +32,10 @@ export class AuthenticationService {
     return user.emailVerified;
   }
 
-  async signUp(params) {
+  signUp(params) {
     delete params.repeatPassword;
     params.birthday = params.birthday.split('/').reverse().join('-');
-    const res = await this.http.post(`${environment.apiUrl}/users/create`, params).toPromise();
-    return res;
+    return this.http.post(`${environment.apiUrl}/users/create`, params).toPromise();
   }
 
   userStatus(email: string) {

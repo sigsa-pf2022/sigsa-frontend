@@ -11,7 +11,6 @@ import { Professional } from '../../interfaces/Professional.interface';
         </div>
         <div class="dl__item__content">
           <ion-label>{{ doctor.firstName }} {{ doctor.lastName }}</ion-label>
-          <ion-label class="dl__item__content__subtitle">{{ doctor.field }}</ion-label>
         </div>
         <ion-icon class="dl__item__action" name="chevron-forward-outline" color="primary"></ion-icon>
       </ion-item>

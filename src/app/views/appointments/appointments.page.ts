@@ -53,23 +53,16 @@ export class AppointmentsPage implements OnInit {
     private toastService: ToastService
   ) {}
 
-  ngOnInit() {
-    console.log('on init');
-  }
+  ngOnInit() {}
 
   async ionViewWillEnter() {
-    console.log('will entre');
     this.setAppointments();
-  }
-
-  ionViewDidEnter() {
-    console.log('did entre');
   }
 
   async setAppointments() {
     this.appointments = [...(await this.appointmentsService.getAppointmentsByUser())];
-    this.filteredAppointments = this.appointments;
     console.log(this.appointments);
+    this.filteredAppointments = this.appointments;
   }
 
   async presentActionSheet(appointment) {

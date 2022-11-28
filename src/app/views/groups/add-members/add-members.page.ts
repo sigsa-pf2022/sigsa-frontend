@@ -23,7 +23,7 @@ import { NewGroupDataService } from '../shared/services/new-group-data/new-group
         <form [formGroup]="this.form">
           <ion-searchbar
             formControlName="search"
-            placeholder="Ingrese ID de Usuario"
+            placeholder="Ingrese DNI de Usuario"
             class="ui-search-input"
             debounce="400"
             type="number"

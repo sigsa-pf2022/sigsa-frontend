@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
-import { format, formatISO, setDefaultOptions } from 'date-fns';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { ProfessionalsService } from '../../doctors/shared/services/professionals.service';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
@@ -15,8 +14,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/tabs/appointments"></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">{{this.isEditMode ?'Editar' : 'Crear'}} turno</ion-title>
-        <ion-label class="ui-header__counter" slot="end">1 de 2</ion-label>
+        <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar' : 'Crear' }} turno</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="apn">
@@ -47,7 +45,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
       </ion-list>
       <div class="apn__empty-list" *ngIf="this.filteredDoctors?.length === 0">
         <ion-text>No se encontraron doctores con los filtros solicitados.</ion-text>
-        <ion-button color="secondary" fill="outline">Crea el tuyo</ion-button>
+        <ion-button (click)="goToMyProfessionals()" color="secondary" fill="outline">Usá el tuyo</ion-button>
       </div>
     </ion-content>
     <ion-footer class="footer__light">
@@ -61,7 +59,7 @@ export class PickProfessionalPage implements OnInit {
   searchForm = this.fb.group({
     search: '',
   });
-  doctor: any;
+  doctor: Professional;
   doctors: Professional[];
   filteredDoctors: Professional[];
   isEditMode = false;
@@ -120,5 +118,11 @@ export class PickProfessionalPage implements OnInit {
       ? `/appointments/edit/${this.appointmentId}/appointment`
       : '/appointments/create/appointment';
     return this.navController.navigateForward([url]);
+  }
+
+  goToMyProfessionals() {
+    this.doctor = null;
+    this.searchForm.reset();
+    return this.navController.navigateForward([`/appointments/create/my-doctors`]);
   }
 }

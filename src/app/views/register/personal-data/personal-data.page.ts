@@ -2,6 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { IonDatetime, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
+import { GENDERS } from 'src/app/constants/Gender.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { RegisterFormDataService } from '../shared-register/services/register-form-data/register-form-data.service';
 
@@ -28,10 +29,17 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
         <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido" type="text"></ion-input>
         <ion-input class="ui-form-input" formControlName="dni" placeholder="DNI" type="text"></ion-input>
-        <ion-select class="ui-form-input" formControlName="gender" placeholder="Genero" interface="alert">
-          <ion-select-option value="M">Masculino</ion-select-option>
-          <ion-select-option value="F">Femenino</ion-select-option>
-          <ion-select-option value="PNF">Prefiero no decirlo</ion-select-option>
+        <ion-select
+          okText="Confirmar"
+          cancelText="Cancelar"
+          class="ui-form-input"
+          formControlName="gender"
+          placeholder="Genero"
+          interface="alert"
+        >
+          <ion-select-option *ngFor="let gender of this.genders" [value]="gender.value">{{
+            gender.text
+          }}</ion-select-option>
         </ion-select>
         <ion-input
           class="ui-form-input"
@@ -79,7 +87,7 @@ export class PersonalDataPage {
     lastName: [null, [Validators.compose([Validators.required, Validators.maxLength(50)])]],
     gender: [null, Validators.required],
     birthday: [null, Validators.required],
-    dni: [null, Validators.required],
+    dni: [null, [Validators.compose([Validators.required, Validators.pattern('[0-9]*'), Validators.minLength(7)])]],
   });
   userType: 'profesional' | 'usuario' = 'usuario';
   url = '/register/user-data';
@@ -87,6 +95,7 @@ export class PersonalDataPage {
   maxDate = format(new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDay()), 'yyyy-MM-dd');
   // timeout;
   // el;
+  genders = GENDERS;
 
   constructor(
     private dateFormatterService: DateFormatterService,

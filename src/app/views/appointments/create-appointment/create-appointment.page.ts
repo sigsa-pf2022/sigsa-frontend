@@ -19,7 +19,6 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
           <ion-back-button [defaultHref]="this.backUrl"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar' : 'Crear' }} turno</ion-title>
-        <ion-label class="ui-header__counter" slot="end">2 de 2</ion-label>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ca">
