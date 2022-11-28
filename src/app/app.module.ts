@@ -17,6 +17,7 @@ import { HomePageModule } from './views/home/home.module';
 import { AppointmentsPageModule } from './views/appointments/appointments.module';
 import { GroupsModule } from './views/groups/groups.module';
 import { ServiceWorkerModule } from '@angular/service-worker';
+import { MedsPageModule } from './views/meds/meds.module';
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -26,6 +27,7 @@ export function createTranslateLoader(http: HttpClient) {
   entryComponents: [],
   imports: [
     AppointmentsPageModule,
+    MedsPageModule,
     HomePageModule,
     GroupsModule,
     BrowserModule,

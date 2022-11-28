@@ -48,6 +48,10 @@ const routes: Routes = [
     path: 'recovery-password',
     loadChildren: () => import('./views/recovery-password/recovery-password.module').then( m => m.RecoveryPasswordModule)
   },
+  {
+    path: 'meds',
+    loadChildren: () => import('./views/meds/meds.module').then( m => m.MedsPageModule)
+  },
 ];
 @NgModule({
   imports: [RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })],

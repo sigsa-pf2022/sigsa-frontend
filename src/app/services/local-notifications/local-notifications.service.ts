@@ -59,4 +59,20 @@ export class LocalNotificationsService {
       ],
     });
   }
+  async scheduleMedEvent(date: string, med) {
+    const subtitle = `Fecha: ${this.dateFormatterService.getSpanishFormattedDate(date)}. Medicamento: ${med.name} `;
+    await this.localNotifications.schedule({
+      notifications: [
+        {
+          title: 'Recordatorio: Tenes que tomar tu medicamento en 5 minutos!',
+          body: subtitle,
+          id: 1,
+          schedule: {
+            at: subMinutes(parseISO(date), 5),
+          },
+          actionTypeId: 'EVENT',
+        },
+      ],
+    });
+  }
 }
