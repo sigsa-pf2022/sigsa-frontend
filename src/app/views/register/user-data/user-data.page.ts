@@ -84,7 +84,7 @@ export class UserDataPage {
     await this.professionalsService
       .createProfessional(this.registerFormDataService.getData())
       .then(() => this.successRegister())
-      .catch(({error}) => {
+      .catch(({ error }) => {
         this.toastService.showError(error.message);
       });
   }

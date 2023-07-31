@@ -36,7 +36,6 @@ export class HomePage {
   }
   async setNextEvents() {
     const events = await this.eventsService.getNextEvents();
-
     this.events = [
       ...events.map((a) => ({
         title: 'Dr.' + a.professional.lastName,

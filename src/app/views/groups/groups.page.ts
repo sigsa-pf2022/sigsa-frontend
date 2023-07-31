@@ -9,11 +9,20 @@ import { FamilyGroup } from './shared/interfaces/FamilyGroup';
     <ion-content class="g">
       <div class="g__content">
         <ion-label class="g__content__title"> Mis Grupos</ion-label>
-        <app-group-item
-          *ngFor="let group of this.groups"
-          [group]="group"
-          (click)="goToGroupHome(group.id)"
-        ></app-group-item>
+        <ng-container *ngIf="this.groups.length > 0">
+          <app-group-item
+            *ngFor="let group of this.groups"
+            [group]="group"
+            (click)="goToGroupHome(group.id)"
+          ></app-group-item>
+        </ng-container>
+
+        <ng-container *ngIf="this.groups.length === 0">
+          <img src="/assets/images/groups/groups-empty.svg" />
+          <ion-label class="g__content__empty-title"
+            >Todavia no perteneces a ningun grupo. ¡Aprovechá para crear el tuyo!</ion-label
+          >
+        </ng-container>
       </div>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="navigateTo()" class="g__fab">
@@ -25,7 +34,7 @@ import { FamilyGroup } from './shared/interfaces/FamilyGroup';
   styleUrls: ['./groups.page.scss'],
 })
 export class GroupsPage implements OnInit {
-  groups: FamilyGroup[];
+  groups: FamilyGroup[] = [];
   constructor(
     private groupsService: GroupsService,
     private navController: NavController,
@@ -43,12 +52,8 @@ export class GroupsPage implements OnInit {
 
   async getGroups() {
     await this.showLoading();
-    await this.groupsService
-      .getFamilyGroupsByUser()
-      .then((res) => {
-        this.groups = res;
-      })
-      .catch((err) => console.log(err));
+    this.groups = await this.groupsService.getFamilyGroupsByUser();
+    console.log(this.groups);
     this.closeLoading();
   }
   async showLoading() {

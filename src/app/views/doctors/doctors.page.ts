@@ -68,12 +68,11 @@ export class DoctorsPage implements OnInit {
 
   ngOnInit() {}
 
-  ionViewWillEnter() {
-    this.professionalsService.getMyProfessionals().then((res: Professional[]) => (this.doctors = res));
-    console.log(this.route.snapshot.url);
-    if (this.route.snapshot.url[0].path === 'create') {
+  async ionViewWillEnter() {
+    this.doctors = await this.professionalsService.getMyProfessionals();
+    if (this.route.snapshot.url[0]?.path === 'create') {
       this.isAppointmentCreation = true;
-    } else if (this.route.snapshot.url[0].path === 'edit') {
+    } else if (this.route.snapshot.url[0]?.path === 'edit') {
       this.isAppointmentEdition = true;
       this.appointmentId = Number(this.route.snapshot.url[1].path);
     }

@@ -1,5 +1,5 @@
 :host {
-  margin: 22px;
+  padding: 16px;
   .g {
     &__content {
       display: flex;
@@ -9,6 +9,10 @@
         font-size: 20px;
         flex-direction: column;
         height: 100%;
+      }
+      &__empty-title {
+        font-size: 18px;
+        text-align: center;
       }
     }
     &__fab {

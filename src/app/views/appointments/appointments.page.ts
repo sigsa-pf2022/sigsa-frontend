@@ -11,23 +11,32 @@ import { AppointmentsService } from './shared/services/appointments/appointments
   selector: 'app-appointments',
   template: `<ion-content class="apts">
     <ion-label class="apts__title"> Mis Turnos </ion-label>
-    <form [formGroup]="this.searchForm" class="apts__search">
-      <ion-searchbar
-        formControlName="search"
-        placeholder="Buscar turno ..."
-        class="ui-search-input  ui-search-input__no-show"
-        debounce="400"
-        type="string"
-        (ionChange)="handleChange($event)"
-      ></ion-searchbar>
-    </form>
-    <cdk-virtual-scroll-viewport itemSize="1">
-      <app-appointments-item-list
-        *ngFor="let appointment of this.filteredAppointments"
-        [appointment]="appointment"
-        (click)="presentActionSheet(appointment)"
-      ></app-appointments-item-list>
-    </cdk-virtual-scroll-viewport>
+    <ng-container *ngIf="this.appointments.length > 0">
+      <form [formGroup]="this.searchForm" class="apts__search">
+        <ion-searchbar
+          formControlName="search"
+          placeholder="Buscar turno ..."
+          class="ui-search-input  ui-search-input__no-show"
+          debounce="400"
+          type="string"
+          (ionChange)="handleChange($event)"
+        ></ion-searchbar>
+      </form>
+      <cdk-virtual-scroll-viewport itemSize="1">
+        <app-appointments-item-list
+          *ngFor="let appointment of this.filteredAppointments"
+          [appointment]="appointment"
+          (click)="presentActionSheet(appointment)"
+        ></app-appointments-item-list>
+      </cdk-virtual-scroll-viewport>
+    </ng-container>
+    <div class="apts__empty" *ngIf="this.appointments.length === 0">
+      <img src="/assets/images/appointments/appointments-empty.svg" />
+      <ion-label class="apts__empty__title"
+        >Todavia no tienes ningun turno<br />
+        ¿Qué esperas para agendar tu próximo turno?</ion-label
+      >
+    </div>
     <div>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="newAppointment()" class="apts__fab">
@@ -56,12 +65,7 @@ export class AppointmentsPage implements OnInit {
   ngOnInit() {}
 
   async ionViewWillEnter() {
-    console.log('fasfafs');
     this.setAppointments();
-  }
-
-  ionViewDidEnter() {
-    console.log('asdasd');
   }
 
   async setAppointments() {

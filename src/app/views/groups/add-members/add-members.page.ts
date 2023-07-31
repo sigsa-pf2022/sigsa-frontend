@@ -79,16 +79,14 @@ export class AddMembersPage implements OnInit {
 
   async handleChange(event) {
     const dni = event.detail.value;
+    this.memberToAdd = null;
     if (dni.length >= 7 && !this.memberAlreadyAdded(dni) && !this.isNotMe(dni)) {
       this.memberToAdd = await this.auth.getUserByDni(dni);
-      console.log(this.memberToAdd);
-    } else {
-      this.memberToAdd = null;
     }
   }
 
   memberAlreadyAdded(dni: number) {
-    return this.members.some((m) => m.dni === Number(dni));
+    return this.members.some((m) => m.dni === dni);
   }
 
   clearMembers() {
@@ -104,8 +102,8 @@ export class AddMembersPage implements OnInit {
     this.form.reset();
   }
 
-  isNotMe(dni: number) {
-    return Number(dni) === this.auth.user().dni;
+  isNotMe(dni: string) {
+    return dni === this.auth.user().dni;
   }
 
   async onSubmit() {

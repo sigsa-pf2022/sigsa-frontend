@@ -99,9 +99,10 @@ export class PickProfessionalPage implements OnInit {
   }
 
   async handleChange(event) {
-    const search = event.detail.value;
+    const search = event.detail.value.toLowerCase();
     this.filteredDoctors = this.doctors.filter(
-      (d: Professional) => d.firstName.includes(search) || d.lastName.includes(search)
+      (professional: Professional) =>
+        professional.firstName.toLowerCase().includes(search) || professional.lastName.toLowerCase().includes(search)
     );
   }
 

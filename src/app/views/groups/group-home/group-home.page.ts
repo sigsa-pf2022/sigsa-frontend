@@ -11,7 +11,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
 @Component({
   selector: 'app-group-home',
   template: `
-    <app-menu contentId="group-home"></app-menu>
+    <app-menu contentId="group-home" title="Menu del grupo" [options]="this.options"></app-menu>
     <div class="ui-main-menu-content" id="group-home">
       <ion-header class="ui-background__light">
         <ion-toolbar class="ui-toolbar__primary">
@@ -39,7 +39,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
                   >{{ this.group.dependent.lastName }}, {{ this.group.dependent.firstName }}</ion-text
                 >
                 <ion-text class="gh__item__wrapper__data__info"
-                  ><b>Fecha de nacimiento:</b> {{ this.group.dependent.birthday | date: 'dd/MM/YYYY' }}</ion-text
+                  ><b>Fecha de nacimiento:</b> {{ this.group.dependent.birthday | date : 'dd/MM/YYYY' }}</ion-text
                 >
                 <ion-text class="gh__item__wrapper__data__info"><b>DNI:</b> {{ this.group.dependent.dni }}</ion-text>
                 <ion-text class="gh__item__wrapper__data__info"
@@ -54,7 +54,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
             [reminders]="this.reminders"
             (changeReminders)="changeReminders($event)"
           ></app-reminders>
-          <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
+          <!-- <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
             <ion-fab-button (click)="openFabList($event)">
               <ion-icon name="add"></ion-icon>
             </ion-fab-button>
@@ -72,7 +72,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
                 <ion-text color="light">Documento</ion-text>
               </div>
             </ion-fab-list>
-          </ion-fab>
+          </ion-fab> -->
         </div>
       </ion-content>
     </div>
@@ -85,6 +85,10 @@ export class GroupHomePage implements OnInit {
   opened = false;
   group: FamilyGroup;
   reminders: any;
+  options = [
+    { title: 'Documentos', icon: 'document.svg' },
+    { title: 'Salir', color: 'danger' },
+  ];
   constructor(
     private animationCtrl: AnimationController,
     private route: ActivatedRoute,
@@ -95,9 +99,7 @@ export class GroupHomePage implements OnInit {
   ngOnInit() {}
 
   async ionViewWillEnter() {
-    await this.groupsService
-      .getFamilyGroupById(this.route.snapshot.paramMap.get('id'))
-      .then(async (res: FamilyGroup) => (this.group = res));
+    this.group = await this.groupsService.getFamilyGroupById(this.route.snapshot.paramMap.get('id'));
     // await this.groupsService
     //   .getFamilyGroupById(this.route.snapshot.paramMap.get('id'))
     //   .then(async (res: FamilyGroup) => {

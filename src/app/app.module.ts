@@ -7,7 +7,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TranslateModule, TranslateLoader } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { HttpClientModule, HttpClient } from '@angular/common/http';
+import { HttpClientModule, HttpClient, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { environment } from 'src/environments/environment';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
@@ -18,6 +18,7 @@ import { AppointmentsPageModule } from './views/appointments/appointments.module
 import { GroupsModule } from './views/groups/groups.module';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { MedsPageModule } from './views/meds/meds.module';
+import { ForbiddenInterceptor } from './interceptors/forbidden.interceptor';
 // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, './assets/i18n/', '.json');
@@ -51,7 +52,11 @@ export function createTranslateLoader(http: HttpClient) {
       registrationStrategy: 'registerWhenStable:30000',
     }),
   ],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, AuthenticationService],
+  providers: [
+    { provide: HTTP_INTERCEPTORS, useClass: ForbiddenInterceptor, multi: true },
+    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    AuthenticationService,
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
