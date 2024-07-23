@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ModalController, NavController } from '@ionic/angular';
-import { isBefore, parseISO } from 'date-fns';
+import { isAfter, isBefore, parseISO } from 'date-fns';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
@@ -74,12 +74,18 @@ export class AppointmentsPage implements OnInit {
   }
 
   async presentActionSheet(appointment) {
-    const actionSheet = isBefore(parseISO(appointment.date), new Date())
-      ? await this.actionSheetService.createOnlyView('Mi Turno')
-      : await this.actionSheetService.createDefault('Mi Turno');
+    const actionSheet = await this.createActionSheet(appointment);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
     this.doActionByRole(role, appointment.id);
+    console.log(appointment.status);
+  }
+
+  async createActionSheet(appointment){
+    if (appointment.status == 'confirmed' && isAfter(parseISO(appointment.date), new Date())) {
+      return await this.actionSheetService.createOnlyView('Mi Turno');
+    }
+    return await this.actionSheetService.createDefault('Mi Turno');
   }
 
   doActionByRole(value: string, id: number) {
@@ -118,9 +124,9 @@ export class AppointmentsPage implements OnInit {
   }
 
   async handleChange(event) {
-    const search = event.detail.value;
+    const search = event.detail.value.toLowerCase();
     this.filteredAppointments = this.appointments.filter(
-      (d) => d.professional.firstName.includes(search) || d.professional.lastName.includes(search)
+      (d) => d.professional.firstName.toLowerCase().includes(search) || d.professional.lastName.toLowerCase().includes(search)
     );
   }
 

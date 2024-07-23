@@ -180,7 +180,7 @@ export class CreateAppointmentPage implements OnInit {
         this.dispatch(notification, appointment.id);
       });
     }
-    this.localNotificationsService.schedule(appointment.date, appointment.professional);
+    this.localNotificationsService.schedule(appointment.date, appointment.professional, appointment.id);
   }
 
   dispatch(notification, id) {
