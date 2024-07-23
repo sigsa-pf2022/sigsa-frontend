@@ -1,4 +1,10 @@
-import { Dependent } from './Dependent';
+interface Dependent {
+  birthday: Date;
+  bloodType: string;
+  dni: string;
+  firstName: string;
+  lastName: string;
+}
 
 export interface FamilyGroup {
   createdBy: any; // Replace to user

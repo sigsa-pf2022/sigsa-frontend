@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
 import { GroupsService } from './shared/services/groups/groups.service';
-import { FamilyGroup } from './shared/interfaces/FamilyGroup';
+import { FamilyGroup } from './shared/interfaces/family-group.interface';
 
 @Component({
   selector: 'app-groups',
