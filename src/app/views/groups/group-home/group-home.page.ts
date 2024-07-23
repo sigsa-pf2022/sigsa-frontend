@@ -5,7 +5,7 @@ import { REMINDERS_TYPE } from '../../home/shared/constants/remindersType';
 import { FAKE_APPOINTMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeAppointmentsReminderData';
 import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeDocumentsReminderData';
 import { FAKE_MEDICATIONS_REMINDERS_DATA } from '../../home/shared/fakes/fakeMedicationsReminderData';
-import { FamilyGroup } from '../shared/interfaces/FamilyGroup';
+import { FamilyGroup } from '../shared/interfaces/family-group.interface';
 import { GroupsService } from '../shared/services/groups/groups.service';
 
 @Component({
