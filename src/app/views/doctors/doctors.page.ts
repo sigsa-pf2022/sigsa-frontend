@@ -25,18 +25,20 @@ import { ProfessionalsService } from './shared/services/professionals.service';
           <ion-icon class="drs__search__icon" name="search"></ion-icon>
         </ion-input>
       </form>
-      <ion-list class="drs__list" *ngIf="this.doctors.length > 0">
-        <ion-radio-group [value]="this.doctor?.id">
-          <app-items-list
-            *ngFor="let doctor of this.doctors"
-            [title]="doctor.firstName + ' ' + doctor.lastName"
-            img="doctor"
-            [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
-            [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
-            (click)="doAction(doctor)"
-          ></app-items-list>
-        </ion-radio-group>
-      </ion-list>
+      <ng-container *ngIf="this.doctors.length > 0">
+        <ion-list class="drs__list">
+          <ion-radio-group [value]="this.doctor?.id">
+            <app-items-list
+              *ngFor="let doctor of this.doctors"
+              [title]="doctor.firstName + ' ' + doctor.lastName"
+              img="doctor"
+              [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
+              [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
+              (click)="doAction(doctor)"
+            ></app-items-list>
+          </ion-radio-group>
+        </ion-list>
+      </ng-container>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="newDoctor()" class="drs__fab">
           <ion-icon name="add"></ion-icon>

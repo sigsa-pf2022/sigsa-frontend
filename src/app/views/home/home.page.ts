@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { EventsService } from 'src/app/views/home/shared/services/events/events.service';
 import { AppointmentsService } from '../appointments/shared/services/appointments/appointments.service';
 import { REMINDERS_TYPE } from './shared/constants/remindersType';
+import { MedsEventsService } from '../meds/shared/services/meds-events/meds-events.service';
 
 @Component({
   selector: 'app-home',
@@ -22,8 +23,13 @@ export class HomePage {
   activeTab = null;
   events = [];
   reminders = [];
+  medEvents = [];
   appointments = [];
-  constructor(private appointmentsService: AppointmentsService, private eventsService: EventsService) {}
+  constructor(
+    private appointmentsService: AppointmentsService,
+    private eventsService: EventsService,
+    private medsEventsService: MedsEventsService
+  ) {}
 
   async ionViewWillEnter() {
     this.setAppointments();
@@ -32,10 +38,12 @@ export class HomePage {
 
   async setAppointments() {
     this.appointments = await this.appointmentsService.getAppointmentsByUser();
+    this.medEvents = await this.medsEventsService.getMedsEventsByUser();
     this.changeReminders(this.remindersTypes.appointments);
   }
   async setNextEvents() {
     const events = await this.eventsService.getNextEvents();
+    console.log('EVENTS', events);
     this.events = [
       ...events.map((a) => ({
         title: 'Dr.' + a.professional.lastName,
@@ -53,7 +61,7 @@ export class HomePage {
         this.reminders = this.appointments;
         break;
       case this.remindersTypes.medications:
-        this.reminders = [];
+        this.reminders = this.medEvents;
         break;
       case this.remindersTypes.documents:
         this.reminders = [];

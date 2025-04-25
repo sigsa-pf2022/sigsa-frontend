@@ -43,7 +43,6 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
         </ion-select>
         <ion-input
           class="ui-form-input"
-          [disabled]="true"
           placeholder="Fecha de Nacimiento"
           formControlName="birthday"
           id="open-modal"

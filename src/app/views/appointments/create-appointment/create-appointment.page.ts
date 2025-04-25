@@ -41,7 +41,6 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
           <!-- > -->
           <ion-input
             class="ui-form-input"
-            [disabled]="true"
             placeholder="Fecha de Atencion"
             formControlName="date"
             id="open-modal"
@@ -185,7 +184,6 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   dispatch(notification, id) {
-    console.log(notification);
     if (notification.actionId === 'confirm') {
       this.confirmAppointment(id);
     } else if (notification.actionId === 'tap') {

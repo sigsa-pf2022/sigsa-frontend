@@ -83,7 +83,6 @@ export class AppointmentsPage implements OnInit {
   }
 
   doActionByRole(value: string, id: number) {
-    console.log(value);
     switch (value) {
       case 'destructive':
         this.cancelAppointment(id);

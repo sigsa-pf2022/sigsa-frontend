@@ -38,7 +38,6 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
         <div class="ca__data">
           <ion-input
             class="ui-form-input"
-            [disabled]="true"
             placeholder="Fecha de ingesta"
             formControlName="date"
             id="open-modal"

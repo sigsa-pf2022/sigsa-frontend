@@ -53,7 +53,6 @@ export class GroupsPage implements OnInit {
   async getGroups() {
     await this.showLoading();
     this.groups = await this.groupsService.getFamilyGroupsByUser();
-    console.log(this.groups);
     this.closeLoading();
   }
   async showLoading() {

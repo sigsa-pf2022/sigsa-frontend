@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ActionPerformed, LocalNotifications } from '@capacitor/local-notifications';
-import { addSeconds, parseISO, subMinutes } from 'date-fns';
+import { parseISO, subMinutes } from 'date-fns';
 import { DateFormatterService } from '../date-formatter/date-formatter.service';
 
 @Injectable({

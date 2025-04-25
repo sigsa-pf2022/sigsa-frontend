@@ -27,11 +27,10 @@ export class MedsEventsItemListComponent implements OnInit {
   status: EventStatus;
   constructor(private dateFormatterService: DateFormatterService) {}
   ngOnInit() {
-    this.setProfessionalData();
+    this.setMedEventData();
   }
 
-  setProfessionalData() {
-    console.log(this.medEvent);
+  setMedEventData() {
     this.title = `${this.medEvent.med.name} ${this.medEvent.med.dosage}`;
     this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.medEvent.date);
     this.status = EVENT_STATUS.find((es) => es.value === this.medEvent.status);

@@ -1,5 +1,4 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { DoctorsPage } from './doctors.page';
@@ -8,6 +7,7 @@ import { SharedComponentsModule } from 'src/app/components/shared-components.mod
 import { DoctorsNewPage } from './doctors-new/doctors-new.page';
 import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 const routes: Routes = [
   {
@@ -22,8 +22,8 @@ const routes: Routes = [
 
 @NgModule({
   imports: [
-    RouterModule.forChild(routes),
     CommonModule,
+    RouterModule.forChild(routes),
     FormsModule,
     IonicModule,
     ReactiveFormsModule,

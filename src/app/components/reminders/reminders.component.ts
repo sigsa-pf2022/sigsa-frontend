@@ -17,13 +17,11 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
         </ion-segment-button>
       </ion-segment>
     </div>
-    <cdk-virtual-scroll-viewport *ngIf="activeTab !== remindersTypes.appointments" itemSize="3">
-      <app-items-list
-        *cdkVirtualFor="let reminder of this.reminders"
-        [title]="reminder.title"
-        [subtitle]="reminder.subtitle"
-        [img]="reminder.img"
-      ></app-items-list>
+    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.medications" itemSize="3">
+      <app-meds-event-item-list
+        *cdkVirtualFor="let medEvent of this.reminders"
+        [medEvent]="medEvent"
+      ></app-meds-event-item-list>
     </cdk-virtual-scroll-viewport>
     <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.appointments" itemSize="3">
       <app-appointments-item-list
@@ -49,5 +47,4 @@ export class RemindersComponent implements OnChanges {
     this.activeTab = event.detail.value;
     this.tabChanged.emit(event.detail.value);
   }
-
 }

@@ -50,7 +50,6 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
         </ion-select>
         <ion-input
           class="ui-form-input"
-          [disabled]="true"
           placeholder="Fecha de Nacimiento"
           formControlName="birthday"
           id="open-modal"

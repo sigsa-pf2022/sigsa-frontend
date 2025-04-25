@@ -80,7 +80,6 @@ export class LoginPage implements OnInit {
     await this.auth
       .userStatus(this.loginForm.value.email)
       .then(async (isValidatedUser) => {
-        console.log(isValidatedUser);
         if (isValidatedUser) {
           await this.signIn();
         } else {
