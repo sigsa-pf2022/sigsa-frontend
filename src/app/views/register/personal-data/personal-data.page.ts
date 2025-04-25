@@ -5,6 +5,7 @@ import { format, parseISO } from 'date-fns';
 import { GENDERS } from 'src/app/constants/Gender.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { RegisterFormDataService } from '../shared-register/services/register-form-data/register-form-data.service';
+import { ProfessionalsService } from '../../doctors/shared/services/professionals.service';
 
 @Component({
   selector: 'app-personal-data',
@@ -100,10 +101,20 @@ export class PersonalDataPage {
     private dateFormatterService: DateFormatterService,
     private navController: NavController,
     private fb: FormBuilder,
-    private registerFormDataService: RegisterFormDataService // private gestureCtrl: GestureController
+    private registerFormDataService: RegisterFormDataService, // private gestureCtrl: GestureController
+    private professionalsService: ProfessionalsService
   ) {}
 
   ionViewWillEnter() {}
+
+  async onSubmit() {
+    this.registerFormDataService.setData(this.form.value);
+    this.getUserByDNI()
+  }
+  
+  getUserByDNI() {
+    throw new Error('Method not implemented.');
+  }
 
   openCalendar() {
     this.showCalendar = !this.showCalendar;
@@ -123,6 +134,8 @@ export class PersonalDataPage {
   confirmDateSelection() {
     this.datetime.confirm(true);
   }
+
+
 
   navigate() {
     this.registerFormDataService.setData(this.form.value);

@@ -33,7 +33,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
       <div class="va__data">
         <div class="va__data__item">
           <ion-text class="va__data__item__label">Fecha:</ion-text>
-          <ion-text class="va__data__item__value">{{ this.appointment?.date | date: 'dd/MM/YYYY HH:mm' }}</ion-text>
+          <ion-text class="va__data__item__value">{{ this.appointment?.date | date : 'dd/MM/YYYY HH:mm' }}</ion-text>
         </div>
         <div class="va__data__item">
           <ion-text class="va__data__item__label">Descripcion:</ion-text>
@@ -42,7 +42,9 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
       </div>
     </ion-content>
     <ion-footer class="footer__light">
-      <ion-button (click)="confirmAppointment()" expand="block" color="primary"> Confirmar </ion-button>
+      <ion-button *ngIf="appointment && !isConfirmed" (click)="confirmAppointment()" expand="block" color="primary">
+        Confirmar
+      </ion-button>
       <ion-button (click)="cancelAppointment()" expand="block" color="danger"> Cancelar </ion-button>
     </ion-footer>
   `,
@@ -51,6 +53,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
 export class ViewAppointmentComponent implements OnInit {
   appointmentId: number;
   appointment: any;
+  isConfirmed: boolean = false;
   constructor(
     private appointmentsService: AppointmentsService,
     private route: ActivatedRoute,
@@ -66,7 +69,13 @@ export class ViewAppointmentComponent implements OnInit {
   }
 
   async getAppointment() {
-    this.appointment = await this.appointmentsService.getAppointment(this.appointmentId);
+    try {
+      this.appointment = await this.appointmentsService.getAppointment(this.appointmentId);
+      console.log('OK');
+    } catch (error) {
+      console.log(error);
+    }
+    this.isConfirmed = this.appointment && this.appointment.status === 'confirmed';
   }
 
   async confirmAppointment() {
@@ -75,7 +84,7 @@ export class ViewAppointmentComponent implements OnInit {
       cssClass: 'modal',
       componentProps: {
         text: '¿Desea confirmar el turno?',
-        yesColor: 'success'
+        yesColor: 'success',
       },
     });
     await modal.present();

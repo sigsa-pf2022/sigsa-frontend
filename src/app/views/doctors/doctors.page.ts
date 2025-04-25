@@ -20,25 +20,28 @@ import { ProfessionalsService } from './shared/services/professionals.service';
       </ion-toolbar>
     </ion-header>
     <ion-content class="drs">
-      <form [formGroup]="this.searchForm">
-        <ion-input class="ui-form-input drs__search" placeholder="Buscar doctor ..." formControlName="input">
-          <ion-icon class="drs__search__icon" name="search"></ion-icon>
-        </ion-input>
+      <form class="drs__form" [formGroup]="this.searchForm">
+      <ion-searchbar
+          formControlName="search"
+          placeholder="Buscar profesionales ..."
+          class="ui-search-input  ui-search-input__no-show"
+          debounce="400"
+          type="string"
+          (ionChange)="handleChange($event)"
+        ></ion-searchbar>
       </form>
-      <ng-container *ngIf="this.doctors.length > 0">
-        <ion-list class="drs__list">
-          <ion-radio-group [value]="this.doctor?.id">
-            <app-items-list
-              *ngFor="let doctor of this.doctors"
-              [title]="doctor.firstName + ' ' + doctor.lastName"
-              img="doctor"
-              [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
-              [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
-              (click)="doAction(doctor)"
-            ></app-items-list>
-          </ion-radio-group>
-        </ion-list>
-      </ng-container>
+      <ion-list class="drs__list" *ngIf="this.filteredDoctors.length > 0">
+        <ion-radio-group [value]="this.doctor?.id">
+          <app-items-list
+            *ngFor="let doctor of this.filteredDoctors"
+            [title]="doctor.firstName + ' ' + doctor.lastName"
+            img="doctor"
+            [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
+            [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
+            (click)="doAction(doctor)"
+          ></app-items-list>
+        </ion-radio-group>
+      </ion-list>
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="newDoctor()" class="drs__fab">
           <ion-icon name="add"></ion-icon>
@@ -54,12 +57,15 @@ import { ProfessionalsService } from './shared/services/professionals.service';
   styleUrls: ['./doctors.page.scss'],
 })
 export class DoctorsPage implements OnInit {
-  searchForm = this.fb.group({ input: '' });
+  searchForm = this.fb.group({
+    search: '',
+  });
   doctors: Professional[] = [];
   isAppointmentCreation = false;
   isAppointmentEdition = false;
   doctor: Professional;
   appointmentId: number;
+  filteredDoctors: Professional[] = [];
   constructor(
     private navController: NavController,
     private fb: FormBuilder,
@@ -71,7 +77,7 @@ export class DoctorsPage implements OnInit {
   ngOnInit() {}
 
   async ionViewWillEnter() {
-    this.doctors = await this.professionalsService.getMyProfessionals();
+    this.doctors = this.filteredDoctors = await this.professionalsService.getMyProfessionals();
     if (this.route.snapshot.url[0]?.path === 'create') {
       this.isAppointmentCreation = true;
     } else if (this.route.snapshot.url[0]?.path === 'edit') {
@@ -93,5 +99,13 @@ export class DoctorsPage implements OnInit {
       ? '/appointments/create/appointment'
       : `/appointments/edit/${this.appointmentId}/appointment`;
     return this.navController.navigateForward([url]);
+  }
+  
+  async handleChange(event) {
+    const search = event.detail.value.toLowerCase();
+    this.filteredDoctors = this.doctors.filter(
+      (professional: Professional) =>
+        professional.firstName.toLowerCase().includes(search) || professional.lastName.toLowerCase().includes(search)
+    );
   }
 }

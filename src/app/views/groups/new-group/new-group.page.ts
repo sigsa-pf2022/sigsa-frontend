@@ -4,11 +4,7 @@ import { IonDatetime, ModalController, NavController, ToastController } from '@i
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { format, parseISO } from 'date-fns';
 import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
-import { TranslateService } from '@ngx-translate/core';
-import { Camera, CameraResultType, ImageOptions } from '@capacitor/camera';
-import { GroupsService } from '../shared/services/groups/groups.service';
 import { NewGroupDataService } from '../shared/services/new-group-data/new-group-data.service';
-import { ToastService } from 'src/app/services/toast/toast.service';
 import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
 
 @Component({
@@ -25,10 +21,6 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
     </ion-header>
     <ion-content class="ng">
       <form class="ng__form" [formGroup]="form">
-        <!-- <ion-fab-button (click)="getPicture()" color="ligth">
-          <ion-icon name="add"></ion-icon>
-          <ion-img *ngIf="src !== ''" [src]="src"></ion-img>
-        </ion-fab-button> -->
         <ion-label>Datos del Grupo</ion-label>
         <ion-input class="ui-form-input" formControlName="name" placeholder="Nombre del grupo" type="text"></ion-input>
         <br />

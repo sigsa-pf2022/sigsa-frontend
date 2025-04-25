@@ -43,8 +43,8 @@ export class UserDataPage {
   form = this.fb.group(
     {
       email: [null, [Validators.compose([Validators.required, Validators.email])]],
-      password: [null, Validators.required],
-      repeatPassword: [null, Validators.required],
+      password: [null, Validators.compose([Validators.required, Validators.minLength(6)])],
+      repeatPassword: [null, Validators.compose([Validators.required, Validators.minLength(6)])],
     },
     {
       validators: [CustomValidators.passwordMatchValidator],
