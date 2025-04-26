@@ -4,10 +4,10 @@ import { NextEvent } from 'src/app/views/home/shared/interfaces/next-event';
 @Component({
   selector: 'app-event-card',
   template: `
-    <div class="ec" [ngClass]="event.type.title === 'medication' ? 'ec-medication' : 'ec-appointment'">
+    <div class="ec" [ngClass]="event.type === 'medication' ? 'ec-medication' : 'ec-appointment'">
       <div
         class="ec__date"
-        [ngClass]="event.type.title === 'medication' ? 'ec-medication__date' : 'ec-appointment__date'"
+        [ngClass]="event.type === 'medication' ? 'ec-medication__date' : 'ec-appointment__date'"
       >
         <ion-label class="ec__date__calendar">{{ event.date | date: 'dd/MM' }}</ion-label>
         <ion-label class="ec__date__day">{{ event.date | date: 'EEE' }}</ion-label>

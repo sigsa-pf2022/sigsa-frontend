@@ -1,5 +1,5 @@
-import { NextEventType } from './next-event-type';
 
+type NextEventType = 'medication' | 'appointment';
 export interface NextEvent {
   date: Date;
   day: string;

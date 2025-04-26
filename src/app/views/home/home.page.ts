@@ -42,16 +42,7 @@ export class HomePage {
     this.changeReminders(this.remindersTypes.appointments);
   }
   async setNextEvents() {
-    const events = await this.eventsService.getNextEvents();
-    console.log('EVENTS', events);
-    this.events = [
-      ...events.map((a) => ({
-        title: 'Dr.' + a.professional.lastName,
-        subtitle: '',
-        date: a.date,
-        type: 'appointment',
-      })),
-    ];
+    this.events = await this.eventsService.getNextEvents();
   }
 
   changeReminders(value) {
