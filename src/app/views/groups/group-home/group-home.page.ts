@@ -7,6 +7,7 @@ import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeDocum
 import { FAKE_MEDICATIONS_REMINDERS_DATA } from '../../home/shared/fakes/fakeMedicationsReminderData';
 import { FamilyGroup } from '../shared/interfaces/family-group.interface';
 import { GroupsService } from '../shared/services/groups/groups.service';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
 @Component({
   selector: 'app-group-home',
@@ -85,21 +86,35 @@ export class GroupHomePage implements OnInit {
   opened = false;
   group: FamilyGroup;
   reminders: any;
-  options = [
-    { title: 'Documentos', icon: 'document.svg' },
-    { title: 'Salir', color: 'danger' },
-  ];
+  options: any;
+
   constructor(
     private animationCtrl: AnimationController,
     private route: ActivatedRoute,
     private groupsService: GroupsService,
-    private navController: NavController
+    private navController: NavController,
+    private authService: AuthenticationService 
   ) {}
 
   ngOnInit() {}
 
   async ionViewWillEnter() {
     this.group = await this.groupsService.getFamilyGroupById(this.route.snapshot.paramMap.get('id'));
+    const currentUser = this.authService.user();
+
+    this.options = [
+      { title: 'Documentos', icon: 'document.svg', action: 'documents' },
+      {
+      title: 'Abandonar grupo',
+      icon: 'exit.svg',
+      color: 'danger',
+      action: 'exit-group',
+      groupId: this.group?.id,
+      memberId: currentUser?.id,
+      },
+      { title: 'Salir', color: 'danger', action: 'logout' },
+    ];
+    
     // await this.groupsService
     //   .getFamilyGroupById(this.route.snapshot.paramMap.get('id'))
     //   .then(async (res: FamilyGroup) => {
