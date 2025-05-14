@@ -22,6 +22,10 @@ const routes: Routes = [
     path: 'add-members',
     loadChildren: () => import('../../views/groups/add-members/add-members.module').then((m) => m.AddMembersModule),
   },
+  {
+    path: ':groupId/members',
+    loadChildren: () => import('../../views/groups/group-members/group-members.module').then((m) => m.GroupMembersPageModule),
+  },
 ];
 
 

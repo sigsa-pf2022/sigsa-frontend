@@ -37,4 +37,8 @@ export class GroupsService {
   deleteMember(groupId: string, memberId: string) {
     return this.http.delete(`${environment.apiUrl}/family-groups/${groupId}/members/${memberId}`).toPromise();
   }
+
+  getMembers(groupId: string) {
+    return this.http.get(`${environment.apiUrl}/family-groups/${groupId}/members`).toPromise();
+  }
 }

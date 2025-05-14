@@ -34,15 +34,20 @@ export class MenuComponent implements OnInit {
 
   ngOnInit() {}
 
-  async onOptionClick(option: any) {
-    switch (option.action) {
-      case 'exit-group':
-        await this.confirmExitGroup(option.groupId, option.memberId);
-        break;
-      default:
-        break;
-    }
+async onOptionClick(option: any) {
+  switch (option.action) {
+    case 'see-members':
+      if (option.groupId) {
+        this.navController.navigateForward([`/groups/${option.groupId}/members`]);
+      }
+      break;
+    case 'exit-group':
+      await this.confirmExitGroup(option.groupId, option.memberId);
+      break;
+    default:
+      break;
   }
+}
 
   async confirmExitGroup(groupId: string, memberId: string) {
     const alert = await this.alertController.create({
