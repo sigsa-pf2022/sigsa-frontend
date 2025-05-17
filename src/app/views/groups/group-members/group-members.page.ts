@@ -1,7 +1,8 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, AnimationController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, LoadingController, NavController } from '@ionic/angular';
 import { GroupsService } from '../shared/services/groups/groups.service';
+import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
 @Component({
   selector: 'app-group-members',
@@ -9,24 +10,33 @@ import { GroupsService } from '../shared/services/groups/groups.service';
     <ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-menu-button></ion-menu-button>
+          <ion-back-button defaultHref="" (click)="goToGroupHome()"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">Miembros del grupo</ion-title>
-        <ion-list>
-          <ion-item *ngFor="let member of members">
-            <ion-label>{{ member.name }}</ion-label>
-            <ion-button color="danger" (click)="deleteMember(member.id)"> Eliminar </ion-button>
-          </ion-item>
-        </ion-list>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="gh"> </ion-content>
+    <ion-content class="gh">
+      <ion-list>
+        <ion-item *ngFor="let member of members">
+          <ion-label>{{ member.firstName }} {{ member.lastName }}</ion-label>
+          <ion-button color="danger" *ngIf="member.id != loggedUserId" (click)="deleteMember(member.id)">
+            Eliminar
+          </ion-button>
+        </ion-item>
+      </ion-list>
+      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+        <ion-fab-button (click)="navigateToAddMember()" class="gm__fab">
+          <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </ion-content>
   `,
   styleUrls: ['./group-members.page.scss'],
 })
 export class GroupMembersPage implements OnInit {
   groupId: string;
   members: any;
+  loggedUserId: any;
 
   constructor(
     private groupsService: GroupsService,
@@ -34,22 +44,24 @@ export class GroupMembersPage implements OnInit {
     private loadingController: LoadingController,
     private alertController: AlertController,
     private route: ActivatedRoute,
-    private animationCtrl: AnimationController
+    private auth: AuthenticationService
   ) {}
 
   ngOnInit() {
     this.groupId = this.route.snapshot.paramMap.get('groupId');
+    this.loggedUserId = this.auth.user().id;
   }
 
   ionViewWillEnter() {
-    // this.getMembers();
+    this.getMembers();
   }
-  goToGroupHome(groupId: string) {
-    return this.navController.navigateForward([`/groups/home/${groupId}`]);
+  goToGroupHome() {
+    return this.navController.navigateForward([`/groups/home/${this.groupId}`]);
   }
   async getMembers() {
     await this.showLoading();
-    this.members = await this.groupsService.getMembers(this.groupId);
+    this.members = (await this.groupsService.getFamilyGroupById(this.groupId)).members;
+    console.log(this.members);
     this.closeLoading();
   }
   async showLoading() {
@@ -88,5 +100,10 @@ export class GroupMembersPage implements OnInit {
       ],
     });
     await alert.present();
+  }
+  navigateToAddMember() {
+    this.navController.navigateForward([`/groups/add-members`], {
+      queryParams: { groupId: this.groupId },
+    });
   }
 }
