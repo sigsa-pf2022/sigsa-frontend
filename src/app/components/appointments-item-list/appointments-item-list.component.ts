@@ -1,20 +1,21 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { EventStatus, EVENT_STATUS } from 'src/app/constants/EventStatus.constant';
+import { isBefore } from 'date-fns';
+import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 
 @Component({
   selector: 'app-appointments-item-list',
   template: `
-    <ion-item class="il" lines="full">
-      <div class="il__img">
+    <ion-item class="ail" [ngClass]="{ 'ail-due': dueDate }" lines="full">
+      <div class="ail__img">
         <ion-img [src]="'assets/images/reminders/doctor.svg'"></ion-img>
       </div>
-      <div class="il__content">
-        <div class="il__content__title">
+      <div class="ail__content">
+        <div class="ail__content__title">
           <ion-text>{{ this.title }}</ion-text>
-          <ion-text [color]="this.status?.color" class="il__content__title__status">{{ this.status?.text }}</ion-text>
+          <ion-text [color]="this.status?.color" class="ail__content__title__status">{{ this.status?.text }}</ion-text>
         </div>
-        <ion-text class="il__content__subtitle">{{ this.subtitle }}</ion-text>
+        <ion-text class="ail__content__subtitle">{{ this.subtitle }}</ion-text>
       </div>
     </ion-item>
   `,
@@ -24,6 +25,7 @@ export class AppointmentsItemListComponent implements OnInit {
   @Input() appointment;
   title: string;
   subtitle: string;
+  dueDate: boolean;
   status: EventStatus;
   constructor(private dateFormatterService: DateFormatterService) {}
   ngOnInit() {
@@ -34,5 +36,7 @@ export class AppointmentsItemListComponent implements OnInit {
     this.title = `Dr/a ${this.appointment.professional.firstName} ${this.appointment.professional.lastName}`;
     this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.appointment.date);
     this.status = EVENT_STATUS.find((es) => es.value === this.appointment.status);
+    this.dueDate =
+      this.status.value === EventStatusEnum.CONFIRMADO && isBefore(new Date(this.appointment.date), new Date());
   }
 }
