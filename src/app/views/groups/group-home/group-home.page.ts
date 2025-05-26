@@ -105,12 +105,18 @@ export class GroupHomePage implements OnInit {
     this.options = [
       { title: 'Documentos', icon: 'document.svg', action: 'documents' },
       {
-      title: 'Abandonar grupo',
-      icon: 'exit.svg',
-      color: 'danger',
-      action: 'exit-group',
-      groupId: this.group?.id,
-      memberId: currentUser?.id,
+        title: 'Ver miembros',
+        action: 'see-members',
+        groupId: this.group?.id,
+        memberId: currentUser?.id,
+      },
+      {
+        title: 'Abandonar grupo',
+        icon: 'exit.svg',
+        color: 'danger',
+        action: 'exit-group',
+        groupId: this.group?.id,
+        memberId: currentUser?.id,
       },
       { title: 'Salir', color: 'danger', action: 'logout' },
     ];

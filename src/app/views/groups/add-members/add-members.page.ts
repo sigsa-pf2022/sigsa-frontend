@@ -5,6 +5,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { GroupsService } from '../shared/services/groups/groups.service';
 import { NewGroupDataService } from '../shared/services/new-group-data/new-group-data.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-add-members',
@@ -20,7 +21,7 @@ import { NewGroupDataService } from '../shared/services/new-group-data/new-group
     </ion-header>
     <ion-content class="am">
       <div>
-        <form [formGroup]="this.form">
+        <form [formGroup]="form">
           <ion-searchbar
             formControlName="search"
             placeholder="Ingrese DNI de Usuario"
@@ -29,23 +30,38 @@ import { NewGroupDataService } from '../shared/services/new-group-data/new-group
             type="number"
             (ionChange)="handleChange($event)"
           ></ion-searchbar>
-          <ion-item lines="none" class="am__member" *ngIf="this.memberToAdd">
-            <ion-label>{{ this.memberToAdd.firstName + ' ' + this.memberToAdd.lastName }}</ion-label>
+          <ion-item lines="none" class="am__member" *ngIf="memberToAdd">
+            <ion-label>{{ memberToAdd.firstName + ' ' + memberToAdd.lastName }}</ion-label>
             <ion-icon name="add" (click)="addMember()"></ion-icon>
           </ion-item>
         </form>
-        <div class="am__no-member" *ngIf="!this.memberToAdd"></div>
+        <div class="am__no-member" *ngIf="!memberToAdd"></div>
       </div>
       <div>
+        <!-- Miembros actuales del grupo -->
+        <ion-list class="am__current-members-list" *ngIf="currentGroupMembers.length > 0">
+          <ion-list-header class="am__members-list__header">
+            <div class="am__members-list__header__container">
+              <ion-label>Miembros actuales</ion-label>
+              <ion-label> ({{ currentGroupMembers.length }})</ion-label>
+            </div>
+          </ion-list-header>
+          <ion-item lines="none" *ngFor="let member of currentGroupMembers">
+            <ion-label>
+              {{ member.firstName + ' ' + member.lastName }}
+            </ion-label>
+          </ion-item>
+        </ion-list>
+        <!-- Lista de miembros a agregar -->
         <ion-list class="am__members-list">
           <ion-list-header class="am__members-list__header">
             <div class="am__members-list__header__container">
-              <ion-label>Miembros</ion-label>
-              <ion-label> ({{ this.members.length }})</ion-label>
+              <ion-label>Miembros a agregar</ion-label>
+              <ion-label> ({{ members.length }})</ion-label>
               <ion-icon color="danger" (click)="clearMembers()" name="trash"></ion-icon>
             </div>
           </ion-list-header>
-          <ion-item lines="none" class="am__members-list__item" *ngFor="let member of this.members">
+          <ion-item lines="none" class="am__members-list__item" *ngFor="let member of members">
             <ion-label>
               {{ member.firstName + ' ' + member.lastName }}
             </ion-label>
@@ -61,6 +77,8 @@ import { NewGroupDataService } from '../shared/services/new-group-data/new-group
   styleUrls: ['./add-members.page.scss'],
 })
 export class AddMembersPage implements OnInit {
+  groupId: string;
+  currentGroupMembers: any[] = [];
   memberToAdd: { firstName: string; lastName: string; dni: number };
   members: { firstName: string; lastName: string; dni: number }[] = [];
   form = this.fb.group({
@@ -72,10 +90,23 @@ export class AddMembersPage implements OnInit {
     private auth: AuthenticationService,
     private fb: FormBuilder,
     private navController: NavController,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.route.queryParams.subscribe((params) => {
+      this.groupId = params['groupId'];
+      if (this.groupId) {
+        this.loadCurrentGroupMembers();
+      }
+    });
+  }
+
+  async loadCurrentGroupMembers() {
+    const group = await this.groupsService.getFamilyGroupById(this.groupId);
+    this.currentGroupMembers = group.members || [];
+  }
 
   async handleChange(event) {
     const dni = event.detail.value;
@@ -86,7 +117,9 @@ export class AddMembersPage implements OnInit {
   }
 
   memberAlreadyAdded(dni: number) {
-    return this.members.some((m) => m.dni === dni);
+    const alreadyInList = this.members.some((m) => m.dni === dni);
+    const alreadyInGroup = this.currentGroupMembers.some((m) => m.dni === dni);
+    return alreadyInList || alreadyInGroup;
   }
 
   clearMembers() {
@@ -107,11 +140,29 @@ export class AddMembersPage implements OnInit {
   }
 
   async onSubmit() {
-    const data = { ...this.newGroupDataService.data, members: this.members };
-    await this.groupsService
-      .createGroup(data)
-      .then(() => this.success())
-      .catch((err) => console.log(err));
+    if (this.groupId) {
+      // Lógica para agregar miembros a un grupo existente
+      try {
+        for (const member of this.members) {
+          // Evita duplicados antes de agregar
+          if (!this.currentGroupMembers.some((m) => m.dni === member.dni)) {
+            await this.groupsService.addMember(this.groupId, member);
+          }
+        }
+        this.toastService.showSuccess('Miembros agregados exitosamente');
+        this.navController.back(); // Vuelve a la vista anterior (group-members)
+      } catch (err) {
+        console.log(err);
+        this.toastService.showError('Error al agregar miembros');
+      }
+    } else {
+      // Lógica para crear grupo nuevo (flujo original)
+      const data = { ...this.newGroupDataService.data, members: this.members };
+      await this.groupsService
+        .createGroup(data)
+        .then(() => this.success())
+        .catch((err) => console.log(err));
+    }
   }
 
   success() {
