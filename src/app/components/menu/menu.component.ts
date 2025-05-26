@@ -14,8 +14,8 @@ import { GroupsService } from 'src/app/views/groups/shared/services/groups/group
       <div *ngFor="let option of this.options">
         <ion-icon color="primary" [src]="'/assets/images/reminders/' + option.icon"></ion-icon>
         <ion-label [color]="option.color" (click)="onOptionClick(option)">
-            {{ option.title }}
-          </ion-label>
+          {{ option.title }}
+        </ion-label>
       </div>
     </ion-content>
   </ion-menu>`,
@@ -34,20 +34,20 @@ export class MenuComponent implements OnInit {
 
   ngOnInit() {}
 
-async onOptionClick(option: any) {
-  switch (option.action) {
-    case 'see-members':
-      if (option.groupId) {
-        this.navController.navigateForward([`/groups/${option.groupId}/members`]);
-      }
-      break;
-    case 'exit-group':
-      await this.confirmExitGroup(option.groupId, option.memberId);
-      break;
-    default:
-      break;
+  async onOptionClick(option: any) {
+    switch (option.action) {
+      case 'see-members':
+        if (option.groupId) {
+          await this.navController.navigateForward([`/groups/${option.groupId}/members`]);
+        }
+        break;
+      case 'exit-group':
+        await this.confirmExitGroup(option.groupId, option.memberId);
+        break;
+      default:
+        break;
+    }
   }
-}
 
   async confirmExitGroup(groupId: string, memberId: string) {
     const alert = await this.alertController.create({
@@ -66,14 +66,14 @@ async onOptionClick(option: any) {
               const successAlert = await this.alertController.create({
                 header: 'Éxito',
                 message: 'Has abandonado el grupo correctamente.',
-                buttons: [{
-                  text: 'OK',
-                  handler: () => {
-                    this.navController.navigateRoot(['/tabs/groups']).then(() => {
-                      window.location.reload();
-                    });
-                  }
-                }],
+                buttons: [
+                  {
+                    text: 'OK',
+                    handler: async () => {
+                      await this.navController.navigateRoot(['/tabs/groups']);
+                    },
+                  },
+                ],
               });
               await successAlert.present();
             } catch (error) {

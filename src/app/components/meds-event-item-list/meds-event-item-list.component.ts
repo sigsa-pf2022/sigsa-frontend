@@ -1,11 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { EventStatus, EVENT_STATUS } from 'src/app/constants/EventStatus.constant';
+import { isBefore } from 'date-fns';
+import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 
 @Component({
   selector: 'app-meds-event-item-list',
   template: `
-    <ion-item class="il" lines="full">
+    <ion-item class="il" [ngClass]="{ 'il-due': dueDate }" lines="full">
       <div class="il__img">
         <ion-img [src]="'assets/images/reminders/pill.svg'"></ion-img>
       </div>
@@ -24,6 +25,7 @@ export class MedsEventsItemListComponent implements OnInit {
   @Input() medEvent;
   title: string;
   subtitle: string;
+  dueDate: boolean;
   status: EventStatus;
   constructor(private dateFormatterService: DateFormatterService) {}
   ngOnInit() {
@@ -34,5 +36,7 @@ export class MedsEventsItemListComponent implements OnInit {
     this.title = `${this.medEvent.med.name} ${this.medEvent.med.dosage}`;
     this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.medEvent.date);
     this.status = EVENT_STATUS.find((es) => es.value === this.medEvent.status);
+    this.dueDate =
+      this.status.value === EventStatusEnum.CONFIRMADO && isBefore(new Date(this.medEvent.date), new Date());
   }
 }

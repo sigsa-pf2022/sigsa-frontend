@@ -78,7 +78,6 @@ export class AppointmentsPage implements OnInit {
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
     this.doActionByRole(role, appointment.id);
-    console.log(appointment.status);
   }
 
   async createActionSheet(appointment){

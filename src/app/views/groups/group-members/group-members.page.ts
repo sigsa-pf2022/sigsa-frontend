@@ -61,7 +61,6 @@ export class GroupMembersPage implements OnInit {
   async getMembers() {
     await this.showLoading();
     this.members = (await this.groupsService.getFamilyGroupById(this.groupId)).members;
-    console.log(this.members);
     this.closeLoading();
   }
   async showLoading() {

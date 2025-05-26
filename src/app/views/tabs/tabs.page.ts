@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 @Component({
-  selector: 'app-home',
+  selector: 'app-tabs',
   template: `
     <app-header></app-header>
     <ion-content>

@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { LoadingController, NavController } from '@ionic/angular';
 import { GroupsService } from './shared/services/groups/groups.service';
 import { FamilyGroup } from './shared/interfaces/family-group.interface';
+import { ActivatedRoute } from '@angular/router';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-groups',
@@ -33,39 +35,70 @@ import { FamilyGroup } from './shared/interfaces/family-group.interface';
   `,
   styleUrls: ['./groups.page.scss'],
 })
-export class GroupsPage implements OnInit {
+export class GroupsPage implements OnInit, OnDestroy {
   groups: FamilyGroup[] = [];
+  private paramsSubscription: Subscription;
+  private isLoading: boolean = false;
+
   constructor(
     private groupsService: GroupsService,
     private navController: NavController,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private route: ActivatedRoute,
   ) {}
 
-  ngOnInit() {}
+
+  ngOnInit() {
+    this.paramsSubscription = this.route.params.subscribe(params => {
+      this.getGroups();
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.paramsSubscription) {
+      this.paramsSubscription.unsubscribe();
+    }
+  }
 
   ionViewWillEnter() {
     this.getGroups();
   }
+
   goToGroupHome(groupId: string) {
     return this.navController.navigateForward([`/groups/home/${groupId}`]);
   }
 
   async getGroups() {
-    await this.showLoading();
-    this.groups = await this.groupsService.getFamilyGroupsByUser();
-    this.closeLoading();
+    try {
+      if (!this.isLoading) {
+        await this.showLoading();
+      }
+      this.groups = await this.groupsService.getFamilyGroupsByUser();
+    } catch (error) {
+      console.error('GroupsPage: error loading groups', error);
+    } finally {
+      if (this.isLoading) {
+        await this.closeLoading();
+      }
+    }
   }
+
   async showLoading() {
+    this.isLoading = true;
     const loading = await this.loadingController.create({
       message: 'Cargando...',
       spinner: 'crescent',
       cssClass: 'ui-loading',
     });
-    loading.present();
+    await loading.present();
   }
 
-  closeLoading() {
-    this.loadingController.dismiss();
+  async closeLoading() {
+    this.isLoading = false;
+    const loading = await this.loadingController.getTop();
+    if (loading) {
+      await loading.dismiss();
+    }
   }
 
   navigateTo() {
