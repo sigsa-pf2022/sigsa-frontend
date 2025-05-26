@@ -1,5 +1,5 @@
 :host {
-  .il {
+  .ail {
     --background: white;
     --padding-start: 0;
     --inner-padding-end: 0;
@@ -32,5 +32,8 @@
         }
       }
     }
+  }
+  .ail-due{
+    --background: #f6ecca;
   }
 }

@@ -1,6 +1,11 @@
-export type EventStatus = { value: string; text: string; color: string };
+export enum EventStatusEnum {
+  CANCELADO = 'canceled',
+  CREADO = 'created',
+  CONFIRMADO = 'confirmed',
+}
+export type EventStatus = { value: EventStatusEnum; text: string; color: string };
 export const EVENT_STATUS: EventStatus[] = [
-  { value: 'canceled', text: 'CANCELADO', color: 'danger' },
-  { value: 'created', text: 'CREADO', color: 'primary' },
-  { value: 'confirmed', text: 'CONFIRMADO', color: 'success' },
+  { value: EventStatusEnum.CANCELADO, text: 'CANCELADO', color: 'danger' },
+  { value: EventStatusEnum.CREADO, text: 'CREADO', color: 'primary' },
+  { value: EventStatusEnum.CONFIRMADO, text: 'CONFIRMADO', color: 'success' },
 ];
