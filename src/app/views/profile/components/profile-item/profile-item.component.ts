@@ -10,7 +10,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
             <ion-icon [src]="'/assets/images/' + this.profileIcon"></ion-icon>
           </ng-container>
           <ng-container *ngIf="!this.profileIcon">
-            <ion-icon color="medium" class="profile-icon" slot="start" [name]="this.icon"></ion-icon>
+            <ion-icon color="primary" class="profile-icon" slot="start" [name]="this.icon"></ion-icon>
           </ng-container>
           <ion-title class="ui-font-profile-title">{{ title }}</ion-title>
         </div>

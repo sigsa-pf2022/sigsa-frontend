@@ -37,7 +37,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
               </div>
               <div class="gh__item__wrapper__data">
                 <ion-text class="item__wrapper__data__title"
-                  >{{ this.group.dependent.lastName }}, {{ this.group.dependent.firstName }}</ion-text
+                  >{{ this.group.dependent.lastName | titlecase }}, {{ this.group.dependent.firstName | titlecase }}</ion-text
                 >
                 <ion-text class="gh__item__wrapper__data__info"
                   ><b>Fecha de nacimiento:</b> {{ this.group.dependent.birthday | date : 'dd/MM/YYYY' }}</ion-text
@@ -55,7 +55,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
             [reminders]="this.reminders"
             (changeReminders)="changeReminders($event)"
           ></app-reminders>
-          <!-- <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
+          <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
             <ion-fab-button (click)="openFabList($event)">
               <ion-icon name="add"></ion-icon>
             </ion-fab-button>
@@ -73,7 +73,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
                 <ion-text color="light">Documento</ion-text>
               </div>
             </ion-fab-list>
-          </ion-fab> -->
+          </ion-fab>
         </div>
       </ion-content>
     </div>
@@ -103,22 +103,28 @@ export class GroupHomePage implements OnInit {
     const currentUser = this.authService.user();
 
     this.options = [
-      { title: 'Documentos', icon: 'document.svg', action: 'documents' },
+      { title: 'Documentos', icon: 'document-outline', action: 'documents' },
       {
         title: 'Ver miembros',
+        icon: 'people-outline',
         action: 'see-members',
         groupId: this.group?.id,
         memberId: currentUser?.id,
       },
       {
         title: 'Abandonar grupo',
-        icon: 'exit.svg',
+        icon: 'exit-outline',
         color: 'danger',
         action: 'exit-group',
         groupId: this.group?.id,
         memberId: currentUser?.id,
       },
-      { title: 'Salir', color: 'danger', action: 'logout' },
+      { 
+        title: 'Salir', 
+        icon: 'log-out-outline',
+        color: 'danger', 
+        action: 'logout' 
+      },
     ];
     
     // await this.groupsService

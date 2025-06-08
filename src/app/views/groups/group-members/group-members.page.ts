@@ -18,7 +18,10 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
     <ion-content class="gh">
       <ion-list>
         <ion-item *ngFor="let member of members">
-          <ion-label>{{ member.firstName }} {{ member.lastName }}</ion-label>
+          <ion-label>
+            {{ member.firstName }} {{ member.lastName }}
+            <span *ngIf="isAdmin(member.id)" style="font-size: 12px; color: var(--ion-color-medium)"> (Admin)</span>
+          </ion-label>
           <ion-button color="danger" *ngIf="member.id != loggedUserId" (click)="deleteMember(member.id)">
             Eliminar
           </ion-button>
@@ -37,6 +40,7 @@ export class GroupMembersPage implements OnInit {
   groupId: string;
   members: any;
   loggedUserId: any;
+  adminId: string;
 
   constructor(
     private groupsService: GroupsService,
@@ -60,7 +64,22 @@ export class GroupMembersPage implements OnInit {
   }
   async getMembers() {
     await this.showLoading();
-    this.members = (await this.groupsService.getFamilyGroupById(this.groupId)).members;
+    const group = await this.groupsService.getFamilyGroupById(this.groupId);
+    this.members = group.members;
+    this.adminId = group.createdBy;
+
+    // Ordenar: admin primero, luego alfabéticamente
+    this.members.sort((a, b) => {
+      const aIsAdmin = a.id === this.adminId;
+      const bIsAdmin = b.id === this.adminId;
+      
+      if (aIsAdmin && !bIsAdmin) return -1;
+      if (!aIsAdmin && bIsAdmin) return 1;
+      
+      // Ambos no-admin: ordenar alfabéticamente
+      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+    });
+
     this.closeLoading();
   }
   async showLoading() {
@@ -104,5 +123,9 @@ export class GroupMembersPage implements OnInit {
     this.navController.navigateForward([`/groups/add-members`], {
       queryParams: { groupId: this.groupId },
     });
+  }
+
+  isAdmin(memberId: string): boolean {
+    return this.adminId === memberId;
   }
 }

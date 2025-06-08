@@ -11,12 +11,28 @@ import { GroupsService } from 'src/app/views/groups/shared/services/groups/group
       </ion-toolbar>
     </ion-header>
     <ion-content class="ion-padding">
-      <div *ngFor="let option of this.options">
-        <ion-icon color="primary" [src]="'/assets/images/reminders/' + option.icon"></ion-icon>
-        <ion-label [color]="option.color" (click)="onOptionClick(option)">
-          {{ option.title }}
-        </ion-label>
-      </div>
+      <ion-item
+        class="mi"
+        lines="none"
+        *ngFor="let option of this.options"
+        (click)="onOptionClick(option)"
+      >
+        <div class="mi__wrapper">
+          <div class="mi__wrapper__title">
+            <ion-icon 
+              color="primary" 
+              [src]="getIconPath(option)"
+              *ngIf="getIconPath(option)"
+            ></ion-icon>
+            <ion-icon 
+              color="primary" 
+              [name]="getIonicIcon(option)"
+              *ngIf="!getIconPath(option) && getIonicIcon(option)"
+            ></ion-icon>
+            <ion-title class="ui-font-profile-title">{{ option.title }}</ion-title>
+          </div>
+        </div>
+      </ion-item>
     </ion-content>
   </ion-menu>`,
   styleUrls: ['./menu.component.scss'],
@@ -90,5 +106,21 @@ export class MenuComponent implements OnInit {
       ],
     });
     await alert.present();
+  }
+
+  getIconPath(option: any): string | null {
+    // Si el ícono termina en .svg, es un archivo
+    if (option.icon && option.icon.endsWith('.svg')) {
+      return `/assets/images/reminders/${option.icon}`;
+    }
+    return null;
+  }
+
+  getIonicIcon(option: any): string | null {
+    // Si el ícono NO termina en .svg, es un ícono de Ionic
+    if (option.icon && !option.icon.endsWith('.svg')) {
+      return option.icon;
+    }
+    return null;
   }
 }
