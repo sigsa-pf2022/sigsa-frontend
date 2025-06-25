@@ -1,0 +1,29 @@
+.mi {
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 2px;
+  margin-bottom: 10px;
+  
+  &__wrapper {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 0;
+    width: 100%;
+    
+    &__title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      
+      ion-icon {
+        font-size: 24px;
+      }
+      
+      ion-title {
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+}
