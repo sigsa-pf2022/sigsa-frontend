@@ -62,6 +62,9 @@ export class PickMedComponent implements OnInit, OnDestroy {
   filteredMeds: any[];
   isEditMode = false;
   medEventId: number;
+  dependentId: number;
+  dependentName: string;
+  groupId: string;
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
@@ -73,6 +76,22 @@ export class PickMedComponent implements OnInit, OnDestroy {
   ngOnInit() {}
 
   ionViewWillEnter() {
+    // Capturar parámetros del dependiente si existen
+    this.route.queryParams.subscribe(params => {
+      const rawDependentId = params['dependentId'];
+      this.dependentId = rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
+        ? Number(rawDependentId)
+        : null;
+      this.dependentName = params['dependentName'] || null;
+      this.groupId = params['groupId'] || null;
+      if (this.dependentId) {
+        this.medEventDataService.update({
+          dependentId: this.dependentId,
+          dependentName: this.dependentName,
+          groupId: this.groupId,
+        });
+      }
+    });
     this.getMeds();
     this.setMedIfBack();
     this.setMode();
@@ -112,9 +131,23 @@ export class PickMedComponent implements OnInit, OnDestroy {
   }
 
   nextStep() {
-    this.medEventDataService.update({ med: this.med });
+    // Guardar solo medId (normalizado) y metadatos del dependiente si existen
+    this.medEventDataService.update({ 
+      medId: this.med?.id,
+      med: this.med, // mantener referencia completa si pasos siguientes la usan para mostrar info
+      dependentId: this.dependentId,
+      dependentName: this.dependentName,
+      groupId: this.groupId,
+    });
     const url = this.isEditMode ? `/meds/edit/${this.medEventId}/med` : '/meds/create/med';
-    return this.navController.navigateForward([url]);
+    const navigationExtras = this.dependentId ? {
+      queryParams: {
+        dependentId: this.dependentId,
+        dependentName: this.dependentName,
+        groupId: this.groupId,
+      }
+    } : {};
+    return this.navController.navigateForward([url], navigationExtras);
   }
 
   goToMyProfessionals() {

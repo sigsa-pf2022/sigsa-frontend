@@ -71,7 +71,6 @@ export class ViewAppointmentComponent implements OnInit {
   async getAppointment() {
     try {
       this.appointment = await this.appointmentsService.getAppointment(this.appointmentId);
-      console.log('OK');
     } catch (error) {
       console.log(error);
     }

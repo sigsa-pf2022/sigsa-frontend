@@ -85,6 +85,10 @@ export class CreateMedEventComponent implements OnInit {
   medEventId: number;
   isEditMode = false;
   backUrl: string;
+  dependentId: number;
+  dependentName: string;
+  groupId: string;
+  isSubmitting = false;
   constructor(
     private dateFormatterService: DateFormatterService,
     private fb: FormBuilder,
@@ -100,6 +104,22 @@ export class CreateMedEventComponent implements OnInit {
   ngOnInit() {}
 
   ionViewWillEnter() {
+    // Capturar parámetros del dependiente si existen
+    this.route.queryParams.subscribe(params => {
+      const rawDependentId = params['dependentId'];
+      this.dependentId = rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
+        ? Number(rawDependentId)
+        : null;
+      this.dependentName = params['dependentName'] || null;
+      this.groupId = params['groupId'] || null;
+      if (this.dependentId) {
+        this.medsEventDataService.update({
+          dependentId: this.dependentId,
+          dependentName: this.dependentName,
+          groupId: this.groupId,
+        });
+      }
+    });
     this.setMode();
   }
 
@@ -126,9 +146,12 @@ export class CreateMedEventComponent implements OnInit {
   // this.setProfessionalAndType(this.appointmentDataService.data);
   // }
 
-  dateChanged(date: string) {
-    this.medEventDate = date;
-    this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(date));
+  dateChanged(date: string | string[]) {
+    const value = Array.isArray(date) ? date[0] : date;
+    this.medEventDate = value;
+    this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(value));
+    this.form.get('date').markAsDirty();
+    this.form.get('date').markAsTouched();
   }
 
   confirmDateSelection() {
@@ -147,13 +170,49 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   async createMedEvent() {
-    await this.medsEventService.createMedEvent(this.form.value).then((res: any) => this.successCreation(res.medEvent));
+    if (this.isSubmitting) return;
+    const isoDate = this.medEventDate || this.form.value.date;
+    const medId = this.medsEventDataService.data?.medId || this.med?.id;
+    if (!medId) {
+      this.toastService.showError?.('Medicamento inválido');
+      return;
+    }
+    if (!isoDate) {
+      this.toastService.showError?.('Fecha requerida');
+      return;
+    }
+    const dateObj = new Date(isoDate);
+    if (isNaN(dateObj.getTime())) {
+      this.toastService.showError?.('Fecha inválida');
+      return;
+    }
+    if (dateObj.getTime() < Date.now() - 60000) { // permitir 1 min de tolerancia
+      this.toastService.showError?.('La fecha debe ser futura');
+      return;
+    }
+    this.isSubmitting = true;
+    const payload = { medId, date: isoDate };
+    try {
+      const res: any = this.dependentId
+        ? await this.medsEventService.createMedEventForDependent(this.dependentId, payload)
+        : await this.medsEventService.createMedEvent(payload);
+      this.successCreation(res.medEvent || res);
+    } catch (err) {
+      this.toastService.showError?.('No se pudo crear el recordatorio');
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 
   successCreation(medEvent) {
     this.createNotification(medEvent);
     this.toastService.showSuccess('Recordatorio de medicamento creado correctamente.');
     this.medsEventDataService.clean();
+    if (this.dependentId && this.groupId) {
+      return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
+    } else if (this.dependentId) {
+      return this.navController.navigateBack(['/groups']);
+    }
     return this.navController.navigateForward(['/tabs/meds']);
   }
 

@@ -7,7 +7,12 @@ import { environment } from 'src/environments/environment';
 })
 export class EventsService {
   constructor(private http: HttpClient) {}
+  
   getNextEvents(): Promise<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/events`).toPromise();
+  }
+
+  getNextEventsByDependent(dependentId: number): Promise<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/events/dependent/${dependentId}`).toPromise();
   }
 }

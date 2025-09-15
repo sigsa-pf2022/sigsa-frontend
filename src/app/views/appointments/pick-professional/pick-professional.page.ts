@@ -14,7 +14,10 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/tabs/appointments"></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar' : 'Crear' }} turno</ion-title>
+        <ion-title class="ui-header__title-center">
+          {{ this.isEditMode ? 'Editar' : 'Crear' }} turno
+          <span *ngIf="dependentName" style="font-size: 0.8em; display: block;">para {{ dependentName | titlecase }}</span>
+        </ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="apn">
@@ -64,6 +67,10 @@ export class PickProfessionalPage implements OnInit {
   filteredDoctors: Professional[];
   isEditMode = false;
   appointmentId: number;
+  dependentId: number;
+  dependentName: string;
+  groupId: string;
+  
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
@@ -76,6 +83,25 @@ export class PickProfessionalPage implements OnInit {
   ngOnInit() {}
 
   ionViewWillEnter() {
+    // Capturar parámetros del dependiente si existen
+    this.route.queryParams.subscribe(params => {
+      const rawDependentId = params['dependentId'];
+      this.dependentId = rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
+        ? Number(rawDependentId)
+        : null;
+      this.dependentName = params['dependentName'] || null;
+      this.groupId = params['groupId'] || null;
+
+      // Persistir (sirve para fallback en el siguiente paso)
+      if (this.dependentId) {
+        this.appointmentDataService.update({
+          dependentId: this.dependentId,
+          dependentName: this.dependentName,
+          groupId: this.groupId,
+        });
+      }
+    });
+
     this.getProfessionals();
     this.setMode();
   }
@@ -112,11 +138,27 @@ export class PickProfessionalPage implements OnInit {
   }
 
   nextStep() {
-    this.appointmentDataService.update({ professional: this.doctor, isMyProfessional: false });
+    this.appointmentDataService.update({ 
+      professional: this.doctor, 
+      isMyProfessional: false,
+      dependentId: this.dependentId,
+      dependentName: this.dependentName,
+      groupId: this.groupId
+    });
+    
     const url = this.isEditMode
       ? `/appointments/edit/${this.appointmentId}/appointment`
       : '/appointments/create/appointment';
-    return this.navController.navigateForward([url]);
+    
+    const navigationExtras = this.dependentId ? {
+      queryParams: {
+        dependentId: this.dependentId,
+        dependentName: this.dependentName,
+        groupId: this.groupId
+      }
+    } : {};
+    
+    return this.navController.navigateForward([url], navigationExtras);
   }
 
   goToMyProfessionals() {
@@ -125,6 +167,15 @@ export class PickProfessionalPage implements OnInit {
     const url = this.isEditMode
       ? `/appointments/edit/${this.appointmentId}/my-doctors`
       : '/appointments/create/my-doctors';
-    return this.navController.navigateForward([url]);
+    
+    const navigationExtras = this.dependentId ? {
+      queryParams: {
+        dependentId: this.dependentId,
+        dependentName: this.dependentName,
+        groupId: this.groupId
+      }
+    } : {};
+    
+    return this.navController.navigateForward([url], navigationExtras);
   }
 }

@@ -14,4 +14,8 @@ export class AppointmentDataService {
   update(values) {
     this._data = { ...this._data, ...values };
   }
+
+  clear() {
+    this._data = null;
+  }
 }
