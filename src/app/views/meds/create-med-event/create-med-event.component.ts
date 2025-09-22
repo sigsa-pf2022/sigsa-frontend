@@ -18,7 +18,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
         <ion-buttons slot="start">
           <ion-back-button [defaultHref]="this.backUrl"></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar' : 'Crear' }} recordatorio</ion-title>
+        <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar medicamento' : 'Crear recordatorio' }}</ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ca">
@@ -213,12 +213,12 @@ export class CreateMedEventComponent implements OnInit {
     } else if (this.dependentId) {
       return this.navController.navigateBack(['/groups']);
     }
-    return this.navController.navigateForward(['/tabs/meds']);
+  return this.navController.navigateForward(['/meds']);
   }
 
   successEdition() {
     this.toastService.showSuccess('Recordatorio de medicamento editado correctamente.');
-    return this.navController.navigateForward(['/tabs/meds']);
+  return this.navController.navigateForward(['/meds']);
   }
 
   createNotification(medEvent) {
@@ -241,7 +241,7 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   viewMedEvent(id) {
-    // return this.navController.navigateForward([`/meds/view/${id}`]);
+  return this.navController.navigateForward([`/meds/view/${id}`]);
   }
 
   confirmMedEvent(id) {

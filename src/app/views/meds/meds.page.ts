@@ -67,9 +67,10 @@ export class MedsPage implements OnInit {
   }
 
   async presentActionSheet(medEvent) {
+    const headerText = 'Mi Medicamento';
     const actionSheet = isBefore(parseISO(medEvent.date), new Date())
-      ? await this.actionSheetService.createOnlyView('Mi Turno')
-      : await this.actionSheetService.createDefault('Mi Turno');
+      ? await this.actionSheetService.createOnlyView(headerText)
+      : await this.actionSheetService.createDefault(headerText);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
     this.doActionByRole(role, medEvent.id);
@@ -116,14 +117,14 @@ export class MedsPage implements OnInit {
   }
 
   newMedEvent() {
-    return this.navController.navigateRoot(['/meds/create/pick-med']);
+    return this.navController.navigateForward(['/meds/create/pick-med']);
   }
 
   editMedEvent(id) {
-    return this.navController.navigateRoot([`/meds/edit/${id}/pick-med`]);
+    return this.navController.navigateForward([`/meds/edit/${id}/pick-med`]);
   }
 
   viewMedEvent(id) {
-    return this.navController.navigateRoot([`/meds/view/${id}`]);
+    return this.navController.navigateForward([`/meds/view/${id}`]);
   }
 }

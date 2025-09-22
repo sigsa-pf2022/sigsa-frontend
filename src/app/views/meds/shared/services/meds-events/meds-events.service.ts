@@ -28,6 +28,10 @@ export class MedsEventsService {
     return this.http.get<any[]>(`${environment.apiUrl}/meds-event`).toPromise();
   }
 
+  getMedEvent(id: number) {
+    return this.http.get<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
+  }
+
   getMedsEventsByDependent(dependentId: number) {
     return this.http.get<any[]>(`${environment.apiUrl}/meds-event/dependent/${dependentId}`).toPromise();
   }

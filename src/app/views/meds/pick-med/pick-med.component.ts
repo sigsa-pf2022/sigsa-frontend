@@ -7,7 +7,8 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 
 @Component({
   selector: 'app-pick-med',
-  template: ` <ion-header class="ui-background__light">
+  template: ` 
+  <ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/tabs/meds"></ion-back-button>

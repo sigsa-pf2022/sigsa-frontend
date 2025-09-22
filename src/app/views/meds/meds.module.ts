@@ -11,8 +11,13 @@ import { SharedAppointmentsModule } from '../appointments/shared/shared-appointm
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { PickMedComponent } from './pick-med/pick-med.component';
 import { CreateMedEventComponent } from './create-med-event/create-med-event.component';
+import { ViewMedEventComponent } from './view-med-event/view-med-event.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    component: MedsPage,
+  },
   {
     path: 'create/pick-med',
     component: PickMedComponent,
@@ -21,26 +26,18 @@ const routes: Routes = [
     path: 'create/med',
     component: CreateMedEventComponent,
   },
-  // {
-  //   path: 'create/my-doctors',
-  //   component: DoctorsPage,
-  // },
-  // {
-  // path: 'edit/:id/pick-doctor',
-  // component: PickMedComponent,
-  // },
-  // {
-  //   path: 'edit/:id/appointment',
-  //   component: CreateAppointmentPage,
-  // },
-  // {
-  //   path: 'edit/:id/my-doctors',
-  //   component: DoctorsPage,
-  // },
-  // {
-  //   path: 'view/:id',
-  //   component: ViewAppointmentComponent,
-  // },
+  {
+    path: 'edit/:id/pick-med',
+    component: PickMedComponent,
+  },
+  {
+    path: 'edit/:id/med',
+    component: CreateMedEventComponent,
+  },
+  {
+    path: 'view/:id',
+    component: ViewMedEventComponent,
+  },
 ];
 @NgModule({
   imports: [
@@ -53,6 +50,6 @@ const routes: Routes = [
     SharedAppointmentsModule,
     ScrollingModule,
   ],
-  declarations: [MedsPage, PickMedComponent, CreateMedEventComponent],
+  declarations: [MedsPage, PickMedComponent, CreateMedEventComponent, ViewMedEventComponent],
 })
 export class MedsPageModule {}
