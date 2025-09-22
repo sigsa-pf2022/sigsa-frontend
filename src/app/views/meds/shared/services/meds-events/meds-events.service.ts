@@ -28,8 +28,25 @@ export class MedsEventsService {
     return this.http.get<any[]>(`${environment.apiUrl}/meds-event`).toPromise();
   }
 
+  getMedsEventsByDependent(dependentId: number) {
+    return this.http.get<any[]>(`${environment.apiUrl}/meds-event/dependent/${dependentId}`).toPromise();
+  }
+
   createMedEvent(data) {
-    return this.http.post(`${environment.apiUrl}/meds-event`, data).toPromise();
+    // Normalizar payload: aceptar data.med (objeto) o data.medId (número)
+    let payload = data;
+    if (data && !data.medId && data.med && typeof data.med === 'object' && 'id' in data.med) {
+      payload = { medId: data.med.id, date: data.date };
+    }
+    return this.http.post(`${environment.apiUrl}/meds-event`, payload).toPromise();
+  }
+
+  createMedEventForDependent(dependentId: number, data) {
+    let payload = data;
+    if (data && !data.medId && data.med && typeof data.med === 'object' && 'id' in data.med) {
+      payload = { medId: data.med.id, date: data.date };
+    }
+    return this.http.post(`${environment.apiUrl}/meds-event/dependent/${dependentId}`, payload).toPromise();
   }
 
   getMeds(): Promise<any[]> {

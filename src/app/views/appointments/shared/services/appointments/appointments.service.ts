@@ -28,6 +28,10 @@ export class AppointmentsService {
     return this.http.get<any[]>(`${environment.apiUrl}/appointments`).toPromise();
   }
 
+  getAppointmentsByDependent(dependentId: number) {
+  return this.http.get<any[]>(`${environment.apiUrl}/appointments/dependent/${dependentId}`).toPromise();
+  }
+
   getAppointment(id: number) {
     return this.http.get<any>(`${environment.apiUrl}/appointments/${id}`).toPromise();
   }

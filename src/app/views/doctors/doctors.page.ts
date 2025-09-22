@@ -66,6 +66,10 @@ export class DoctorsPage implements OnInit {
   doctor: Professional;
   appointmentId: number;
   filteredDoctors: Professional[] = [];
+  // Datos de dependiente (si la creación viene desde un grupo / dependiente)
+  dependentId: number;
+  dependentName: string;
+  groupId: string;
   constructor(
     private navController: NavController,
     private fb: FormBuilder,
@@ -84,6 +88,16 @@ export class DoctorsPage implements OnInit {
       this.isAppointmentEdition = true;
       this.appointmentId = Number(this.route.snapshot.url[1].path);
     }
+
+    // Captura de query params para dependiente
+    this.route.queryParams.subscribe(params => {
+      const rawDependentId = params['dependentId'];
+      this.dependentId = rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
+        ? Number(rawDependentId)
+        : null;
+      this.dependentName = params['dependentName'] || null;
+      this.groupId = params['groupId'] || null;
+    });
   }
   newDoctor() {
     return this.navController.navigateForward(['/doctors/new']);
@@ -94,11 +108,25 @@ export class DoctorsPage implements OnInit {
     }
   }
   nextStep() {
-    this.appointmentDataService.update({ professional: this.doctor, isMyProfessional: true });
+    this.appointmentDataService.update({ 
+      professional: this.doctor, 
+      isMyProfessional: true,
+      // Persistir info de dependiente para siguiente paso
+      dependentId: this.dependentId,
+      dependentName: this.dependentName,
+      groupId: this.groupId,
+    });
     const url = this.isAppointmentCreation
       ? '/appointments/create/appointment'
       : `/appointments/edit/${this.appointmentId}/appointment`;
-    return this.navController.navigateForward([url]);
+    const navigationExtras = this.dependentId ? {
+      queryParams: {
+        dependentId: this.dependentId,
+        dependentName: this.dependentName,
+        groupId: this.groupId,
+      }
+    } : {};
+    return this.navController.navigateForward([url], navigationExtras);
   }
   
   async handleChange(event) {

@@ -8,6 +8,9 @@ import { FAKE_MEDICATIONS_REMINDERS_DATA } from '../../home/shared/fakes/fakeMed
 import { FamilyGroup } from '../shared/interfaces/family-group.interface';
 import { GroupsService } from '../shared/services/groups/groups.service';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { EventsService } from '../../home/shared/services/events/events.service';
+import { AppointmentsService } from '../../appointments/shared/services/appointments/appointments.service';
+import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-events.service';
 
 @Component({
   selector: 'app-group-home',
@@ -53,22 +56,23 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           <app-reminders
             height="37vh"
             [reminders]="this.reminders"
-            (changeReminders)="changeReminders($event)"
+            [activeTab]="this.currentReminderType"
+            (tabChanged)="changeReminders($event)"
           ></app-reminders>
           <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
             <ion-fab-button (click)="openFabList($event)">
               <ion-icon name="add"></ion-icon>
             </ion-fab-button>
             <ion-fab-list side="top" class="gh__fab__list" #fabList>
-              <div class="gh__fab__list__button">
+              <div class="gh__fab__list__button" (click)="createMedication()">
                 <img [src]="'/assets/images/reminders/pill.svg'" />
                 <ion-text color="light">Medicamento</ion-text>
               </div>
-              <div class="gh__fab__list__button">
+              <div class="gh__fab__list__button" (click)="createAppointment()">
                 <img [src]="'/assets/images/reminders/doctor.svg'" />
                 <ion-text color="light">Turno</ion-text>
               </div>
-              <div class="gh__fab__list__button">
+              <div class="gh__fab__list__button" (click)="createDocument()">
                 <img [src]="'/assets/images/reminders/document.svg'" />
                 <ion-text color="light">Documento</ion-text>
               </div>
@@ -85,7 +89,8 @@ export class GroupHomePage implements OnInit {
   events = [];
   opened = false;
   group: FamilyGroup;
-  reminders: any;
+  reminders: any = [];
+  currentReminderType: string = REMINDERS_TYPE.appointments;
   options: any;
 
   constructor(
@@ -93,50 +98,57 @@ export class GroupHomePage implements OnInit {
     private route: ActivatedRoute,
     private groupsService: GroupsService,
     private navController: NavController,
-    private authService: AuthenticationService 
+    private authService: AuthenticationService,
+    private eventsService: EventsService,
+    private appointmentsService: AppointmentsService,
+    private medsEventsService: MedsEventsService 
   ) {}
 
   ngOnInit() {}
 
   async ionViewWillEnter() {
-    this.group = await this.groupsService.getFamilyGroupById(this.route.snapshot.paramMap.get('id'));
+    // Reset completo de estado
+    this.group = null;
+    this.events = [];
+    this.reminders = [];
+
+    const groupId = this.route.snapshot.paramMap.get('id');
+    this.group = await this.groupsService.getFamilyGroupById(groupId);
     const currentUser = this.authService.user();
 
     this.options = [
       { title: 'Documentos', icon: 'document-outline', action: 'documents' },
-      {
-        title: 'Ver miembros',
-        icon: 'people-outline',
-        action: 'see-members',
-        groupId: this.group?.id,
-        memberId: currentUser?.id,
-      },
-      {
-        title: 'Abandonar grupo',
-        icon: 'exit-outline',
-        color: 'danger',
-        action: 'exit-group',
-        groupId: this.group?.id,
-        memberId: currentUser?.id,
-      },
-      { 
-        title: 'Salir', 
-        icon: 'log-out-outline',
-        color: 'danger', 
-        action: 'logout' 
-      },
+      { title: 'Ver miembros', icon: 'people-outline', action: 'see-members', groupId: this.group?.id, memberId: currentUser?.id },
+      { title: 'Abandonar grupo', icon: 'exit-outline', color: 'danger', action: 'exit-group', groupId: this.group?.id, memberId: currentUser?.id },
+      { title: 'Salir', icon: 'log-out-outline', color: 'danger', action: 'logout' },
     ];
-    
-    // await this.groupsService
-    //   .getFamilyGroupById(this.route.snapshot.paramMap.get('id'))
-    //   .then(async (res: FamilyGroup) => {
-    //     if (res) {
-    //       res.imgUrl = URL.createObjectURL(
-    //         await this.groupsService.getGroupImage(res.imgUrl)
-    //       );
-    //     }
-    //     this.group = res;
-    //   });
+
+    // Cargar datos secuencialmente para garantizar consistencia
+    await this.loadDependentEvents();
+    await this.loadDependentReminders();
+  }
+
+  async ionViewDidEnter() {
+  // Ya se cargó en ionViewWillEnter; evitar doble carga que puede mostrar datos viejos momentáneamente
+  }
+
+  private async loadDependentEvents() {
+    // Cargar eventos del dependiente
+    if (this.group?.dependent?.id) {
+      try {
+        this.events = await this.eventsService.getNextEventsByDependent(this.group.dependent.id);
+      } catch (error) {
+        console.error('Error cargando eventos del dependiente:', error);
+        this.events = [];
+      }
+    }
+  }
+
+  private async loadDependentReminders() {
+    // Cargar reminders del dependiente según el tipo actual
+    if (this.group?.dependent?.id) {
+      await this.changeReminders(this.currentReminderType);
+    }
   }
 
   openFabList(ev: Event) {
@@ -168,21 +180,80 @@ export class GroupHomePage implements OnInit {
       .play();
   }
 
-  changeReminders(value) {
-    // switch (value) {
-    //   case REMINDERS_TYPE.appointments:
-    //     this.reminders = FAKE_APPOINTMENTS_REMINDERS_DATA;
-    //     break;
-    //   case REMINDERS_TYPE.medications:
-    //     this.reminders = FAKE_MEDICATIONS_REMINDERS_DATA;
-    //     break;
-    //   case REMINDERS_TYPE.documents:
-    //     this.reminders = FAKE_DOCUMENTS_REMINDERS_DATA;
-    //     break;
-    // }
+  async changeReminders(value) {
+    this.currentReminderType = value;
+    if (!this.group?.dependent?.id) {
+      this.reminders = [];
+      return;
+    }
+
+    try {
+      switch (value) {
+        case REMINDERS_TYPE.appointments:
+          console.log(this.group.dependent.id);
+          this.reminders = await this.appointmentsService.getAppointmentsByDependent(this.group.dependent.id);
+          break;
+        case REMINDERS_TYPE.medications:
+          this.reminders = await this.medsEventsService.getMedsEventsByDependent(this.group.dependent.id);
+          break;
+        case REMINDERS_TYPE.documents:
+          // TODO: Implementar cuando tengamos el servicio de documentos
+          this.reminders = [];
+          break;
+        default:
+          this.reminders = [];
+      }
+    } catch (error) {
+      console.error('Error cargando reminders:', error);
+      this.reminders = [];
+    }
   }
 
   exitGroup() {
     this.navController.navigateBack(['/tabs/groups']);
+  }
+
+  createAppointment() {
+    // Cerrar el FAB primero
+    if (this.opened) {
+      this.closeAnimation();
+      this.opened = false;
+    }
+    
+    // Navegar a la creación de turno para el dependiente
+    this.navController.navigateForward(['/appointments/create/pick-doctor'], {
+      queryParams: {
+        dependentId: this.group.dependent.id,
+        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
+        groupId: this.group.id
+      }
+    });
+  }
+
+  createMedication() {
+    // Cerrar el FAB primero
+    if (this.opened) {
+      this.closeAnimation();
+      this.opened = false;
+    }
+    // Navegar al flujo de creación de medicamento para el dependiente
+    this.navController.navigateForward(['/meds/create/pick-med'], {
+      queryParams: {
+        dependentId: this.group.dependent.id,
+        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
+        groupId: this.group.id
+      }
+    });
+  }
+
+  createDocument() {
+    // Cerrar el FAB primero
+    if (this.opened) {
+      this.closeAnimation();
+      this.opened = false;
+    }
+    
+    // TODO: Implementar navegación a creación de documento para dependiente
+    console.log('Crear documento para dependiente:', this.group.dependent);
   }
 }

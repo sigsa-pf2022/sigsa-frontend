@@ -33,14 +33,19 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
   styleUrls: ['./reminders.component.scss'],
 })
 export class RemindersComponent implements OnChanges {
-  @Input() reminders;
+  @Input() reminders: any[] = [];
   @Input() activeTab = REMINDERS_TYPE.medications;
   @Output() tabChanged = new EventEmitter<string>();
   remindersTypes = REMINDERS_TYPE;
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.reminders = changes.reminders.currentValue;
+    if (changes?.reminders && 'currentValue' in changes.reminders) {
+      this.reminders = changes.reminders.currentValue || [];
+    }
+    if (changes?.activeTab && 'currentValue' in changes.activeTab) {
+      this.activeTab = changes.activeTab.currentValue || this.activeTab;
+    }
   }
 
   changeReminders(event) {

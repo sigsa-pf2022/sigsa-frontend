@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { IonDatetime, NavController } from '@ionic/angular';
 import { formatISO } from 'date-fns';
@@ -18,7 +18,12 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         <ion-buttons slot="start">
           <ion-back-button [defaultHref]="this.backUrl"></ion-back-button>
         </ion-buttons>
-        <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar' : 'Crear' }} turno</ion-title>
+        <ion-title class="ui-header__title-center">
+          {{ this.isEditMode ? 'Editar' : 'Crear' }} turno
+          <span *ngIf="dependentName" style="font-size: 0.8em; display: block;"
+            >para {{ dependentName | titlecase }}</span
+          >
+        </ion-title>
       </ion-toolbar>
     </ion-header>
     <ion-content class="ca">
@@ -39,12 +44,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
           <!-- <ion-text class="ui-font-profile-label" -->
           <!-- >Dirección de atención: {{ this.doctor?.streetName }} {{ this.doctor?.streetNumber }}</ion-text -->
           <!-- > -->
-          <ion-input
-            class="ui-form-input"
-            placeholder="Fecha de Atencion"
-            formControlName="date"
-            id="open-modal"
-          >
+          <ion-input class="ui-form-input" placeholder="Fecha de Atencion" formControlName="date" id="open-modal">
           </ion-input>
           <ion-modal trigger="open-modal" class="calendar-modal-time">
             <ng-template>
@@ -84,7 +84,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
 export class CreateAppointmentPage implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
   form = this.fb.group({
-    date: null,
+    date: [null, Validators.required],
     description: '',
   });
   showCalendar = false;
@@ -94,6 +94,10 @@ export class CreateAppointmentPage implements OnInit {
   appointmentId: number;
   isEditMode = false;
   backUrl: string;
+  dependentId: number;
+  dependentName: string;
+  groupId: string;
+
   constructor(
     private dateFormatterService: DateFormatterService,
     private fb: FormBuilder,
@@ -109,6 +113,25 @@ export class CreateAppointmentPage implements OnInit {
   ngOnInit() {}
 
   ionViewWillEnter() {
+    // Capturar parámetros del dependiente si existen
+    this.route.queryParams.subscribe((params) => {
+      // Cast seguro (evita 'undefined' string y asegura number)
+      const rawDependentId = params['dependentId'];
+      this.dependentId =
+        rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
+          ? Number(rawDependentId)
+          : null;
+      this.dependentName = params['dependentName'] || null;
+      this.groupId = params['groupId'] || null;
+
+      // Fallback: si no llegaron por query params, intentar tomar del servicio temporal
+      if (!this.dependentId && this.appointmentDataService.data?.dependentId) {
+        this.dependentId = this.appointmentDataService.data.dependentId;
+        this.dependentName = this.appointmentDataService.data.dependentName;
+        this.groupId = this.appointmentDataService.data.groupId;
+      }
+    });
+
     this.setMode();
   }
 
@@ -126,6 +149,16 @@ export class CreateAppointmentPage implements OnInit {
 
   setProfessionalAndType(data: any) {
     this.doctor = data.professional;
+
+    // Remover controles previos si existen
+    if (this.form.get('myProfessional')) {
+      this.form.removeControl('myProfessional');
+    }
+    if (this.form.get('professional')) {
+      this.form.removeControl('professional');
+    }
+
+    // Agregar el control correcto
     this.form.addControl(data.isMyProfessional ? 'myProfessional' : 'professional', new FormControl(this.doctor));
   }
 
@@ -135,9 +168,10 @@ export class CreateAppointmentPage implements OnInit {
     this.setProfessionalAndType(this.appointmentDataService.data);
   }
 
-  dateChanged(date: string) {
-    this.appointmentDate = date;
-    this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(date));
+  dateChanged(date: string | string[]) {
+    const dateValue = Array.isArray(date) ? date[0] : date;
+    this.appointmentDate = dateValue;
+    this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(dateValue));
   }
 
   confirmDateSelection() {
@@ -145,6 +179,11 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   async onSubmit() {
+    // Asegurar que tenemos una fecha seleccionada antes de enviar
+    if (!this.appointmentDate) {
+      this.toastService.showError?.('Seleccioná una fecha');
+      return;
+    }
     this.form.get('date').setValue(this.appointmentDate);
     return this.isEditMode ? this.editAppointment() : this.createAppointment();
   }
@@ -156,19 +195,73 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   async createAppointment() {
-    await this.appointmentsService
-      .createAppointment(this.form.value)
-      .then((res: any) => this.successCreation(res.appointment));
+    // Construir payload limpio evitando formatos locales y objetos innecesarios
+    const isMyProfessional = !!this.form.get('myProfessional');
+    const professionalControl = isMyProfessional ? this.form.get('myProfessional') : this.form.get('professional');
+    const professionalValue: any = professionalControl?.value;
+
+    const appointmentData: any = {
+      date: this.appointmentDate, // ISO string recibido del ion-datetime
+      description: this.form.get('description').value || '',
+    };
+
+    if (isMyProfessional) {
+      appointmentData.myProfessional = { id: professionalValue?.id };
+    } else {
+      appointmentData.professional = { id: professionalValue?.id };
+    }
+
+    if (!professionalValue?.id) {
+      this.toastService.showError?.('Seleccioná un profesional');
+      return;
+    }
+
+    // Si estamos creando un turno para un dependiente, agregar los datos correspondientes
+    if (this.dependentId) {
+      appointmentData.createdById = this.dependentId; // backend espera id numérico
+      appointmentData.createdByType = 'dependent';
+      // Guardar nuevamente en el servicio para continuidad entre pasos / redirecciones
+      this.appointmentDataService.update({
+        dependentId: this.dependentId,
+        dependentName: this.dependentName,
+        groupId: this.groupId,
+      });
+    }
+
+    // Debug log temporal (remover en producción)
+    // eslint-disable-next-line no-console
+    console.log('[CreateAppointment] Payload enviado', appointmentData);
+    try {
+      const res: any = await this.appointmentsService.createAppointment(appointmentData);
+      this.successCreation(res.appointment);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[CreateAppointment] Error creación', err);
+      this.toastService.showError?.('No se pudo crear el turno');
+    }
   }
 
   successCreation(appointment) {
     this.createNotification(appointment);
     this.toastService.showSuccess('Turno creado correctamente.');
-    return this.navController.navigateForward(['/tabs/appointments']);
+    // Limpiar datos temporales para evitar contaminación en futuras creaciones
+    this.appointmentDataService.clear();
+
+    // Si venimos de un grupo específico, regresar a ese grupo
+    if (this.dependentId && this.groupId) {
+    return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
+    } else if (this.dependentId) {
+        // Si solo tenemos dependentId pero no groupId, ir al listado de grupos
+        return this.navController.navigateBack(['/groups']);
+    } else {
+      // Usuario normal, ir a appointments
+      return this.navController.navigateForward(['/tabs/appointments']);
+    }
   }
 
   successEdition() {
     this.toastService.showSuccess('Turno editado correctamente.');
+    this.appointmentDataService.clear();
     return this.navController.navigateForward(['/tabs/appointments']);
   }
 

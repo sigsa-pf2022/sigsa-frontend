@@ -1,4 +1,5 @@
 interface Dependent {
+  id?: number;
   birthday: Date;
   bloodType: string;
   dni: string;
