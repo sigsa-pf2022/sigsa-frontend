@@ -6,8 +6,9 @@ SwiperCore.use([Autoplay, Navigation]);
   selector: 'app-next-events',
   template: `
     <div class="ne">
-      <ion-label>Proximos eventos</ion-label>
-      <swiper class="ne__swiper" [config]="this.swiperConfig">
+      <ion-label class="ne__title">Proximos eventos</ion-label>
+      <div class="ne__swiper__wrapper">
+      <swiper class="ne__swiper" [config]="swiperConfig">
         <ng-template
           *ngFor="let event of this.events"
           swiperSlide
@@ -23,6 +24,11 @@ SwiperCore.use([Autoplay, Navigation]);
           <app-empty-event-card></app-empty-event-card>
         </ng-template>
       </swiper>
+      <div class="ne__hint" *ngIf="events && events.length > 1">
+        <div class="ne__hint__gradient"></div>
+        <ion-icon name="chevron-forward-outline" class="ne__hint__icon" aria-hidden="true"></ion-icon>
+      </div>
+      </div>
     </div>
   `,
   styleUrls: ['./next-events.component.scss'],
@@ -30,10 +36,12 @@ SwiperCore.use([Autoplay, Navigation]);
 export class NextEventsComponent implements OnInit {
   @Input() events: NextEvent[];
   swiperConfig: SwiperOptions = {
-    spaceBetween: -40,
-    height: 120,
+    slidesPerView: 1,
+    spaceBetween: 0,
     centeredSlides: false,
-    autoplay: true,
+    autoplay: { delay: 5000, disableOnInteraction: false },
+    speed: 500,
+    resistanceRatio: 0.85,
   };
   constructor() {}
 

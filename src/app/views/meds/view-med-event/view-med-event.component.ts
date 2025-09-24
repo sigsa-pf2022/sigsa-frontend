@@ -44,6 +44,8 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 export class ViewMedEventComponent implements OnInit {
   medEventId: number;
   medEvent: any;
+  loading = false;
+  notFound = false;
   constructor(
     private route: ActivatedRoute,
     private medsEventsService: MedsEventsService,
@@ -54,18 +56,34 @@ export class ViewMedEventComponent implements OnInit {
 
   ionViewWillEnter() {
     this.medEventId = Number(this.route.snapshot.paramMap.get('id'));
-    this.load();
+    const dependentIdParam = this.route.snapshot.queryParamMap.get('dependentId');
+    const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
+    this.load(dependentId);
   }
 
-  async load() {
+  async load(dependentId?: number) {
+    this.loading = true;
+    this.notFound = false;
+    await this.fallbackLoad(dependentId);
+    this.notFound = !this.medEvent;
+    this.loading = false;
+    if (this.notFound) {
+      // Navegar atrás solo si realmente no hay nada
+      this.navController.navigateBack(['/meds']);
+    }
+  }
+
+  private async fallbackLoad(dependentId?: number) {
     try {
-      const list = await this.medsEventsService.getMedsEventsByUser();
-      this.medEvent = list?.find((m) => m.id === this.medEventId);
-      if (!this.medEvent) {
-  this.navController.navigateBack(['/meds']);
+      let list = [];
+      if (dependentId) {
+        list = await this.medsEventsService.getMedsEventsByDependent(dependentId);
+      } else {
+        list = await this.medsEventsService.getMedsEventsByUser();
       }
-    } catch (e) {
-  this.navController.navigateBack(['/meds']);
+      this.medEvent = list?.find((m) => m.id === this.medEventId);
+    } catch {
+      this.medEvent = null;
     }
   }
 }

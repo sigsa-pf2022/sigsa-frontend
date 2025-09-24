@@ -1,6 +1,9 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AnimationController, NavController } from '@ionic/angular';
+import { AnimationController, NavController, ModalController } from '@ionic/angular';
+import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
+import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
+import { parseISO, isAfter, isBefore } from 'date-fns';
 import { REMINDERS_TYPE } from '../../home/shared/constants/remindersType';
 import { FAKE_APPOINTMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeAppointmentsReminderData';
 import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeDocumentsReminderData';
@@ -58,6 +61,7 @@ import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-e
             [reminders]="this.reminders"
             [activeTab]="this.currentReminderType"
             (tabChanged)="changeReminders($event)"
+            (itemClicked)="onReminderItemClicked($event)"
           ></app-reminders>
           <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
             <ion-fab-button (click)="openFabList($event)">
@@ -101,7 +105,9 @@ export class GroupHomePage implements OnInit {
     private authService: AuthenticationService,
     private eventsService: EventsService,
     private appointmentsService: AppointmentsService,
-    private medsEventsService: MedsEventsService 
+    private medsEventsService: MedsEventsService,
+    private actionSheetService: ActionSheetService,
+    private modalController: ModalController
   ) {}
 
   ngOnInit() {}
@@ -190,7 +196,6 @@ export class GroupHomePage implements OnInit {
     try {
       switch (value) {
         case REMINDERS_TYPE.appointments:
-          console.log(this.group.dependent.id);
           this.reminders = await this.appointmentsService.getAppointmentsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.medications:
@@ -207,6 +212,123 @@ export class GroupHomePage implements OnInit {
       console.error('Error cargando reminders:', error);
       this.reminders = [];
     }
+  }
+
+  async onReminderItemClicked(event: { item: any; type: string }) {
+    if (!event?.item) return;
+    if (event.type === REMINDERS_TYPE.appointments) {
+      await this.presentAppointmentActionSheet(event.item);
+    } else if (event.type === REMINDERS_TYPE.medications) {
+      await this.presentMedEventActionSheet(event.item);
+    }
+  }
+
+  private async presentAppointmentActionSheet(appointment: any) {
+    const actionSheet = await this.createAppointmentActionSheet(appointment);
+    await actionSheet.present();
+    const { role } = await actionSheet.onDidDismiss();
+    this.doAppointmentActionByRole(role, appointment.id);
+  }
+
+  private async createAppointmentActionSheet(appointment: any) {
+    if (appointment.status === 'confirmed' && isAfter(parseISO(appointment.date), new Date())) {
+      return await this.actionSheetService.createOnlyView('Mi Turno');
+    }
+    return await this.actionSheetService.createDefault('Mi Turno');
+  }
+
+  private doAppointmentActionByRole(value: string, id: number) {
+    switch (value) {
+      case 'destructive':
+        this.cancelAppointment(id);
+        break;
+      case 'edit':
+        this.editAppointment(id);
+        break;
+      case 'view':
+        this.viewAppointment(id);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private async cancelAppointment(id: number) {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: { text: '¿Desea cancelar el turno?' },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      // TODO: Integrar con appointmentsService.cancelAppointment(id) si es necesario en contexto de grupo
+    }
+  }
+
+  private editAppointment(id: number) {
+    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`]);
+  }
+
+  private viewAppointment(id: number) {
+    return this.navController.navigateForward([`/appointments/view/${id}`]);
+  }
+
+  private async presentMedEventActionSheet(medEvent: any) {
+    const actionSheet = await this.createMedEventActionSheet(medEvent);
+    await actionSheet.present();
+    const { role } = await actionSheet.onDidDismiss();
+    this.doMedEventActionByRole(role, medEvent.id);
+  }
+
+  private async createMedEventActionSheet(medEvent: any) {
+    if (medEvent.status === 'confirmed' && isBefore(parseISO(medEvent.date), new Date())) {
+      return await this.actionSheetService.createOnlyView('Mi Medicamento');
+    }
+    return await this.actionSheetService.createDefault('Mi Medicamento');
+  }
+
+  private doMedEventActionByRole(value: string, id: number) {
+    switch (value) {
+      case 'destructive':
+        this.cancelMedEvent(id);
+        break;
+      case 'edit':
+        this.editMedEvent(id);
+        break;
+      case 'view':
+        this.viewMedEvent(id);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private async cancelMedEvent(id: number) {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: { text: '¿Desea cancelar el recordatorio de medicamento?' },
+    });
+    await modal.present();
+    await modal.onWillDismiss();
+    // TODO: Integrar con medsEventsService.cancelMedEvent(id) si existe en contexto de grupo
+  }
+
+  private editMedEvent(id: number) {
+    return this.navController.navigateForward([`/meds/edit/${id}/pick-med`], {
+      queryParams: {
+        dependentId: this.group?.dependent?.id,
+        dependentName: `${this.group?.dependent?.firstName} ${this.group?.dependent?.lastName}`,
+        groupId: this.group?.id
+      }
+    });
+  }
+
+  private viewMedEvent(id: number) {
+    return this.navController.navigateForward([`/meds/view/${id}`], {
+      queryParams: { dependentId: this.group?.dependent?.id }
+    });
   }
 
   exitGroup() {

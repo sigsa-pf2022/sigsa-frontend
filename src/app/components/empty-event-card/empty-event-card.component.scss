@@ -1,20 +1,45 @@
+// Estilo alineado al nuevo diseño glass de event-card
 :host {
+  --empty-bg: rgba(255,255,255,0.60);
+  --empty-border: 1px solid rgba(255,255,255,0.45);
+  --empty-radius: 18px;
+  --empty-shadow: 0 4px 12px -2px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.04);
+  --empty-title-color: #5f6368;
+
   .eec {
     display: flex;
-    border-radius: 10px;
-    padding: 12px;
-    font-family: var(--ui-font-roboto);
+    flex: 1;
+    width: 100%;
     height: 120px;
-    background-color: white;
-    border: 1px solid rgb(195, 194, 194);
+    background: var(--empty-bg);
+    border: var(--empty-border);
+    border-radius: var(--empty-radius);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    box-shadow: var(--empty-shadow);
+    font-family: var(--ui-font-roboto, 'Roboto', sans-serif);
+    padding: 10px 14px;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+
     &__description {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
       &__title {
-        font-weight: 700;
-        font-size: 18px;
+        font-weight: 600;
+        font-size: 15px;
+        color: var(--empty-title-color);
+        letter-spacing: .3px;
       }
     }
+  }
+
+  @media (max-width: 480px) {
+    .eec { height: 110px; &__description__title { font-size: 14px; } }
   }
 }

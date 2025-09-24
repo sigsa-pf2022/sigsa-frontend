@@ -76,7 +76,6 @@ export class GroupsPage implements OnInit, OnDestroy {
         await this.showLoading();
       }
       this.groups = await this.groupsService.getFamilyGroupsByUser();
-      console.log(this.groups)
     } catch (error) {
       console.error('GroupsPage: error loading groups', error);
     } finally {

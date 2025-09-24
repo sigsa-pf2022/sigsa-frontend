@@ -120,6 +120,12 @@ export class CreateMedEventComponent implements OnInit {
         });
       }
     });
+    // Fallback por si la navegación perdió los query params
+    if (!this.dependentId && this.medsEventDataService.data?.dependentId) {
+      this.dependentId = this.medsEventDataService.data.dependentId;
+      this.dependentName = this.medsEventDataService.data.dependentName;
+      this.groupId = this.medsEventDataService.data.groupId;
+    }
     this.setMode();
   }
 
@@ -127,8 +133,8 @@ export class CreateMedEventComponent implements OnInit {
     this.medEventId = Number(this.route.snapshot.paramMap.get('id'));
     if (this.medEventId) {
       this.isEditMode = true;
-      // this.setAppointmentInfo();
       this.backUrl = `/meds/edit/${this.medEventId}/pick-med`;
+      this.loadMedEvent();
     } else {
       this.setMed(this.medsEventDataService.data);
       this.backUrl = `/meds/create/pick-med`;
@@ -164,9 +170,36 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   async editMedEvent() {
-    // await this.appointmentsService
-    //   .editAppointment(this.appointmentId, this.form.value)
-    //   .then(() => this.successEdition());
+    if (this.isSubmitting) return;
+    const isoDate = this.medEventDate || this.form.value.date;
+    if (!isoDate) {
+      this.toastService.showError?.('Fecha requerida');
+      return;
+    }
+    const dateObj = new Date(isoDate);
+    if (isNaN(dateObj.getTime())) {
+      this.toastService.showError?.('Fecha inválida');
+      return;
+    }
+    if (dateObj.getTime() < Date.now() - 60000) {
+      this.toastService.showError?.('La fecha debe ser futura');
+      return;
+    }
+    this.isSubmitting = true;
+    try {
+      const payload: any = { date: isoDate };
+      // Permitir cambio de medicamento si se llegó desde pick-med y se cambió
+      const medId = this.medsEventDataService.data?.medId;
+      if (medId && medId !== this.med?.id) {
+        payload.medId = medId;
+      }
+      await this.medsEventService.editMedEvent(this.medEventId, payload);
+      this.successEdition();
+    } catch (err) {
+      this.toastService.showError?.('No se pudo editar el recordatorio');
+    } finally {
+      this.isSubmitting = false;
+    }
   }
 
   async createMedEvent() {
@@ -207,18 +240,27 @@ export class CreateMedEventComponent implements OnInit {
   successCreation(medEvent) {
     this.createNotification(medEvent);
     this.toastService.showSuccess('Recordatorio de medicamento creado correctamente.');
+    const depId = this.dependentId || this.medsEventDataService.data?.dependentId;
+    const grpId = this.groupId || this.medsEventDataService.data?.groupId;
     this.medsEventDataService.clean();
-    if (this.dependentId && this.groupId) {
-      return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
-    } else if (this.dependentId) {
-      return this.navController.navigateBack(['/groups']);
+    if (depId && grpId) {
+      return this.navController.navigateRoot(`/groups/home/${grpId}`);
+    } else if (depId) {
+      return this.navController.navigateBack('/groups');
     }
-  return this.navController.navigateForward(['/meds']);
+    return this.navController.navigateForward('/tabs/meds');
   }
 
   successEdition() {
     this.toastService.showSuccess('Recordatorio de medicamento editado correctamente.');
-  return this.navController.navigateForward(['/meds']);
+    const depId = this.dependentId || this.medsEventDataService.data?.dependentId;
+    const grpId = this.groupId || this.medsEventDataService.data?.groupId;
+    if (depId && grpId) {
+      return this.navController.navigateRoot(`/groups/home/${grpId}`);
+    } else if (depId) {
+      return this.navController.navigateBack('/groups');
+    }
+    return this.navController.navigateForward('/tabs/meds');
   }
 
   createNotification(medEvent) {
@@ -241,7 +283,28 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   viewMedEvent(id) {
-  return this.navController.navigateForward([`/meds/view/${id}`]);
+  return this.navController.navigateForward(`/meds/view/${id}`);
+  }
+
+  private async loadMedEvent() {
+    try {
+      const medEvent = await this.medsEventService.getMedEvent(this.medEventId);
+      if (!medEvent) {
+        this.toastService.showError?.('Recordatorio no encontrado');
+        return;
+      }
+      this.med = medEvent.med;
+      if (!this.form.get('med')) {
+        this.form.addControl('med', new FormControl(this.med));
+      } else {
+        this.form.get('med').setValue(this.med);
+      }
+      this.medsEventDataService.update({ med: this.med, medId: this.med?.id });
+      this.medEventDate = medEvent.date;
+      this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(medEvent.date));
+    } catch (err) {
+      this.toastService.showError?.('No se pudo cargar el recordatorio');
+    }
   }
 
   confirmMedEvent(id) {

@@ -147,14 +147,14 @@ export class PickMedComponent implements OnInit, OnDestroy {
         dependentName: this.dependentName,
         groupId: this.groupId,
       }
-    } : {};
-    return this.navController.navigateForward([url], navigationExtras);
+    } : undefined;
+    return this.navController.navigateForward(url, navigationExtras);
   }
 
   goToMyProfessionals() {
     this.searchForm.reset();
     const url = this.isEditMode ? `/meds/edit/${this.medEventId}/my-meds` : '/meds/create/my-meds';
-    return this.navController.navigateForward([url]);
+    return this.navController.navigateForward(url);
   }
 
   ngOnDestroy(){

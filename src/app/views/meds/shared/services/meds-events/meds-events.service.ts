@@ -28,10 +28,6 @@ export class MedsEventsService {
     return this.http.get<any[]>(`${environment.apiUrl}/meds-event`).toPromise();
   }
 
-  getMedEvent(id: number) {
-    return this.http.get<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
-  }
-
   getMedsEventsByDependent(dependentId: number) {
     return this.http.get<any[]>(`${environment.apiUrl}/meds-event/dependent/${dependentId}`).toPromise();
   }
@@ -55,5 +51,18 @@ export class MedsEventsService {
 
   getMeds(): Promise<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/meds/all`).toPromise();
+  }
+  // Nota: El backend actual no expone GET /meds-event/:id; se obtiene por listado y filtrado.
+  // Si se habilita PUT /meds-event/:id para edición, se puede reintroducir editMedEvent aquí.
+  getMedEvent(id: number) {
+    return this.http.get<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
+  }
+
+  editMedEvent(id: number, data: { medId?: number; date?: string }) {
+    let payload: any = data;
+    if (data && !data.medId && (data as any).med && typeof (data as any).med === 'object' && 'id' in (data as any).med) {
+      payload = { medId: (data as any).med.id, date: (data as any).date };
+    }
+    return this.http.put<any>(`${environment.apiUrl}/meds-event/${id}`, payload).toPromise();
   }
 }

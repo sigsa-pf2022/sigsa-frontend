@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersType';
 
 @Component({
@@ -21,12 +21,14 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
       <app-meds-event-item-list
         *cdkVirtualFor="let medEvent of this.reminders"
         [medEvent]="medEvent"
+        (click)="onItemClick(medEvent)"
       ></app-meds-event-item-list>
     </cdk-virtual-scroll-viewport>
     <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.appointments" itemSize="3">
       <app-appointments-item-list
         *cdkVirtualFor="let appointment of this.reminders"
         [appointment]="appointment"
+        (click)="onItemClick(appointment)"
       ></app-appointments-item-list>
     </cdk-virtual-scroll-viewport>
   `,
@@ -36,6 +38,7 @@ export class RemindersComponent implements OnChanges {
   @Input() reminders: any[] = [];
   @Input() activeTab = REMINDERS_TYPE.medications;
   @Output() tabChanged = new EventEmitter<string>();
+  @Output() itemClicked = new EventEmitter<{ item: any; type: string }>();
   remindersTypes = REMINDERS_TYPE;
   constructor() {}
 
@@ -51,5 +54,9 @@ export class RemindersComponent implements OnChanges {
   changeReminders(event) {
     this.activeTab = event.detail.value;
     this.tabChanged.emit(event.detail.value);
+  }
+
+  onItemClick(item: any) {
+    this.itemClicked.emit({ item, type: this.activeTab });
   }
 }
