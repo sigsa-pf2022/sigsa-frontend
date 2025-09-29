@@ -10,7 +10,7 @@ import { AppointmentsService } from './shared/services/appointments/appointments
 @Component({
   selector: 'app-appointments',
   template: `<ion-content class="apts">
-    <ion-label class="apts__title"> Mis Turnos </ion-label>
+    <ion-label class="view-title">Mis turnos</ion-label>
     <ng-container *ngIf="this.appointments.length > 0">
       <form [formGroup]="this.searchForm" class="apts__search">
         <ion-searchbar

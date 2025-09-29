@@ -25,7 +25,7 @@ import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-e
           <ion-buttons slot="start">
             <ion-menu-button></ion-menu-button>
           </ion-buttons>
-          <ion-title *ngIf="this.group" class="ui-header__title-center">{{ this.group.name }}</ion-title>
+          <ion-title *ngIf="this.group" class="ui-header__title-center">{{ this.group.name | titlecase }}</ion-title>
           <ion-buttons slot="end">
             <ion-icon (click)="exitGroup()" name="log-out-outline"></ion-icon>
           </ion-buttons>

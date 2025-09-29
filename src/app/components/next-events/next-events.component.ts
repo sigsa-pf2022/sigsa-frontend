@@ -6,28 +6,22 @@ SwiperCore.use([Autoplay, Navigation]);
   selector: 'app-next-events',
   template: `
     <div class="ne">
-      <ion-label class="ne__title">Proximos eventos</ion-label>
-      <div class="ne__swiper__wrapper">
-      <swiper class="ne__swiper" [config]="swiperConfig">
-        <ng-template
-          *ngFor="let event of this.events"
-          swiperSlide
-          class="ne__swiper__slide"
-        >
-          <app-event-card [event]="event"></app-event-card>
-        </ng-template>
-        <ng-template
-          *ngIf="this.events.length === 0"
-          swiperSlide
-          class="ne__swiper__slide"
-        >
-          <app-empty-event-card></app-empty-event-card>
-        </ng-template>
-      </swiper>
-      <div class="ne__hint" *ngIf="events && events.length > 1">
-        <div class="ne__hint__gradient"></div>
-        <ion-icon name="chevron-forward-outline" class="ne__hint__icon" aria-hidden="true"></ion-icon>
+      <div style="padding: 14px 14px 0px 14px;">
+        <ion-label class="view-title view-title--small">Próximos eventos</ion-label>
       </div>
+      <div class="ne__swiper__wrapper">
+        <swiper class="ne__swiper" [config]="swiperConfig">
+          <ng-template *ngFor="let event of this.events" swiperSlide class="ne__swiper__slide">
+            <app-event-card [event]="event"></app-event-card>
+          </ng-template>
+          <ng-template *ngIf="this.events.length === 0" swiperSlide class="ne__swiper__slide">
+            <app-empty-event-card></app-empty-event-card>
+          </ng-template>
+        </swiper>
+        <div class="ne__hint" *ngIf="events && events.length > 1">
+          <div class="ne__hint__gradient"></div>
+          <ion-icon name="chevron-forward-outline" class="ne__hint__icon" aria-hidden="true"></ion-icon>
+        </div>
       </div>
     </div>
   `,

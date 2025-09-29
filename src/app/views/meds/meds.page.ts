@@ -11,7 +11,7 @@ import { MedsEventsService } from './shared/services/meds-events/meds-events.ser
   selector: 'app-meds',
   template: `
     <ion-content class="meds">
-      <ion-label class="meds__title"> Mis recordatorios de medicamentos </ion-label>
+  <ion-label class="view-title">Mis recordatorios</ion-label>
       <form [formGroup]="this.searchForm" class="meds__search">
         <ion-searchbar
           formControlName="search"
