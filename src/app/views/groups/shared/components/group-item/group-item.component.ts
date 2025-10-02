@@ -9,7 +9,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
           <ion-icon color="light" name="people"></ion-icon>
         </ion-avatar>
         <div class="gi__wrap__description">
-          <ion-label class="gi__wrap__description__title titulo">{{ this.group.name }}</ion-label>
+          <ion-label class="gi__wrap__description__title titulo">{{ this.group.name | titlecase}}</ion-label>
           <ion-label class="gi__wrap__description__subtitle subtitulo"
             >{{ this.group.members.length + ' miembro/s' }}
           </ion-label>

@@ -1,18 +1,23 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
 import { IonicModule } from '@ionic/angular';
-
 import { MedsPage } from './meds.page';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
-import { SharedAppointmentsModule } from '../appointments/shared/shared-appointments.module';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { PickMedComponent } from './pick-med/pick-med.component';
 import { CreateMedEventComponent } from './create-med-event/create-med-event.component';
+import { ViewMedEventComponent } from './view-med-event/view-med-event.component';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
+import { SharedMedsEventsModule } from './shared/services/shared-meds-events.module';
 
 const routes: Routes = [
+  {
+    path: '',
+    component: MedsPage,
+  },
   {
     path: 'create/pick-med',
     component: PickMedComponent,
@@ -21,26 +26,18 @@ const routes: Routes = [
     path: 'create/med',
     component: CreateMedEventComponent,
   },
-  // {
-  //   path: 'create/my-doctors',
-  //   component: DoctorsPage,
-  // },
-  // {
-  // path: 'edit/:id/pick-doctor',
-  // component: PickMedComponent,
-  // },
-  // {
-  //   path: 'edit/:id/appointment',
-  //   component: CreateAppointmentPage,
-  // },
-  // {
-  //   path: 'edit/:id/my-doctors',
-  //   component: DoctorsPage,
-  // },
-  // {
-  //   path: 'view/:id',
-  //   component: ViewAppointmentComponent,
-  // },
+  {
+    path: 'edit/:id/pick-med',
+    component: PickMedComponent,
+  },
+  {
+    path: 'edit/:id/med',
+    component: CreateMedEventComponent,
+  },
+  {
+    path: 'view/:id',
+    component: ViewMedEventComponent,
+  },
 ];
 @NgModule({
   imports: [
@@ -50,9 +47,11 @@ const routes: Routes = [
     ReactiveFormsModule,
     IonicModule,
     SharedComponentsModule,
-    SharedAppointmentsModule,
+    SharedMedsEventsModule,
     ScrollingModule,
   ],
-  declarations: [MedsPage, PickMedComponent, CreateMedEventComponent],
+  declarations: [MedsPage, PickMedComponent, CreateMedEventComponent, ViewMedEventComponent],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }],
+  
 })
 export class MedsPageModule {}

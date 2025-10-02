@@ -4,7 +4,7 @@ import { Component, OnInit } from '@angular/core';
   selector: 'app-empty-event-card',
   template: ` <div class="eec">
     <div class="eec__description">
-      <ion-label class="eec__description__title">No hay proximos eventos</ion-label>
+      <ion-label class="eec__description__title">No hay próximos eventos</ion-label>
     </div>
   </div>`,
   styleUrls: ['./empty-event-card.component.scss'],

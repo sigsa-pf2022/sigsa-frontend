@@ -1,3 +1,32 @@
-.clickable{
-    cursor: pointer;
+.clickable{ cursor: pointer; }
+
+// Título de vistas unificado
+// Uso: <ion-label class="view-title">Texto</ion-label>
+// Variantes: .view-title--center, .view-title--small
+.view-title {
+    display: block;
+    font-family: var(--ui-font-roboto, 'Roboto', sans-serif);
+    font-size: 22px;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: .4px;
+    color: #1f2933;
+    margin: 6px 0 20px;
+    position: relative;
+    padding: 0; /* sin padding horizontal */
+    /* Subrayado fino y largo sutil */
+    &:after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 140px;
+        max-width: 55%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--ion-color-primary) 0%, transparent 100%);
+        opacity: .55;
+    }
 }
+
+.view-title--center { text-align: center; &:after { left: 50%; transform: translateX(-50%); } }
+/* Eliminada variante small para consistencia */

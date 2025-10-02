@@ -10,7 +10,7 @@ import { Subscription } from 'rxjs';
   template: `
     <ion-content class="g">
       <div class="g__content">
-        <ion-label class="g__content__title"> Mis Grupos</ion-label>
+  <ion-label class="view-title">Mis grupos</ion-label>
         <ng-container *ngIf="this.groups.length > 0">
           <app-group-item
             *ngFor="let group of this.groups"
@@ -76,7 +76,6 @@ export class GroupsPage implements OnInit, OnDestroy {
         await this.showLoading();
       }
       this.groups = await this.groupsService.getFamilyGroupsByUser();
-      console.log(this.groups)
     } catch (error) {
       console.error('GroupsPage: error loading groups', error);
     } finally {

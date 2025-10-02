@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { isBefore } from 'date-fns';
 import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
@@ -6,7 +6,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 @Component({
   selector: 'app-meds-event-item-list',
   template: `
-    <ion-item class="il" [ngClass]="{ 'il-due': dueDate }" lines="full">
+  <ion-item class="il" [ngClass]="{ 'il-due': dueDate, 'il--flush': flush }" lines="none">
       <div class="il__img">
         <ion-img [src]="'assets/images/reminders/pill.svg'"></ion-img>
       </div>
@@ -21,8 +21,9 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
   `,
   styleUrls: ['./meds-event-item-list.component.scss'],
 })
-export class MedsEventsItemListComponent implements OnInit {
+export class MedsEventsItemListComponent implements OnInit, OnChanges {
   @Input() medEvent;
+  @Input() flush: boolean = false; // Quita margen horizontal cuando true
   title: string;
   subtitle: string;
   dueDate: boolean;
@@ -32,11 +33,45 @@ export class MedsEventsItemListComponent implements OnInit {
     this.setMedEventData();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['medEvent']) {
+      this.setMedEventData();
+    }
+  }
+
   setMedEventData() {
-    this.title = `${this.medEvent.med.name} ${this.medEvent.med.dosage}`;
-    this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.medEvent.date);
+    if (!this.medEvent) {
+      this.title = 'Medicamento';
+      this.subtitle = '';
+      this.status = null;
+      this.dueDate = false;
+      return;
+    }
+
+    const med = this.medEvent.med || {};
+    const rawName = med.name;
+    const name = typeof rawName === 'string' ? rawName.trim() : rawName != null ? String(rawName) : '';
+    const rawDosage = med.dosage;
+    const dosageStr = rawDosage == null ? '' : typeof rawDosage === 'string' ? rawDosage.trim() : String(rawDosage);
+    this.title = `${name}${dosageStr ? ' ' + dosageStr : ''}`.trim() || 'Medicamento';
+
+    // Fecha segura
+    let formattedDate = '';
+    try {
+      if (this.medEvent.date) {
+        formattedDate = this.dateFormatterService.getSpanishFormattedDate(this.medEvent.date);
+      }
+    } catch {
+      formattedDate = '';
+    }
+    this.subtitle = formattedDate;
+
     this.status = EVENT_STATUS.find((es) => es.value === this.medEvent.status);
-    this.dueDate =
-      this.status.value === EventStatusEnum.CONFIRMADO && isBefore(new Date(this.medEvent.date), new Date());
+    if (this.status && this.status.value === EventStatusEnum.CONFIRMADO && this.medEvent.date) {
+      const date = new Date(this.medEvent.date);
+      this.dueDate = !isNaN(date.getTime()) && isBefore(date, new Date());
+    } else {
+      this.dueDate = false;
+    }
   }
 }

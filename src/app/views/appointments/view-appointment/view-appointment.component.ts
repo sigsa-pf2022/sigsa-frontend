@@ -35,7 +35,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
           <ion-text class="va__data__item__label">Fecha:</ion-text>
           <ion-text class="va__data__item__value">{{ this.appointment?.date | date : 'dd/MM/YYYY HH:mm' }}</ion-text>
         </div>
-        <div class="va__data__item">
+        <div class="va__data__item" *ngIf="this.appointment?.description">
           <ion-text class="va__data__item__label">Descripcion:</ion-text>
           <ion-text class="va__data__item__value">{{ this.appointment?.description }}</ion-text>
         </div>

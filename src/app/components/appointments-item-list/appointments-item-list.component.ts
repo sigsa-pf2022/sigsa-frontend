@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { isBefore } from 'date-fns';
 import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
@@ -6,7 +6,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 @Component({
   selector: 'app-appointments-item-list',
   template: `
-    <ion-item class="ail" [ngClass]="{ 'ail-due': dueDate }" lines="full">
+  <ion-item class="ail" [ngClass]="{ 'ail-due': dueDate, 'ail--flush': flush }" lines="none">
       <div class="ail__img">
         <ion-img [src]="'assets/images/reminders/doctor.svg'"></ion-img>
       </div>
@@ -21,8 +21,9 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
   `,
   styleUrls: ['./appointments-item-list.component.scss'],
 })
-export class AppointmentsItemListComponent implements OnInit {
+export class AppointmentsItemListComponent implements OnInit, OnChanges {
   @Input() appointment;
+  @Input() flush: boolean = false; // Quita margen horizontal cuando true
   title: string;
   subtitle: string;
   dueDate: boolean;
@@ -32,11 +33,39 @@ export class AppointmentsItemListComponent implements OnInit {
     this.setProfessionalData();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['appointment']) {
+      this.setProfessionalData();
+    }
+  }
+
   setProfessionalData() {
-    this.title = `Dr/a ${this.appointment.professional.firstName} ${this.appointment.professional.lastName}`;
-    this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.appointment.date);
+    if (!this.appointment) {
+      this.title = 'Turno';
+      this.subtitle = '';
+      this.status = null;
+      this.dueDate = false;
+      return;
+    }
+
+    const professional = this.appointment.professional;
+    const firstName = professional?.firstName?.trim();
+    const lastName = professional?.lastName?.trim();
+    const hasProfessionalNames = Boolean(firstName || lastName);
+    this.title = hasProfessionalNames ? `Dr/a ${firstName || ''} ${lastName || ''}`.trim() : 'Turno sin profesional';
+
+    try {
+      this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.appointment.date);
+    } catch {
+      this.subtitle = '';
+    }
+
     this.status = EVENT_STATUS.find((es) => es.value === this.appointment.status);
-    this.dueDate =
-      this.status.value === EventStatusEnum.CONFIRMADO && isBefore(new Date(this.appointment.date), new Date());
+    if (this.status && this.status.value === EventStatusEnum.CONFIRMADO) {
+      const date = new Date(this.appointment.date);
+      this.dueDate = isBefore(date, new Date());
+    } else {
+      this.dueDate = false;
+    }
   }
 }

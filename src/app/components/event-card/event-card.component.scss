@@ -1,57 +1,112 @@
+// Nuevo estilo glass y paleta tenue unificada con list items
 :host {
+  // Variables (pueden sobreescribirse externamente)
+  --event-border-radius: 18px;
+  --event-height: 120px;
+  --event-padding: 12px 14px;
+  --event-font-family: var(--ui-font-roboto, 'Roboto', sans-serif);
+  --event-bg-glass: rgba(255,255,255,0.70);
+  --event-border: 1px solid rgba(255,255,255,0.45);
+  --event-shadow: 0 4px 12px -2px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --event-shadow-hover: 0 6px 18px -2px rgba(0,0,0,0.12), 0 3px 6px -1px rgba(0,0,0,0.08);
+  // Colores por tipo (tenues)
+  --event-med-main: #3b82f6; // azul base (ajustado más tenue que el anterior)
+  --event-med-main-soft: #e3f1ff;
+  --event-med-gradient: linear-gradient(135deg, #4a96ff 0%, #2f6fd1 100%);
+  --event-apt-main: #f59e0b; // naranja suave
+  --event-apt-main-soft: #fff3df;
+  --event-apt-gradient: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  --event-text-primary: #1f2933;
+  --event-text-secondary: #5f6368;
+  --event-hour-size: 13px;
+  --event-title-size: 15px;
+  --event-subtitle-size: 13px;
+  --event-date-day-size: 13px;
+  --event-date-calendar-size: 20px;
+
   .ec {
-    &-medication {
-      background-color: #155a96;
-      &__date {
-        background-color: #144264;
-      }
-    }
-    &-appointment {
-      background-color: #c89c0f;
-      &__date {
-        background-color: var(--ion-color-complementary);
-      }
-    }
     display: flex;
-    border-radius: 10px;
-    padding: 12px;
-    color: white;
-    font-family: var(--ui-font-roboto);
+    align-items: stretch;
+    position: relative;
+    height: var(--event-height);
+    background: var(--event-bg-glass);
+    border: var(--event-border);
+    border-radius: var(--event-border-radius);
+    backdrop-filter: blur(10px) saturate(160%);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    box-shadow: var(--event-shadow);
+    padding: 0; // manejamos padding interno por secciones
+    font-family: var(--event-font-family);
+    overflow: hidden;
+    transition: box-shadow .25s ease, transform .2s ease, background-color .3s ease;
+    cursor: pointer;
+
+    &:hover { box-shadow: var(--event-shadow-hover); transform: translateY(-2px); }
+    &:active { transform: translateY(0); }
+    &:focus-visible { outline: 2px solid var(--event-med-main); outline-offset: 2px; }
+
+    &-medication { --event-accent: var(--event-med-main); --event-accent-soft: var(--event-med-main-soft); }
+    &-appointment { --event-accent: var(--event-apt-main); --event-accent-soft: var(--event-apt-main-soft); }
+
     &__date {
+      background: var(--event-accent);
+      background: var(--event-accent-soft);
+      min-width: 82px;
+      padding: 14px 10px 14px 14px;
       display: flex;
       flex-direction: column;
-      padding: 20px;
-      border-radius: 10px;
-      gap: 5px;
-      margin-right: 16px;
-      &__calendar {
-        font-weight: 800;
-        font-size: 22px;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 4px;
+      position: relative;
+      isolation: isolate;
+
+      &:before { // ribbon gradient
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--event-accent-soft);
+        z-index: 0;
       }
-      &__day {
-        font-weight: 600;
-        font-size: 16px;
+      &:after { // borde decorativo
+        content: '';
+        position: absolute;
+        top: 0; bottom: 0; right: 0;
+        width: 6px;
+        background: var(--event-accent);
+        opacity: .85;
       }
+
+      &__calendar, &__day { position: relative; z-index: 1; }
+      &__calendar { font-weight: 800; font-size: var(--event-date-calendar-size); color: var(--event-accent); line-height: 1; }
+      &__day { font-weight: 600; font-size: var(--event-date-day-size); text-transform: uppercase; letter-spacing: .5px; color: var(--event-text-secondary); }
     }
+
     &__description {
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: flex-start;
-      gap: 5px;
-      margin-right: 36px;
-      &__hour {
-        font-weight: 400;
-        font-size: 14px;
-      }
-      &__meds {
-        font-weight: 700;
-        font-size: 18px;
-      }
-      &__dosis {
-        font-weight: 400;
-        font-size: 16px;
-      }
+      padding: var(--event-padding);
+      gap: 6px;
+      flex: 1;
+      min-width: 0;
+
+      &__hour { font-weight: 500; font-size: var(--event-hour-size); color: var(--event-accent); letter-spacing: .3px; }
+      &__med { font-weight: 600; font-size: var(--event-title-size); color: var(--event-text-primary); line-height: 1.25; word-break: break-word; }
+      &__dosis { font-weight: 500; font-size: var(--event-subtitle-size); color: var(--event-text-secondary); letter-spacing: .2px; }
     }
+
+    &__options {
+      display: flex;
+      align-items: flex-start;
+      padding: 8px 10px 0 0;
+      ion-icon { font-size: 20px; color: var(--event-text-secondary); opacity: .75; }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ec { height: 110px; &__date { min-width: 70px; padding: 12px 8px 12px 12px; } }
+    .ec__description { --event-title-size: 14px; --event-subtitle-size: 12px; --event-hour-size: 12px; }
   }
 }

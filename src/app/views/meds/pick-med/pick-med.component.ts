@@ -7,7 +7,8 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 
 @Component({
   selector: 'app-pick-med',
-  template: ` <ion-header class="ui-background__light">
+  template: ` 
+  <ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
         <ion-buttons slot="start">
           <ion-back-button defaultHref="/tabs/meds"></ion-back-button>
@@ -146,14 +147,14 @@ export class PickMedComponent implements OnInit, OnDestroy {
         dependentName: this.dependentName,
         groupId: this.groupId,
       }
-    } : {};
-    return this.navController.navigateForward([url], navigationExtras);
+    } : undefined;
+    return this.navController.navigateForward(url, navigationExtras);
   }
 
   goToMyProfessionals() {
     this.searchForm.reset();
     const url = this.isEditMode ? `/meds/edit/${this.medEventId}/my-meds` : '/meds/create/my-meds';
-    return this.navController.navigateForward([url]);
+    return this.navController.navigateForward(url);
   }
 
   ngOnDestroy(){
