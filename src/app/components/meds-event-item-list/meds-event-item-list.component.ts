@@ -6,7 +6,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 @Component({
   selector: 'app-meds-event-item-list',
   template: `
-  <ion-item class="il" [ngClass]="{ 'il-due': dueDate }" lines="none">
+  <ion-item class="il" [ngClass]="{ 'il-due': dueDate, 'il--flush': flush }" lines="none">
       <div class="il__img">
         <ion-img [src]="'assets/images/reminders/pill.svg'"></ion-img>
       </div>
@@ -23,6 +23,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 })
 export class MedsEventsItemListComponent implements OnInit, OnChanges {
   @Input() medEvent;
+  @Input() flush: boolean = false; // Quita margen horizontal cuando true
   title: string;
   subtitle: string;
   dueDate: boolean;

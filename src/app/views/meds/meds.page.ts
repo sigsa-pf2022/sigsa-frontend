@@ -26,6 +26,7 @@ import { MedsEventsService } from './shared/services/meds-events/meds-events.ser
         <app-meds-event-item-list
           *ngFor="let medEvent of this.filteredMedsEvents"
           [medEvent]="medEvent"
+          [flush]="true"
           (click)="presentActionSheet(medEvent)"
         ></app-meds-event-item-list>
       </cdk-virtual-scroll-viewport>

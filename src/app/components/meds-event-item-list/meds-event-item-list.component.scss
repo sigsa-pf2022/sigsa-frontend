@@ -1,17 +1,19 @@
-// Nuevas variables (pueden sobreescribirse globalmente)
+// Estilo alineado con appointments item (versión sutil optimizada para virtual scroll)
 :host {
-  --med-item-bg: rgba(255,255,255,0.7);
-  --med-item-border: 1px solid rgba(255,255,255,0.4);
-  --med-item-shadow: 0 4px 12px -2px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.06);
-  --med-item-shadow-hover: 0 6px 18px -2px rgba(0,0,0,0.12), 0 3px 6px -1px rgba(0,0,0,0.08);
+  /* Fondo y sombra mínima */
+  --med-item-bg: rgba(255,255,255,0.82);
+  --med-item-bg-alt: linear-gradient(145deg, rgba(255,255,255,0.96) 0%, rgba(250,252,255,0.94) 70%, rgba(248,250,253,0.92) 100%);
+  --med-item-border: 1px solid rgba(225,229,235,0.95);
+  --med-item-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  --med-item-shadow-hover: 0 2px 4px rgba(0,0,0,0.08);
   --med-item-radius: 18px;
-  --med-item-padding-y: 10px;
-  --med-item-padding-x: 6px;
+  /* Padding reducido para compacidad (alineado con appointments) */
+  --med-item-padding-y: 6px;
+  --med-item-padding-x: 8px;
   --med-status-font-size: 11px;
   --med-title-font-size: 15px;
   --med-subtitle-font-size: 13px;
   --med-subtitle-color: #5f6368;
-  // Paleta unificada (coincide con event-card medication)
   --med-accent: #3b82f6;
   --med-accent-shade: #2f6fd1;
   --med-badge-bg: var(--med-accent);
@@ -24,9 +26,10 @@
     --padding-start: 0;
     --inner-padding-end: 0;
     position: relative;
-    margin: 6px 10px;
+  /* Más espacio vertical entre ítems */
+  margin: 14px 10px;
     padding: var(--med-item-padding-y) var(--med-item-padding-x);
-    background: var(--med-item-bg);
+    background: var(--med-item-bg-alt, var(--med-item-bg));
     border: var(--med-item-border);
     border-radius: var(--med-item-radius);
     backdrop-filter: blur(10px) saturate(160%);
@@ -36,9 +39,14 @@
     cursor: pointer;
     overflow: hidden;
 
-    &:hover { box-shadow: var(--med-item-shadow-hover); transform: translateY(-2px); }
-    &:active { transform: translateY(0); }
-  &:focus-visible { outline: 2px solid var(--med-accent); outline-offset: 2px; }
+    /* Hairline y línea inferior */
+    &:before { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 0 0 1px rgba(255,255,255,0.9) inset; }
+    &:after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:linear-gradient(to right, rgba(0,0,0,0.08), rgba(0,0,0,0.04) 40%, rgba(0,0,0,0.02) 70%, rgba(0,0,0,0)); pointer-events:none; }
+
+    &:hover { box-shadow: var(--med-item-shadow-hover); }
+    &:active { box-shadow: var(--med-item-shadow); }
+    &:focus-visible { outline: 2px solid var(--med-accent); outline-offset: 2px; }
+    &.il--flush { margin-left: 0; margin-right: 0; }
 
     &__img {
       background: linear-gradient(135deg, var(--med-accent) 0%, var(--med-accent-shade) 100%);
@@ -52,7 +60,6 @@
       justify-content: center;
       position: relative;
       box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-
       ion-img { width: 28px; height: 28px; filter: brightness(105%); }
     }
 
@@ -61,7 +68,7 @@
       display: flex;
       flex-direction: column;
       padding: 6px 4px 6px 0;
-      min-width: 0; // truncation safe
+      min-width: 0;
 
       &__title {
         display: flex;
@@ -91,7 +98,7 @@
           align-items: center;
           justify-content: center;
           text-align: center;
-          min-width: 56px; // ancho mínimo para uniformidad
+          min-width: 56px;
         }
       }
 
@@ -108,13 +115,11 @@
     }
   }
 
-  .il-due {
-    background: var(--med-due-bg);
-    border: var(--med-due-border);
-  }
+  .il-due { background: var(--med-due-bg); border: var(--med-due-border); }
 
   @media (max-width: 480px) {
-    .il { margin: 4px 6px; &__img { width: 50px; height: 50px; padding: 10px; } }
+    .il { margin: 12px 8px; &__img { width: 50px; height: 50px; padding: 10px; } }
+    .il.il--flush { margin-left: 0; margin-right: 0; }
     .il__content__title { font-size: 14px; }
     .il__content__subtitle { font-size: 12px; }
   }

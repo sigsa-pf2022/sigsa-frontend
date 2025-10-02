@@ -231,10 +231,13 @@ export class GroupHomePage implements OnInit {
   }
 
   private async createAppointmentActionSheet(appointment: any) {
+    const depName = this.getDependentFullName();
+    const formatted = depName ? this.toTitleCase(depName) : null;
+    const baseTitle = formatted ? `Turno de ${formatted}` : 'Mi Turno';
     if (appointment.status === 'confirmed' && isAfter(parseISO(appointment.date), new Date())) {
-      return await this.actionSheetService.createOnlyView('Mi Turno');
+      return await this.actionSheetService.createOnlyView(baseTitle);
     }
-    return await this.actionSheetService.createDefault('Mi Turno');
+    return await this.actionSheetService.createDefault(baseTitle);
   }
 
   private doAppointmentActionByRole(value: string, id: number) {
@@ -282,10 +285,13 @@ export class GroupHomePage implements OnInit {
   }
 
   private async createMedEventActionSheet(medEvent: any) {
+    const depName = this.getDependentFullName();
+    const formatted = depName ? this.toTitleCase(depName) : null;
+    const baseTitle = formatted ? `Medicamento de ${formatted}` : 'Mi Medicamento';
     if (medEvent.status === 'confirmed' && isBefore(parseISO(medEvent.date), new Date())) {
-      return await this.actionSheetService.createOnlyView('Mi Medicamento');
+      return await this.actionSheetService.createOnlyView(baseTitle);
     }
-    return await this.actionSheetService.createDefault('Mi Medicamento');
+    return await this.actionSheetService.createDefault(baseTitle);
   }
 
   private doMedEventActionByRole(value: string, id: number) {
@@ -329,6 +335,22 @@ export class GroupHomePage implements OnInit {
     return this.navController.navigateForward([`/meds/view/${id}`], {
       queryParams: { dependentId: this.group?.dependent?.id }
     });
+  }
+
+  private getDependentFullName(): string | null {
+    const first = this.group?.dependent?.firstName?.trim();
+    const last = this.group?.dependent?.lastName?.trim();
+    if (!first && !last) return null;
+    return [first, last].filter(Boolean).join(' ');
+  }
+
+  private toTitleCase(value: string): string {
+    return value
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
   }
 
   exitGroup() {

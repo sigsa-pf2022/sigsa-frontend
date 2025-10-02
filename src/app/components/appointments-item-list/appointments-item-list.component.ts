@@ -6,7 +6,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 @Component({
   selector: 'app-appointments-item-list',
   template: `
-  <ion-item class="ail" [ngClass]="{ 'ail-due': dueDate }" lines="none">
+  <ion-item class="ail" [ngClass]="{ 'ail-due': dueDate, 'ail--flush': flush }" lines="none">
       <div class="ail__img">
         <ion-img [src]="'assets/images/reminders/doctor.svg'"></ion-img>
       </div>
@@ -23,6 +23,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 })
 export class AppointmentsItemListComponent implements OnInit, OnChanges {
   @Input() appointment;
+  @Input() flush: boolean = false; // Quita margen horizontal cuando true
   title: string;
   subtitle: string;
   dueDate: boolean;

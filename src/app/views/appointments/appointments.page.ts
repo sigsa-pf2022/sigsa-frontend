@@ -26,6 +26,7 @@ import { AppointmentsService } from './shared/services/appointments/appointments
         <app-appointments-item-list
           *ngFor="let appointment of this.filteredAppointments"
           [appointment]="appointment"
+          [flush]="true"
           (click)="presentActionSheet(appointment)"
         ></app-appointments-item-list>
       </cdk-virtual-scroll-viewport>
