@@ -40,6 +40,11 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'documents',
+    loadChildren: () => import('./views/documents/documents.module').then((m) => m.DocumentsPageModule),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'doctors',
     loadChildren: () => import('./views/doctors/doctors.module').then((m) => m.DoctorsPageModule),
     canActivate: [AuthGuard],
