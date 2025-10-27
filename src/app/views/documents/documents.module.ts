@@ -14,6 +14,10 @@ import { CreateDocumentPage } from './create-document/create-document.page';
 
 const routes: Routes = [
   {
+    path: '',
+    component: DocumentsPage,
+  },
+  {
     path: 'create',
     component: CreateDocumentPage,
   },
