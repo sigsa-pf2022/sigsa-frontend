@@ -1,0 +1,45 @@
+:host {
+  padding: 16px;
+
+  .docs {
+    &__list {
+      margin-top: 16px;
+      border: 1px solid #a3a3a3;
+      padding: 0;
+    }
+    
+    &__search {
+      margin-top: 16px;
+    }
+
+    &__fab {
+      --box-shadow: none;
+    }
+
+    &__empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 70vh;
+      padding: 32px;
+      text-align: center;
+
+      img {
+        max-width: 280px;
+        margin-bottom: 24px;
+      }
+
+      &__title {
+        font-size: 16px;
+        color: var(--ion-color-medium);
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+cdk-virtual-scroll-viewport {
+  height: calc(100vh - 300px);
+  width: 100%;
+}
