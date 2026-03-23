@@ -14,6 +14,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 import { EventsService } from '../../home/shared/services/events/events.service';
 import { AppointmentsService } from '../../appointments/shared/services/appointments/appointments.service';
 import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-events.service';
+import { DocumentsService } from '../../documents/shared/services/documents.service';
 
 @Component({
   selector: 'app-group-home',
@@ -106,6 +107,7 @@ export class GroupHomePage implements OnInit {
     private eventsService: EventsService,
     private appointmentsService: AppointmentsService,
     private medsEventsService: MedsEventsService,
+    private documentsService: DocumentsService,
     private actionSheetService: ActionSheetService,
     private modalController: ModalController
   ) {}
@@ -202,8 +204,7 @@ export class GroupHomePage implements OnInit {
           this.reminders = await this.medsEventsService.getMedsEventsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.documents:
-          // TODO: Implementar cuando tengamos el servicio de documentos
-          this.reminders = [];
+          this.reminders = await this.documentsService.getDocumentsByDependent(this.group.dependent.id);
           break;
         default:
           this.reminders = [];
@@ -220,6 +221,8 @@ export class GroupHomePage implements OnInit {
       await this.presentAppointmentActionSheet(event.item);
     } else if (event.type === REMINDERS_TYPE.medications) {
       await this.presentMedEventActionSheet(event.item);
+    } else if (event.type === REMINDERS_TYPE.documents) {
+      await this.presentDocumentActionSheet(event.item);
     }
   }
 
@@ -337,6 +340,71 @@ export class GroupHomePage implements OnInit {
     });
   }
 
+  private async presentDocumentActionSheet(document: any) {
+    const actionSheet = await this.createDocumentActionSheet(document);
+    await actionSheet.present();
+    const { role } = await actionSheet.onDidDismiss();
+    this.doDocumentActionByRole(role, document.id);
+  }
+
+  private async createDocumentActionSheet(document: any) {
+    const depName = this.getDependentFullName();
+    const formatted = depName ? this.toTitleCase(depName) : null;
+    const baseTitle = formatted ? `Documento de ${formatted}` : 'Mi Documento';
+    return await this.actionSheetService.createDefault(baseTitle);
+  }
+
+  private doDocumentActionByRole(value: string, id: number) {
+    switch (value) {
+      case 'destructive':
+        this.deleteDocument(id);
+        break;
+      case 'edit':
+        this.editDocument(id);
+        break;
+      case 'view':
+        this.viewDocument(id);
+        break;
+      default:
+        break;
+    }
+  }
+
+  private async deleteDocument(id: number) {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: { text: '¿Desea eliminar el documento?' },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      try {
+        await this.documentsService.deleteDocument(id);
+        // Recargar los documentos después de eliminar
+        await this.changeReminders(REMINDERS_TYPE.documents);
+      } catch (error) {
+        console.error('Error eliminando documento:', error);
+      }
+    }
+  }
+
+  private editDocument(id: number) {
+    return this.navController.navigateForward([`/documents/edit/${id}`], {
+      queryParams: {
+        dependentId: this.group?.dependent?.id,
+        dependentName: `${this.group?.dependent?.firstName} ${this.group?.dependent?.lastName}`,
+        groupId: this.group?.id
+      }
+    });
+  }
+
+  private viewDocument(id: number) {
+    return this.navController.navigateForward([`/documents/view/${id}`], {
+      queryParams: { dependentId: this.group?.dependent?.id }
+    });
+  }
+
   private getDependentFullName(): string | null {
     const first = this.group?.dependent?.firstName?.trim();
     const last = this.group?.dependent?.lastName?.trim();
@@ -397,7 +465,13 @@ export class GroupHomePage implements OnInit {
       this.opened = false;
     }
     
-    // TODO: Implementar navegación a creación de documento para dependiente
-    console.log('Crear documento para dependiente:', this.group.dependent);
+    // Navegar a la creación de documento para el dependiente
+    this.navController.navigateForward(['/documents/create'], {
+      queryParams: {
+        dependentId: this.group.dependent.id,
+        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
+        groupId: this.group.id
+      }
+    });
   }
 }
