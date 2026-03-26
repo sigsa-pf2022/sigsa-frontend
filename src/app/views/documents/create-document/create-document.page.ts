@@ -15,10 +15,10 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
     <ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-back-button defaultHref="/tabs/clipboard"></ion-back-button>
+          <ion-back-button [defaultHref]="dependentId ? '/groups/' + groupId : '/tabs/clipboard'"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">
-          {{ isEditMode ? 'Editar' : 'Nuevo' }} Documento
+          {{ isEditMode ? 'Editar' : 'Nuevo' }} Documento{{ dependentName ? ' de ' + dependentName : '' }}
         </ion-title>
       </ion-toolbar>
     </ion-header>
@@ -114,6 +114,9 @@ export class CreateDocumentPage implements OnInit {
   maxDate = formatISO(new Date());
   isEditMode = false;
   documentId: number;
+  dependentId: number;
+  dependentName: string;
+  groupId: number;
 
   constructor(
     private fb: FormBuilder,
@@ -129,6 +132,14 @@ export class CreateDocumentPage implements OnInit {
 
   ionViewWillEnter() {
     this.documentId = Number(this.route.snapshot.paramMap.get('id'));
+    
+    // Obtener queryParams para dependiente
+    this.route.queryParams.subscribe(params => {
+      this.dependentId = params['dependentId'] ? Number(params['dependentId']) : null;
+      this.dependentName = params['dependentName'] || null;
+      this.groupId = params['groupId'] ? Number(params['groupId']) : null;
+    });
+    
     if (this.documentId) {
       this.isEditMode = true;
       this.loadDocument();
@@ -309,9 +320,17 @@ export class CreateDocumentPage implements OnInit {
     };
 
     try {
-      await this.documentsService.createDocument(payload);
-      this.toastService.showSuccess('Documento creado correctamente');
-      this.navController.navigateRoot(['/tabs/clipboard']);
+      if (this.dependentId) {
+        // Crear documento para dependiente
+        await this.documentsService.createDocumentForDependent(this.dependentId, payload);
+        this.toastService.showSuccess(`Documento creado correctamente para ${this.dependentName}`);
+        this.navController.navigateBack(['/groups/' + this.groupId]);
+      } else {
+        // Crear documento para usuario
+        await this.documentsService.createDocument(payload);
+        this.toastService.showSuccess('Documento creado correctamente');
+        this.navController.navigateRoot(['/tabs/clipboard']);
+      }
     } catch (error) {
       this.toastService.showError('Error al crear el documento');
     }
@@ -327,7 +346,14 @@ export class CreateDocumentPage implements OnInit {
     try {
       await this.documentsService.editDocument(this.documentId, payload);
       this.toastService.showSuccess('Documento actualizado correctamente');
-      this.navController.navigateRoot(['/tabs/clipboard']);
+      
+      if (this.dependentId) {
+        // Navegar de vuelta al grupo si estamos editando un documento de dependiente
+        this.navController.navigateBack(['/groups/' + this.groupId]);
+      } else {
+        // Navegar a la lista de documentos si estamos editando un documento propio
+        this.navController.navigateRoot(['/tabs/clipboard']);
+      }
     } catch (error) {
       this.toastService.showError('Error al actualizar el documento');
     }

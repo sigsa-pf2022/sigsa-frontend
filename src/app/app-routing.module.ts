@@ -55,7 +55,8 @@ const routes: Routes = [
   },
   {
     path: 'meds',
-    loadChildren: () => import('./views/meds/meds.module').then( m => m.MedsPageModule)
+    loadChildren: () => import('./views/meds/meds.module').then( m => m.MedsPageModule),
+    canActivate: [AuthGuard],
   },
 ];
 @NgModule({

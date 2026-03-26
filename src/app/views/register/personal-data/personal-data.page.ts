@@ -120,12 +120,13 @@ export class PersonalDataPage {
     this.showCalendar = !this.showCalendar;
   }
 
-  dateChanged(date: string) {
+  dateChanged(date: string | string[]) {
+    const dateStr = Array.isArray(date) ? date[0] : date;
     this.form
       .get('birthday')
       .setValue(
         format(
-          parseISO(format(this.dateFormatterService.createDateFromCalendarStringDate(date), 'yyyy-MM-dd')),
+          parseISO(format(this.dateFormatterService.createDateFromCalendarStringDate(dateStr), 'yyyy-MM-dd')),
           'dd/MM/yyyy'
         )
       );

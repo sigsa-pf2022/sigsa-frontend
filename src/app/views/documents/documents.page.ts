@@ -6,44 +6,36 @@ import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.s
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { DocumentsService } from './shared/services/documents.service';
 import { MedicalDocument } from './shared/interfaces/Document.interface';
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-documents',
   template: `<ion-content class="docs">
     <ion-label class="view-title">Mis documentos</ion-label>
-    <ng-container *ngIf="this.documents.length > 0">
-      <form [formGroup]="this.searchForm" class="docs__search">
-        <ion-searchbar
-          formControlName="search"
-          placeholder="Buscar documento ..."
-          class="ui-search-input ui-search-input__no-show"
-          debounce="400"
-          type="string"
-          (ionChange)="handleChange($event)"
-        ></ion-searchbar>
-      </form>
-      <cdk-virtual-scroll-viewport itemSize="1">
-        <ion-item
-          *ngFor="let document of this.filteredDocuments"
-          lines="full"
-          class="docs__item"
-          (click)="presentActionSheet(document)"
-        >
-          <div class="docs__item__wrapper">
-            <ion-icon
-              [name]="getIconByMimeType(document.mimeType)"
-              class="docs__item__icon"
-            ></ion-icon>
-            <div class="docs__item__content">
-              <ion-label class="docs__item__title">{{ document.title }}</ion-label>
-              <ion-text class="docs__item__date">{{ document.documentDate | date: 'dd/MM/yyyy' }}</ion-text>
-              <ion-text class="docs__item__size" *ngIf="document.fileSize">{{ formatFileSize(document.fileSize) }}</ion-text>
-            </div>
-          </div>
-        </ion-item>
-      </cdk-virtual-scroll-viewport>
+    <ng-container *ngIf="(documents$ | async) as documents">
+      <ng-container *ngIf="documents.length > 0">
+        <form [formGroup]="searchForm" class="docs__search">
+          <ion-searchbar
+            formControlName="search"
+            placeholder="Buscar documento ..."
+            class="ui-search-input ui-search-input__no-show"
+            debounce="400"
+            type="string"
+            (ionChange)="handleChange($event)"
+          ></ion-searchbar>
+        </form>
+        <cdk-virtual-scroll-viewport itemSize="1">
+          <app-document-item-list
+            *ngFor="let document of (filteredDocuments$ | async)"
+            [document]="document"
+            [flush]="true"
+            (click)="presentActionSheet(document)"
+          ></app-document-item-list>
+        </cdk-virtual-scroll-viewport>
+      </ng-container>
     </ng-container>
-    <div class="docs__empty" *ngIf="this.documents.length === 0">
+    <div class="docs__empty" *ngIf="(documents$ | async)?.length === 0 && !(isLoading$ | async)">
       <img src="/assets/images/documents/documents-empty.svg" />
       <ion-label class="docs__empty__title"
         >Todavía no tienes ningún documento<br />
@@ -61,8 +53,25 @@ import { MedicalDocument } from './shared/interfaces/Document.interface';
   styleUrls: ['./documents.page.scss'],
 })
 export class DocumentsPage implements OnInit {
-  documents: MedicalDocument[] = [];
-  filteredDocuments: MedicalDocument[] = [];
+  private documentsSubject$ = new BehaviorSubject<MedicalDocument[]>([]);
+  private searchSubject$ = new BehaviorSubject<string>('');
+  private isLoadingSubject$ = new BehaviorSubject<boolean>(false);
+  
+  documents$ = this.documentsSubject$.asObservable();
+  isLoading$ = this.isLoadingSubject$.asObservable();
+  
+  filteredDocuments$: Observable<MedicalDocument[]> = combineLatest([
+    this.documents$,
+    this.searchSubject$
+  ]).pipe(
+    map(([documents, search]) => {
+      if (!search) return documents;
+      return documents.filter(doc => 
+        doc.title.toLowerCase().includes(search.toLowerCase())
+      );
+    })
+  );
+  
   searchForm = this.fb.group({
     search: '',
   });
@@ -79,12 +88,21 @@ export class DocumentsPage implements OnInit {
   ngOnInit() {}
 
   async ionViewWillEnter() {
-    this.setDocuments();
+    await this.loadDocuments();
   }
 
-  async setDocuments() {
-    this.documents = [...(await this.documentsService.getDocumentsByUser())];
-    this.filteredDocuments = this.documents;
+  private async loadDocuments() {
+    this.isLoadingSubject$.next(true);
+    try {
+      const docs = await this.documentsService.getDocumentsByUser();
+      this.documentsSubject$.next(docs || []);
+    } catch (error) {
+      console.error('Error loading documents:', error);
+      this.toastService.showError('Error al cargar documentos');
+      this.documentsSubject$.next([]);
+    } finally {
+      this.isLoadingSubject$.next(false);
+    }
   }
 
   async presentActionSheet(document: MedicalDocument) {
@@ -124,16 +142,14 @@ export class DocumentsPage implements OnInit {
       await this.documentsService
         .deleteDocument(id)
         .then(() => this.toastService.showSuccess('Documento eliminado correctamente.'))
-        .then(() => this.setDocuments())
+        .then(() => this.loadDocuments())
         .catch(() => {});
     }
   }
 
-  async handleChange(event) {
-    const search = event.detail.value.toLowerCase();
-    this.filteredDocuments = this.documents.filter((doc) =>
-      doc.title.toLowerCase().includes(search)
-    );
+  handleChange(event) {
+    const search = event.detail.value;
+    this.searchSubject$.next(search || '');
   }
 
   newDocument() {
@@ -146,25 +162,5 @@ export class DocumentsPage implements OnInit {
 
   viewDocument(id: number) {
     return this.navController.navigateRoot([`/documents/view/${id}`]);
-  }
-
-  getIconByMimeType(mimeType: string): string {
-    if (mimeType.includes('pdf')) {
-      return 'document-text';
-    } else if (mimeType.includes('image')) {
-      return 'image';
-    } else {
-      return 'document';
-    }
-  }
-
-  formatFileSize(bytes: number): string {
-    if (bytes < 1024) {
-      return bytes + ' B';
-    } else if (bytes < 1024 * 1024) {
-      return (bytes / 1024).toFixed(2) + ' KB';
-    } else {
-      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-    }
   }
 }

@@ -17,8 +17,8 @@ export class AlreadyLoggedGuard implements CanActivate {
     const userLogged = this.auth.user() !== null;
     if (userLogged) {
       this.navController.navigateRoot(['/tabs/home']);
-      return userLogged;
+      return false;
     }
-    return !userLogged;
+    return true;
   }
 }

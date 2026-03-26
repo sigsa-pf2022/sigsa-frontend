@@ -5,6 +5,7 @@ export interface MedicalDocument {
   fileName: string;
   mimeType: string;
   fileSize: number;
+  fileContent: string; // Base64
   documentDate: Date | string;
   date: Date | string;
   status: string;
