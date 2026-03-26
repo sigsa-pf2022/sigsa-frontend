@@ -9,6 +9,7 @@ import { SwiperModule } from 'swiper/angular';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 import { AppointmentsPage } from '../appointments/appointments.page';
 import { GroupsPage } from '../groups/groups.page';
+import { DocumentsPage } from '../documents/documents.page';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
 
