@@ -50,6 +50,11 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
+    path: 'patients',
+    loadChildren: () => import('./views/patients/patients.module').then((m) => m.PatientsPageModule),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'recovery-password',
     loadChildren: () => import('./views/recovery-password/recovery-password.module').then( m => m.RecoveryPasswordModule)
   },

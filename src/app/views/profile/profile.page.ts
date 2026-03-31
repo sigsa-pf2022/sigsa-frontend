@@ -36,19 +36,33 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
   styleUrls: ['./profile.page.scss'],
 })
 export class ProfilePage implements OnInit {
-  options = PROFILE_OPTIONS;
+  options = [];
   constructor(private auth: AuthenticationService, private navController: NavController) {}
 
   ngOnInit() {}
   ionViewWillEnter() {
-    this.setUserEmail();
+    this.buildOptions();
   }
   logout() {
     this.auth.signOut();
     return this.navController.navigateRoot(['welcome']);
   }
-  setUserEmail() {
-    this.options[0].title = `${this.auth.user().firstName}`;
+  buildOptions() {
+    const user = this.auth.user();
+    this.options = JSON.parse(JSON.stringify(PROFILE_OPTIONS));
+    this.options[0].title = user.firstName;
+
+    if (user.role === 'professional') {
+      // Replace "Mis Profesionales" (index 1) with "Mis Pacientes"
+      this.options[1] = {
+        icon: 'people-outline',
+        title: 'Mis Pacientes',
+        action: {
+          type: 'navigate',
+          payload: '/patients',
+        },
+      };
+    }
   }
 
   doAction(event) {
