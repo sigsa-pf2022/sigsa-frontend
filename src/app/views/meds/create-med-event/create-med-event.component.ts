@@ -4,8 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { IonDatetime, NavController } from '@ionic/angular';
 import { formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
-import { LocalNotificationsService } from 'src/app/services/local-notifications/local-notifications.service';
-import { PlatformService } from 'src/app/services/platform/platform.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { MedsEventDataService } from '../shared/services/meds-events-data/meds-events-data.service';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
@@ -79,7 +77,7 @@ export class CreateMedEventComponent implements OnInit {
     date: null,
   });
   showCalendar = false;
-  minDate = formatISO(new Date());
+  minDate = formatISO(new Date(Date.now() - 24 * 60 * 60 * 1000));
   med: any;
   medEventDate;
   medEventId: number;
@@ -96,8 +94,6 @@ export class CreateMedEventComponent implements OnInit {
     private medsEventDataService: MedsEventDataService,
     private toastService: ToastService,
     private navController: NavController,
-    private localNotificationsService: LocalNotificationsService,
-    private platformService: PlatformService,
     private route: ActivatedRoute
   ) {}
 
@@ -219,7 +215,7 @@ export class CreateMedEventComponent implements OnInit {
       this.toastService.showError?.('Fecha inválida');
       return;
     }
-    if (dateObj.getTime() < Date.now() - 60000) { // permitir 1 min de tolerancia
+    if (dateObj.getTime() < Date.now() - 24 * 60 * 60 * 1000) { // testing: permite hasta ayer
       this.toastService.showError?.('La fecha debe ser futura');
       return;
     }
@@ -238,7 +234,6 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   successCreation(medEvent) {
-    this.createNotification(medEvent);
     this.toastService.showSuccess('Recordatorio de medicamento creado correctamente.');
     const depId = this.dependentId || this.medsEventDataService.data?.dependentId;
     const grpId = this.groupId || this.medsEventDataService.data?.groupId;
@@ -261,17 +256,6 @@ export class CreateMedEventComponent implements OnInit {
       return this.navController.navigateBack('/groups');
     }
     return this.navController.navigateForward('/tabs/meds');
-  }
-
-  createNotification(medEvent) {
-    this.localNotificationsService.requestPermissions();
-    if (!this.platformService.isMobileWeb) {
-      this.localNotificationsService.registerActionTypes();
-      this.localNotificationsService.addEventListener((notification) => {
-        this.dispatch(notification, medEvent.id);
-      });
-    }
-    this.localNotificationsService.scheduleMedEvent(medEvent.date, medEvent.med);
   }
 
   dispatch(notification, id) {

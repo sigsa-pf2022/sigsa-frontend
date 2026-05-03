@@ -4,8 +4,6 @@ import { ActivatedRoute } from '@angular/router';
 import { IonDatetime, NavController } from '@ionic/angular';
 import { formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
-import { LocalNotificationsService } from 'src/app/services/local-notifications/local-notifications.service';
-import { PlatformService } from 'src/app/services/platform/platform.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
@@ -105,8 +103,6 @@ export class CreateAppointmentPage implements OnInit {
     private appointmentsService: AppointmentsService,
     private toastService: ToastService,
     private navController: NavController,
-    private localNotificationsService: LocalNotificationsService,
-    private platformService: PlatformService,
     private route: ActivatedRoute
   ) {}
 
@@ -242,7 +238,6 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   successCreation(appointment) {
-    this.createNotification(appointment);
     this.toastService.showSuccess('Turno creado correctamente.');
     // Limpiar datos temporales para evitar contaminación en futuras creaciones
     this.appointmentDataService.clear();
@@ -263,17 +258,6 @@ export class CreateAppointmentPage implements OnInit {
     this.toastService.showSuccess('Turno editado correctamente.');
     this.appointmentDataService.clear();
     return this.navController.navigateForward(['/tabs/appointments']);
-  }
-
-  createNotification(appointment) {
-    this.localNotificationsService.requestPermissions();
-    if (!this.platformService.isMobileWeb) {
-      this.localNotificationsService.registerActionTypes();
-      this.localNotificationsService.addEventListener((notification) => {
-        this.dispatch(notification, appointment.id);
-      });
-    }
-    this.localNotificationsService.schedule(appointment.date, appointment.professional, appointment.id);
   }
 
   dispatch(notification, id) {
