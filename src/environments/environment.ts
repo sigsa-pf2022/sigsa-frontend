@@ -1,6 +1,7 @@
 export const environment = {
   production: false,
-  firebaseConfig: {apiKey: 'AIzaSyDa_nlKUlYl03IthKC_wzcccsklopY9gBw',authDomain: 'sigsa-2022.firebaseapp.com',projectId: 'sigsa-2022',storageBucket: 'sigsa-2022.appspot.com',messagingSenderId: '935585119063',appId: '1:935585119063:web:bf0290affe61b3eec49c12',measurementId: 'G-Q49L50LDWL'},
-  apiUrl: 'http://192.168.0.38:3000/api',
-  // apiUrl: 'http://192.168.0.138:3000/api', windows config
+  firebaseConfig: {apiKey: 'AIzaSyAEGMzSz8Itz5js4GAhO5Uzood9AeMEppg',authDomain: 'sigsa-eeebc.firebaseapp.com',projectId: 'sigsa-eeebc',storageBucket: 'sigsa-eeebc.firebasestorage.app',messagingSenderId: '665878700401',appId: '1:665878700401:web:b6918349a7e75f151316d0',measurementId: 'G-PDMWFWFRGM'},
+  // apiUrl: 'http://192.168.0.38:3000/api',      // iPhone en red local
+  // apiUrl: 'http://192.168.0.138:3000/api',   // windows config
+  apiUrl: 'http://10.0.2.2:3000/api',           // emulador Android
 };

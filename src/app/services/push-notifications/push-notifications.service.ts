@@ -12,20 +12,37 @@ export class PushNotificationsService {
   constructor(private http: HttpClient, private platform: Platform) {}
 
   async initialize(): Promise<void> {
-    if (!this.platform.is('capacitor')) return;
+    console.log('[Push] initialize() llamado');
+    console.log('[Push] is capacitor:', this.platform.is('capacitor'));
+    console.log('[Push] is ios:', this.platform.is('ios'));
+    console.log('[Push] is android:', this.platform.is('android'));
+
+    if (!this.platform.is('capacitor')) {
+      console.log('[Push] No es Capacitor, saliendo');
+      return;
+    }
+
+    await this.platform.ready();
+    console.log('[Push] Platform lista, pidiendo permisos...');
 
     const permission = await PushNotifications.requestPermissions();
-    if (permission.receive !== 'granted') return;
+    console.log('[Push] Permiso resultado:', JSON.stringify(permission));
+    if (permission.receive !== 'granted') {
+      console.warn('[Push] Permiso denegado:', permission.receive);
+      return;
+    }
 
+    console.log('[Push] Registrando en APNs/FCM...');
     await PushNotifications.register();
 
     await PushNotifications.addListener('registration', (token: Token) => {
+      console.log('[Push] Token obtenido:', token.value);
       this.currentToken = token.value;
       this.registerWithBackend(token.value);
     });
 
     await PushNotifications.addListener('registrationError', (error) => {
-      console.error('[Push] Registration error:', error);
+      console.error('[Push] Registration error:', JSON.stringify(error));
     });
 
     await PushNotifications.addListener('pushNotificationReceived', (notification) => {
