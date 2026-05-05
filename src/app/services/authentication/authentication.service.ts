@@ -3,11 +3,17 @@ import { Injectable } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { User } from 'src/app/interfaces/user';
 import { environment } from 'src/environments/environment';
+import { PushNotificationsService } from '../push-notifications/push-notifications.service';
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
-  constructor(public navController: NavController, private http: HttpClient) {}
+  constructor(
+    public navController: NavController,
+    private http: HttpClient,
+    private pushNotifications: PushNotificationsService
+  ) {}
 
   user() {
     return JSON.parse(localStorage.getItem('user'));
@@ -57,6 +63,7 @@ export class AuthenticationService {
   async signIn(params) {
     const res = await this.http.post(`${environment.apiUrl}/auth/login`, params).toPromise();
     this.saveUser(res);
+    this.pushNotifications.initialize();
     return res;
   }
 
@@ -64,7 +71,8 @@ export class AuthenticationService {
     return this.http.get<any>(`${environment.apiUrl}/users/${value}`).toPromise();
   }
 
-  signOut() {
+  async signOut() {
+    await this.pushNotifications.deregister();
     return this.deleteUser();
   }
 }
