@@ -15,7 +15,7 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
     <ion-header class="ui-background__light">
       <ion-toolbar class="ui-toolbar__primary">
         <ion-buttons slot="start">
-          <ion-back-button [defaultHref]="dependentId ? '/groups/' + groupId : '/tabs/clipboard'"></ion-back-button>
+          <ion-back-button [defaultHref]="dependentId ? '/groups/home/' + groupId : '/tabs/clipboard'"></ion-back-button>
         </ion-buttons>
         <ion-title class="ui-header__title-center">
           {{ isEditMode ? 'Editar' : 'Nuevo' }} Documento{{ dependentName ? ' de ' + dependentName : '' }}
@@ -324,7 +324,7 @@ export class CreateDocumentPage implements OnInit {
         // Crear documento para dependiente
         await this.documentsService.createDocumentForDependent(this.dependentId, payload);
         this.toastService.showSuccess(`Documento creado correctamente para ${this.dependentName}`);
-        this.navController.navigateBack(['/groups/' + this.groupId]);
+        this.navController.navigateRoot(['/groups/home/' + this.groupId]);
       } else {
         // Crear documento para usuario
         await this.documentsService.createDocument(payload);
@@ -349,7 +349,7 @@ export class CreateDocumentPage implements OnInit {
       
       if (this.dependentId) {
         // Navegar de vuelta al grupo si estamos editando un documento de dependiente
-        this.navController.navigateBack(['/groups/' + this.groupId]);
+        this.navController.navigateRoot(['/groups/home/' + this.groupId]);
       } else {
         // Navegar a la lista de documentos si estamos editando un documento propio
         this.navController.navigateRoot(['/tabs/clipboard']);
