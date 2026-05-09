@@ -8,22 +8,6 @@ import { environment } from 'src/environments/environment';
 export class MedsEventsService {
   constructor(private http: HttpClient) {}
 
-  editAppointment(id, data) {
-    return this.http.put(`${environment.apiUrl}/appointments/${id}`, data).toPromise();
-  }
-
-  cancelAppointment(id) {
-    return this.http.delete(`${environment.apiUrl}/appointments/cancel/${id}`).toPromise();
-  }
-
-  confirmAppointment(id) {
-    return this.http.put(`${environment.apiUrl}/appointments/confirm/${id}`, {}).toPromise();
-  }
-
-  getAppointment(id: number) {
-    return this.http.get<any>(`${environment.apiUrl}/appointments/${id}`).toPromise();
-  }
-  
   getMedsEventsByUser() {
     return this.http.get<any[]>(`${environment.apiUrl}/meds-event`).toPromise();
   }
@@ -32,8 +16,11 @@ export class MedsEventsService {
     return this.http.get<any[]>(`${environment.apiUrl}/meds-event/dependent/${dependentId}`).toPromise();
   }
 
+  getMedEvent(id: number) {
+    return this.http.get<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
+  }
+
   createMedEvent(data) {
-    // Normalizar payload: aceptar data.med (objeto) o data.medId (número)
     let payload = data;
     if (data && !data.medId && data.med && typeof data.med === 'object' && 'id' in data.med) {
       payload = { medId: data.med.id, date: data.date };
@@ -49,20 +36,23 @@ export class MedsEventsService {
     return this.http.post(`${environment.apiUrl}/meds-event/dependent/${dependentId}`, payload).toPromise();
   }
 
-  getMeds(): Promise<any[]> {
-    return this.http.get<any[]>(`${environment.apiUrl}/meds/all`).toPromise();
-  }
-  // Nota: El backend actual no expone GET /meds-event/:id; se obtiene por listado y filtrado.
-  // Si se habilita PUT /meds-event/:id para edición, se puede reintroducir editMedEvent aquí.
-  getMedEvent(id: number) {
-    return this.http.get<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
-  }
-
   editMedEvent(id: number, data: { medId?: number; date?: string }) {
     let payload: any = data;
     if (data && !data.medId && (data as any).med && typeof (data as any).med === 'object' && 'id' in (data as any).med) {
       payload = { medId: (data as any).med.id, date: (data as any).date };
     }
-    return this.http.put<any>(`${environment.apiUrl}/meds-event/${id}`, payload).toPromise();
+    return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}`, payload).toPromise();
+  }
+
+  cancelMedEvent(id: number) {
+    return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/cancel`, {}).toPromise();
+  }
+
+  confirmMedEvent(id: number) {
+    return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/confirm`, {}).toPromise();
+  }
+
+  getMeds(): Promise<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/meds/all`).toPromise();
   }
 }

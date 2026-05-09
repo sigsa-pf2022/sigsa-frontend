@@ -5,7 +5,7 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
   selector: 'app-reminders',
   template: `
     <div class="rem">
-      <ion-segment class="rem__segment" (ionChange)="changeReminders($event)" [value]="remindersTypes.appointments">
+      <ion-segment class="rem__segment" (ionChange)="changeReminders($event)" [value]="activeTab">
         <ion-segment-button class="rem__segment__button" [value]="remindersTypes.medications">
           <ion-label>Medicamentos</ion-label>
         </ion-segment-button>
@@ -30,6 +30,13 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
         [appointment]="appointment"
         (click)="onItemClick(appointment)"
       ></app-appointments-item-list>
+    </cdk-virtual-scroll-viewport>
+    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.documents" itemSize="3">
+      <app-document-item-list
+        *cdkVirtualFor="let document of this.reminders"
+        [document]="document"
+        (click)="onItemClick(document)"
+      ></app-document-item-list>
     </cdk-virtual-scroll-viewport>
   `,
   styleUrls: ['./reminders.component.scss'],

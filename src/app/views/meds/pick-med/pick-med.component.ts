@@ -77,7 +77,6 @@ export class PickMedComponent implements OnInit, OnDestroy {
   ngOnInit() {}
 
   ionViewWillEnter() {
-    // Capturar parámetros del dependiente si existen
     this.route.queryParams.subscribe(params => {
       const rawDependentId = params['dependentId'];
       this.dependentId = rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
@@ -94,7 +93,6 @@ export class PickMedComponent implements OnInit, OnDestroy {
       }
     });
     this.getMeds();
-    this.setMedIfBack();
     this.setMode();
   }
 
@@ -102,23 +100,34 @@ export class PickMedComponent implements OnInit, OnDestroy {
     this.medEventId = Number(this.route.snapshot.paramMap.get('id'));
     if (this.medEventId) {
       this.isEditMode = true;
-      // this.setAppointmentInfo();
+      const savedMed = this.medEventDataService.data?.med;
+      if (savedMed) {
+        // Usuario volvió atrás desde el paso 2 con un med ya elegido
+        this.med = savedMed;
+      } else {
+        // Primera entrada al wizard de edición: cargar el med actual desde la API
+        this.loadCurrentMed();
+      }
+    } else {
+      // Modo creación: restaurar selección si el usuario volvió atrás
+      if (this.medEventDataService.data?.med) {
+        this.med = this.medEventDataService.data.med;
+      }
     }
   }
 
-  // async setAppointmentInfo() {
-  // const appointment = await this.appointmentsService.getAppointment(this.appointmentId);
-  // this.setDoctor(appointment.professional);
-  // this.appointmentDataService.update(appointment);
-  // }
+  private async loadCurrentMed() {
+    try {
+      const medEvent = await this.medsEventsService.getMedEvent(this.medEventId);
+      if (medEvent?.med) {
+        this.med = medEvent.med;
+        this.medEventDataService.update({ med: this.med, medId: this.med.id });
+      }
+    } catch {}
+  }
 
   setMed(value) {
     this.med = value;
-  }
-  setMedIfBack() {
-    if (this.medEventDataService.data?.med) {
-      this.med = this.medEventDataService.data?.med;
-    }
   }
 
   async handleChange(event) {
@@ -132,10 +141,9 @@ export class PickMedComponent implements OnInit, OnDestroy {
   }
 
   nextStep() {
-    // Guardar solo medId (normalizado) y metadatos del dependiente si existen
-    this.medEventDataService.update({ 
+    this.medEventDataService.update({
       medId: this.med?.id,
-      med: this.med, // mantener referencia completa si pasos siguientes la usan para mostrar info
+      med: this.med,
       dependentId: this.dependentId,
       dependentName: this.dependentName,
       groupId: this.groupId,

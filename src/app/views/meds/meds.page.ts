@@ -1,11 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { NavigationEnd, Router } from '@angular/router';
 import { ModalController, NavController } from '@ionic/angular';
 import { isBefore, parseISO } from 'date-fns';
+import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { MedsEventsService } from './shared/services/meds-events/meds-events.service';
+import { MedsEventDataService } from './shared/services/meds-events-data/meds-events-data.service';
 
 @Component({
   selector: 'app-meds',
@@ -41,22 +45,38 @@ import { MedsEventsService } from './shared/services/meds-events/meds-events.ser
   `,
   styleUrls: ['./meds.page.scss'],
 })
-export class MedsPage implements OnInit {
+export class MedsPage implements OnInit, OnDestroy {
   medsEvents: any[] = [];
   filteredMedsEvents: any[] = [];
   searchForm = this.fb.group({
     search: '',
   });
+  private routerSub: Subscription | undefined;
+
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
+    private router: Router,
     private medsEventsService: MedsEventsService,
+    private medsEventDataService: MedsEventDataService,
     private actionSheetService: ActionSheetService,
     private modalController: ModalController,
     private toastService: ToastService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.routerSub = this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(e => {
+        if (e.urlAfterRedirects === '/tabs/meds' || e.url === '/tabs/meds') {
+          this.setMedsEvents();
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    this.routerSub?.unsubscribe();
+  }
 
   async ionViewWillEnter() {
     this.setMedsEvents();
@@ -104,11 +124,11 @@ export class MedsPage implements OnInit {
     await modal.present();
     const { data } = await modal.onWillDismiss();
     if (data) {
-      // await this.appointmentsService
-      //   .cancelAppointment(id)
-      //   .then(() => this.toastService.showSuccess('Turno cancelado correctamente.'))
-      //   .then(() => this.setAppointments())
-      //   .catch(() => {});
+      await this.medsEventsService
+        .cancelMedEvent(id)
+        .then(() => this.toastService.showSuccess('Recordatorio cancelado correctamente.'))
+        .then(() => this.setMedsEvents())
+        .catch(() => this.toastService.showError('No se pudo cancelar el recordatorio.'));
     }
   }
 
@@ -122,6 +142,7 @@ export class MedsPage implements OnInit {
   }
 
   editMedEvent(id) {
+    this.medsEventDataService.clean();
     return this.navController.navigateForward([`/meds/edit/${id}/pick-med`]);
   }
 

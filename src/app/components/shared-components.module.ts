@@ -18,6 +18,7 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
 import { AppointmentsItemListComponent } from './appointments-item-list/appointments-item-list.component';
 import { YesNoModalComponent } from './yes-no-modal/yes-no-modal.component';
 import { MedsEventsItemListComponent } from './meds-event-item-list/meds-event-item-list.component';
+import { SharedDocumentsModule } from '../views/documents/shared/shared-documents.module';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,7 @@ import { MedsEventsItemListComponent } from './meds-event-item-list/meds-event-i
     YesNoModalComponent,
     MedsEventsItemListComponent
   ],
-  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule],
+  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule, SharedDocumentsModule],
   exports: [
     HeaderComponent,
     SendVerificationEmailModalComponent,

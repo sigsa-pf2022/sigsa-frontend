@@ -77,7 +77,7 @@ export class CreateMedEventComponent implements OnInit {
     date: null,
   });
   showCalendar = false;
-  minDate = formatISO(new Date(Date.now() - 24 * 60 * 60 * 1000));
+  minDate = formatISO(new Date());
   med: any;
   medEventDate;
   medEventId: number;
@@ -184,9 +184,8 @@ export class CreateMedEventComponent implements OnInit {
     this.isSubmitting = true;
     try {
       const payload: any = { date: isoDate };
-      // Permitir cambio de medicamento si se llegó desde pick-med y se cambió
-      const medId = this.medsEventDataService.data?.medId;
-      if (medId && medId !== this.med?.id) {
+      const medId = this.medsEventDataService.data?.medId || this.med?.id;
+      if (medId) {
         payload.medId = medId;
       }
       await this.medsEventService.editMedEvent(this.medEventId, payload);
@@ -215,7 +214,7 @@ export class CreateMedEventComponent implements OnInit {
       this.toastService.showError?.('Fecha inválida');
       return;
     }
-    if (dateObj.getTime() < Date.now() - 24 * 60 * 60 * 1000) { // testing: permite hasta ayer
+    if (dateObj.getTime() < Date.now() - 60000) {
       this.toastService.showError?.('La fecha debe ser futura');
       return;
     }
@@ -243,19 +242,20 @@ export class CreateMedEventComponent implements OnInit {
     } else if (depId) {
       return this.navController.navigateBack('/groups');
     }
-    return this.navController.navigateForward('/tabs/meds');
+    return this.navController.navigateRoot('/tabs/meds');
   }
 
   successEdition() {
     this.toastService.showSuccess('Recordatorio de medicamento editado correctamente.');
     const depId = this.dependentId || this.medsEventDataService.data?.dependentId;
     const grpId = this.groupId || this.medsEventDataService.data?.groupId;
+    this.medsEventDataService.clean();
     if (depId && grpId) {
       return this.navController.navigateRoot(`/groups/home/${grpId}`);
     } else if (depId) {
       return this.navController.navigateBack('/groups');
     }
-    return this.navController.navigateForward('/tabs/meds');
+    return this.navController.navigateRoot('/tabs/meds');
   }
 
   dispatch(notification, id) {
@@ -277,13 +277,18 @@ export class CreateMedEventComponent implements OnInit {
         this.toastService.showError?.('Recordatorio no encontrado');
         return;
       }
-      this.med = medEvent.med;
+      // Si el usuario cambió el med en pick-med, respetar esa elección.
+      // Si el data service está vacío (primera entrada al wizard de edición), usar el de la API.
+      const savedMed = this.medsEventDataService.data?.med;
+      this.med = savedMed ?? medEvent.med;
       if (!this.form.get('med')) {
         this.form.addControl('med', new FormControl(this.med));
       } else {
         this.form.get('med').setValue(this.med);
       }
-      this.medsEventDataService.update({ med: this.med, medId: this.med?.id });
+      if (!savedMed) {
+        this.medsEventDataService.update({ med: this.med, medId: this.med?.id });
+      }
       this.medEventDate = medEvent.date;
       this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(medEvent.date));
     } catch (err) {

@@ -14,6 +14,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 import { EventsService } from '../../home/shared/services/events/events.service';
 import { AppointmentsService } from '../../appointments/shared/services/appointments/appointments.service';
 import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-events.service';
+import { MedsEventDataService } from '../../meds/shared/services/meds-events-data/meds-events-data.service';
 import { DocumentsService } from '../../documents/shared/services/documents.service';
 
 @Component({
@@ -107,6 +108,7 @@ export class GroupHomePage implements OnInit {
     private eventsService: EventsService,
     private appointmentsService: AppointmentsService,
     private medsEventsService: MedsEventsService,
+    private medsEventDataService: MedsEventDataService,
     private documentsService: DocumentsService,
     private actionSheetService: ActionSheetService,
     private modalController: ModalController
@@ -268,7 +270,10 @@ export class GroupHomePage implements OnInit {
     await modal.present();
     const { data } = await modal.onWillDismiss();
     if (data) {
-      // TODO: Integrar con appointmentsService.cancelAppointment(id) si es necesario en contexto de grupo
+      await this.appointmentsService
+        .cancelAppointment(id)
+        .then(() => this.changeReminders(this.currentReminderType))
+        .catch(err => console.error('Error cancelando turno:', err));
     }
   }
 
@@ -320,11 +325,17 @@ export class GroupHomePage implements OnInit {
       componentProps: { text: '¿Desea cancelar el recordatorio de medicamento?' },
     });
     await modal.present();
-    await modal.onWillDismiss();
-    // TODO: Integrar con medsEventsService.cancelMedEvent(id) si existe en contexto de grupo
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.medsEventsService
+        .cancelMedEvent(id)
+        .then(() => this.changeReminders(this.currentReminderType))
+        .catch(err => console.error('Error cancelando medicamento:', err));
+    }
   }
 
   private editMedEvent(id: number) {
+    this.medsEventDataService.clean();
     return this.navController.navigateForward([`/meds/edit/${id}/pick-med`], {
       queryParams: {
         dependentId: this.group?.dependent?.id,
