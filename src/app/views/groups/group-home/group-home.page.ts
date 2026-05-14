@@ -17,6 +17,7 @@ import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-e
 import { MedsEventDataService } from '../../meds/shared/services/meds-events-data/meds-events-data.service';
 import { DocumentsService } from '../../documents/shared/services/documents.service';
 
+
 @Component({
   selector: 'app-group-home',
   template: `
@@ -57,6 +58,23 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
               </div>
             </div>
           </ion-item>
+          <!-- Solicitudes de profesionales pendientes (solo visible para el admin del grupo) -->
+          <ion-item
+            *ngIf="pendingRequestsCount > 0"
+            lines="full"
+            button
+            detail
+            (click)="openProfessionalRequests()"
+            style="margin: 8px 0;"
+          >
+            <ion-icon slot="start" name="shield-checkmark-outline" color="warning"></ion-icon>
+            <ion-label>
+              <h3>Solicitudes de profesionales</h3>
+              <p>{{ pendingRequestsCount }} solicitud(es) pendiente(s)</p>
+            </ion-label>
+            <ion-badge slot="end" color="warning">{{ pendingRequestsCount }}</ion-badge>
+          </ion-item>
+
           <app-next-events [events]="this.events"></app-next-events>
           <app-reminders
             height="37vh"
@@ -98,6 +116,7 @@ export class GroupHomePage implements OnInit {
   reminders: any = [];
   currentReminderType: string = REMINDERS_TYPE.appointments;
   options: any;
+  pendingRequestsCount = 0;
 
   constructor(
     private animationCtrl: AnimationController,
@@ -136,6 +155,7 @@ export class GroupHomePage implements OnInit {
     // Cargar datos secuencialmente para garantizar consistencia
     await this.loadDependentEvents();
     await this.loadDependentReminders();
+    await this.loadPendingRequestsCount();
   }
 
   async ionViewDidEnter() {
@@ -155,10 +175,30 @@ export class GroupHomePage implements OnInit {
   }
 
   private async loadDependentReminders() {
-    // Cargar reminders del dependiente según el tipo actual
     if (this.group?.dependent?.id) {
       await this.changeReminders(this.currentReminderType);
     }
+  }
+
+  private async loadPendingRequestsCount() {
+    const currentUser = this.authService.user();
+    const isAdmin = this.group?.createdBy?.id === currentUser?.id;
+    if (!isAdmin || !this.group?.id) {
+      this.pendingRequestsCount = 0;
+      return;
+    }
+    try {
+      const all = await this.groupsService.getProfessionalRequests();
+      this.pendingRequestsCount = (all || []).filter(
+        (r) => String(r.groupId) === String(this.group.id),
+      ).length;
+    } catch {
+      this.pendingRequestsCount = 0;
+    }
+  }
+
+  openProfessionalRequests() {
+    this.navController.navigateForward([`/groups/professional-requests/${this.group.id}`]);
   }
 
   openFabList(ev: Event) {

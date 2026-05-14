@@ -4,24 +4,26 @@ import { environment } from 'src/environments/environment';
 import { PatientLink } from '../interfaces/PatientLink.interface';
 import { MedicalDocument } from 'src/app/views/documents/shared/interfaces/Document.interface';
 
+export interface PatientsResponse {
+  patients: PatientLink[];
+  pendingRequests: PatientLink[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class PatientsService {
   constructor(private http: HttpClient) {}
 
-  getPatients(): Promise<PatientLink[]> {
+  getPatients(): Promise<PatientsResponse> {
     return this.http
-      .get<PatientLink[]>(`${environment.apiUrl}/professionals/patients`)
+      .get<PatientsResponse>(`${environment.apiUrl}/professionals/patients`)
       .toPromise();
   }
 
   linkPatient(patientId: number, patientType: string): Promise<any> {
     return this.http
-      .post(`${environment.apiUrl}/professionals/patients`, {
-        patientId,
-        patientType,
-      })
+      .post(`${environment.apiUrl}/professionals/patients`, { patientId, patientType })
       .toPromise();
   }
 
@@ -33,10 +35,7 @@ export class PatientsService {
       .toPromise();
   }
 
-  getPatientDocuments(
-    patientId: number,
-    patientType: string
-  ): Promise<MedicalDocument[]> {
+  getPatientDocuments(patientId: number, patientType: string): Promise<MedicalDocument[]> {
     return this.http
       .get<MedicalDocument[]>(
         `${environment.apiUrl}/professionals/patients/${patientId}/documents?patientType=${patientType}`

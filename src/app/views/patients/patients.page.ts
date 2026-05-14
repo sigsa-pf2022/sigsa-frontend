@@ -28,6 +28,11 @@ import { PatientsService } from './shared/services/patients.service';
           (ionChange)="handleChange($event)"
         ></ion-searchbar>
       </form>
+
+      <!-- Sección: Mis pacientes (ACCEPTED) -->
+      <ion-list-header *ngIf="filteredPatients.length > 0">
+        <ion-label>Mis pacientes</ion-label>
+      </ion-list-header>
       <ion-list class="pts__list" *ngIf="filteredPatients.length > 0">
         <app-items-list
           *ngFor="let patient of filteredPatients"
@@ -39,13 +44,36 @@ import { PatientsService } from './shared/services/patients.service';
           (press)="confirmUnlink(patient)"
         ></app-items-list>
       </ion-list>
-      <div class="pts__empty" *ngIf="filteredPatients.length === 0 && !isLoading">
+
+      <!-- Sección: Solicitudes pendientes (PENDING) -->
+      <ion-list-header *ngIf="filteredPending.length > 0">
+        <ion-label>
+          Solicitudes pendientes
+          <ion-badge color="warning" style="margin-left: 8px;">{{ filteredPending.length }}</ion-badge>
+        </ion-label>
+      </ion-list-header>
+      <ion-list *ngIf="filteredPending.length > 0">
+        <app-items-list
+          *ngFor="let patient of filteredPending"
+          [title]="patient.firstName + ' ' + patient.lastName"
+          subtitle="Esperando autorización del responsable"
+          img="doctor"
+          [showIcon]="false"
+          (press)="confirmUnlink(patient)"
+        ></app-items-list>
+      </ion-list>
+
+      <div
+        class="pts__empty"
+        *ngIf="filteredPatients.length === 0 && filteredPending.length === 0 && !isLoading"
+      >
         <ion-icon name="people-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
         <ion-label style="text-align: center; margin-top: 16px; color: var(--ion-color-medium);">
           No tenés pacientes vinculados.<br />
           Presioná + para agregar uno.
         </ion-label>
       </div>
+
       <ion-fab vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button (click)="addPatient()" class="pts__fab">
           <ion-icon name="add"></ion-icon>
@@ -58,7 +86,9 @@ import { PatientsService } from './shared/services/patients.service';
 export class PatientsPage implements OnInit {
   searchForm = this.fb.group({ search: '' });
   patients: PatientLink[] = [];
+  pendingRequests: PatientLink[] = [];
   filteredPatients: PatientLink[] = [];
+  filteredPending: PatientLink[] = [];
   isLoading = false;
 
   constructor(
@@ -78,12 +108,17 @@ export class PatientsPage implements OnInit {
   private async loadPatients() {
     this.isLoading = true;
     try {
-      this.patients = (await this.patientsService.getPatients()) || [];
+      const res = await this.patientsService.getPatients();
+      this.patients = res?.patients || [];
+      this.pendingRequests = res?.pendingRequests || [];
       this.filteredPatients = this.patients;
+      this.filteredPending = this.pendingRequests;
     } catch (error) {
       this.toastService.showError('Error al cargar pacientes');
       this.patients = [];
+      this.pendingRequests = [];
       this.filteredPatients = [];
+      this.filteredPending = [];
     } finally {
       this.isLoading = false;
     }
@@ -96,6 +131,11 @@ export class PatientsPage implements OnInit {
         p.firstName.toLowerCase().includes(search) ||
         p.lastName.toLowerCase().includes(search),
     );
+    this.filteredPending = this.pendingRequests.filter(
+      (p) =>
+        p.firstName.toLowerCase().includes(search) ||
+        p.lastName.toLowerCase().includes(search),
+    );
   }
 
   addPatient() {
@@ -103,11 +143,15 @@ export class PatientsPage implements OnInit {
   }
 
   viewDocuments(patient: PatientLink) {
-    this.navController.navigateForward([
-      `/patients/${patient.patientId}/documents`,
-    ], {
-      queryParams: { patientType: patient.patientType, name: `${patient.firstName} ${patient.lastName}` },
-    });
+    this.navController.navigateForward(
+      [`/patients/${patient.patientId}/documents`],
+      {
+        queryParams: {
+          patientType: patient.patientType,
+          name: `${patient.firstName} ${patient.lastName}`,
+        },
+      },
+    );
   }
 
   async confirmUnlink(patient: PatientLink) {
@@ -115,7 +159,7 @@ export class PatientsPage implements OnInit {
       component: YesNoModalComponent,
       cssClass: 'modal',
       componentProps: {
-        text: `¿Desvincular a ${patient.firstName} ${patient.lastName}?`,
+        text: `¿Cancelar vinculación con ${patient.firstName} ${patient.lastName}?`,
       },
     });
     await modal.present();

@@ -71,6 +71,12 @@ export class AuthenticationService {
     return this.http.get<any>(`${environment.apiUrl}/users/${value}`).toPromise();
   }
 
+  getDependentByDni(dni: string): Promise<any[]> {
+    return this.http
+      .get<any[]>(`${environment.apiUrl}/family-groups/dependents/search?dni=${dni}`)
+      .toPromise();
+  }
+
   async signOut() {
     await this.pushNotifications.deregister();
     return this.deleteUser();
