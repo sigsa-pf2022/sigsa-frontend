@@ -44,4 +44,22 @@ export class GroupsService {
       member
     ).toPromise();
   }
+
+  getProfessionalRequests(): Promise<any[]> {
+    return this.http
+      .get<any[]>(`${environment.apiUrl}/family-groups/professional-requests`)
+      .toPromise();
+  }
+
+  acceptProfessionalRequest(requestId: number): Promise<any> {
+    return this.http
+      .patch(`${environment.apiUrl}/family-groups/professional-requests/${requestId}/accept`, {})
+      .toPromise();
+  }
+
+  rejectProfessionalRequest(requestId: number): Promise<any> {
+    return this.http
+      .patch(`${environment.apiUrl}/family-groups/professional-requests/${requestId}/reject`, {})
+      .toPromise();
+  }
 }
