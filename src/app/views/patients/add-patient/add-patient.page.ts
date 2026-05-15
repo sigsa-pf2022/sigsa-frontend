@@ -19,18 +19,19 @@ import { PatientsService } from '../shared/services/patients.service';
     <ion-content class="ap">
       <div class="ap__search">
         <ion-label class="ap__search__label">Ingrese el DNI del paciente</ion-label>
-        <form [formGroup]="searchForm" (ngSubmit)="searchPatient()">
+        <form [formGroup]="searchForm">
           <ion-item>
             <ion-input
               formControlName="dni"
               placeholder="DNI"
-              type="number"
+              type="text"
               inputmode="numeric"
+              (keyup.enter)="searchPatient()"
             ></ion-input>
           </ion-item>
           <ion-button
             expand="block"
-            type="submit"
+            (click)="searchPatient()"
             [disabled]="searchForm.invalid || isSearching"
             style="margin-top: 16px;"
           >
@@ -128,7 +129,7 @@ export class AddPatientPage implements OnInit {
         return;
       }
     } catch {
-      // No encontrado como usuario, continúa buscando dependientes
+      // user not found, try dependent search
     }
 
     try {
@@ -139,7 +140,7 @@ export class AddPatientPage implements OnInit {
         this.foundPatient = { ...dependents[0], patientType: 'dependent' };
       }
     } catch {
-      // No encontrado
+      // dependent search failed silently
     }
 
     this.searchDone = true;
