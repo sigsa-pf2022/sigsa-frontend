@@ -14,33 +14,60 @@ import { MedsEventDataService } from './shared/services/meds-events-data/meds-ev
 @Component({
   selector: 'app-meds',
   template: `
-    <ion-content class="meds">
-  <ion-label class="view-title">Mis recordatorios</ion-label>
-      <form [formGroup]="this.searchForm" class="meds__search">
-        <ion-searchbar
-          formControlName="search"
-          placeholder="Buscar recordatorio ..."
-          class="ui-search-input  ui-search-input__no-show"
-          debounce="400"
-          type="string"
-          (ionChange)="handleChange($event)"
-        ></ion-searchbar>
-      </form>
-      <cdk-virtual-scroll-viewport itemSize="1">
-        <app-meds-event-item-list
-          *ngFor="let medEvent of this.filteredMedsEvents"
-          [medEvent]="medEvent"
-          [flush]="true"
-          (click)="presentActionSheet(medEvent)"
-        ></app-meds-event-item-list>
-      </cdk-virtual-scroll-viewport>
-      <div>
-        <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-          <ion-fab-button (click)="newMedEvent()" class="meds__fab">
+    <ion-content class="listing meds">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Tu medicación</p>
+        <h1 class="listing-header__title">Recordatorios</h1>
+      </header>
+
+      <ng-container *ngIf="this.medsEvents.length > 0; else emptyState">
+        <form [formGroup]="this.searchForm" class="listing-search">
+          <ion-searchbar
+            class="listing-searchbar"
+            formControlName="search"
+            placeholder="Buscar medicamento..."
+            debounce="400"
+            type="string"
+            mode="md"
+            (ionChange)="handleChange($event)"
+          ></ion-searchbar>
+        </form>
+
+        <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
+          <app-meds-event-item-list
+            *cdkVirtualFor="let medEvent of this.filteredMedsEvents"
+            [medEvent]="medEvent"
+            [flush]="true"
+            (click)="presentActionSheet(medEvent)"
+          ></app-meds-event-item-list>
+        </cdk-virtual-scroll-viewport>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <div class="empty-state" role="status">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="medkit"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin recordatorios todavía</h2>
+          <p class="empty-state__subtitle">
+            Agregá tu primer medicamento y te avisamos cuándo tomarlo.
+          </p>
+          <button type="button" class="empty-state__cta" (click)="newMedEvent()">
             <ion-icon name="add"></ion-icon>
-          </ion-fab-button>
-        </ion-fab>
-      </div>
+            Agregar medicamento
+          </button>
+        </div>
+      </ng-template>
+
+      <ion-fab class="app-fab" vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="newMedEvent()"
+          aria-label="Agregar medicamento"
+        >
+          <ion-icon name="add"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
     </ion-content>
   `,
   styleUrls: ['./meds.page.scss'],
@@ -133,8 +160,11 @@ export class MedsPage implements OnInit, OnDestroy {
   }
 
   async handleChange(event) {
-    const search = event.detail.value;
-    this.filteredMedsEvents = this.medsEvents.filter((d) => d.name.includes(search));
+    const search = (event.detail.value || '').toLowerCase();
+    this.filteredMedsEvents = this.medsEvents.filter((d) => {
+      const name = d?.med?.name ?? d?.name ?? '';
+      return String(name).toLowerCase().includes(search);
+    });
   }
 
   newMedEvent() {

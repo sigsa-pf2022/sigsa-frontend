@@ -541,3 +541,193 @@ ion-content {
 
   &::part(native) { background: #fff5f5; }
 }
+
+/* ===========================================================
+ *  Listing pages (meds, appointments, documents) — shared
+ *  pattern: large title + searchbar + virtual scroll + FAB
+ *  + empty state.
+ * =========================================================== */
+
+.listing {
+  --background: var(--color-surface-app);
+}
+
+.listing-header {
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listing-header__eyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+.listing-header__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.listing-search {
+  padding: 16px 20px 8px;
+}
+
+.listing-searchbar {
+  --background: var(--color-surface-subtle);
+  --color: var(--color-text);
+  --placeholder-color: var(--color-text-muted);
+  --placeholder-opacity: 1;
+  --icon-color: var(--color-text-muted);
+  --clear-button-color: var(--color-text-muted);
+  --border-radius: var(--radius-input);
+  --box-shadow: none;
+  --cancel-button-color: var(--sigsa-700);
+  padding: 0;
+  min-height: 52px;
+  font-size: 15px;
+  font-weight: 500;
+
+  .searchbar-input.sc-ion-searchbar-md {
+    border-radius: var(--radius-input);
+    padding-inline-start: 44px !important;
+    padding-inline-end: 44px !important;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: border-color 150ms ease, background 150ms ease,
+                box-shadow 150ms ease;
+  }
+
+  .searchbar-input-container {
+    height: 52px;
+  }
+
+  &.searchbar-has-focus .searchbar-input.sc-ion-searchbar-md {
+    border-color: var(--sigsa-500);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 4px rgba(156, 89, 232, 0.15);
+  }
+
+  .searchbar-search-icon.sc-ion-searchbar-md {
+    inset-inline-start: 14px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .searchbar-clear-button.sc-ion-searchbar-md {
+    inset-inline-end: 6px;
+  }
+}
+
+.listing-scroll {
+  height: 100%;
+  width: 100%;
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 120px);
+  box-sizing: border-box;
+}
+
+/* Empty state with icon-in-circle */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 48px 24px calc(env(safe-area-inset-bottom, 0) + 96px);
+  margin: 0 auto;
+  max-width: 380px;
+  min-height: 60vh;
+}
+
+.empty-state__icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  box-shadow: inset 0 0 0 1px rgba(115, 56, 173, 0.08);
+
+  ion-icon {
+    font-size: 44px;
+    color: var(--sigsa-700);
+  }
+}
+
+.empty-state__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.empty-state__subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.empty-state__cta {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--sigsa-500) 0%, var(--sigsa-600) 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-button);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: var(--shadow-floating);
+  transition: transform 150ms var(--ease-out-soft),
+              box-shadow 150ms var(--ease-out-soft);
+
+  ion-icon { font-size: 18px; }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: var(--shadow-floating-soft);
+  }
+}
+
+/* FAB — floating action button, bottom-right by convention */
+.app-fab {
+  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
+  margin-right: 4px;
+}
+
+.app-fab-button {
+  --background: linear-gradient(135deg, var(--sigsa-500) 0%, var(--sigsa-600) 100%);
+  --background-activated: var(--sigsa-700);
+  --background-focused: var(--sigsa-700);
+  --background-hover: var(--sigsa-600);
+  --color: #ffffff;
+  --box-shadow: var(--shadow-floating);
+  --border-radius: 9999px;
+  width: 60px;
+  height: 60px;
+  transition: transform 150ms var(--ease-out-soft);
+
+  ion-icon { font-size: 26px; }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
