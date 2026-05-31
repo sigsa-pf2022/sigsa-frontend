@@ -11,62 +11,90 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 @Component({
   selector: 'app-create-med-event',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
-        <ion-buttons slot="start">
-          <ion-back-button [defaultHref]="this.backUrl"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar medicamento' : 'Crear recordatorio' }}</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div class="auth-stepper" aria-label="Paso 2 de 2">
+            <div class="auth-stepper__bar auth-stepper__bar--done"></div>
+            <div class="auth-stepper__bar auth-stepper__bar--current"></div>
+            <span class="auth-stepper__count">2/2</span>
+          </div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ca">
-      <div class="ca__doctor">
-        <div class="ca__doctor__background">
-          <ion-item lines="none" class="ca__doctor__item no-padding">
-            <div class="ca__doctor__item__wrapper">
-              <ion-img [src]="'assets/images/reminders/pill-colored.svg'"></ion-img>
-              <div class="ca__doctor__item__wrapper__content">
-                <ion-text class="ui-font-profile-title"> {{ this.med?.name }} {{ this.med?.dosage }}</ion-text>
-              </div>
-            </div>
-          </ion-item>
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">
+          {{ this.isEditMode ? 'Editar recordatorio' : 'Nuevo recordatorio' }}
+        </p>
+        <h1 class="listing-header__title">¿Cuándo lo vas a tomar?</h1>
+      </header>
+
+      <div class="wizard-summary" *ngIf="this.med">
+        <div class="wizard-summary__icon" aria-hidden="true">
+          <ion-img src="assets/images/reminders/pill-colored.svg"></ion-img>
+        </div>
+        <div class="wizard-summary__body">
+          <p class="wizard-summary__eyebrow">Medicamento</p>
+          <p class="wizard-summary__title">{{ this.med?.name }} {{ this.med?.dosage }}</p>
         </div>
       </div>
-      <form [formGroup]="this.form">
-        <div class="ca__data">
-          <ion-input
-            class="ui-form-input"
-            placeholder="Fecha de ingesta"
-            formControlName="date"
+
+      <form [formGroup]="this.form" class="auth-form cme__form">
+        <div class="auth-field">
+          <label class="auth-field__label" for="open-modal">Fecha y hora de ingesta</label>
+          <button
+            type="button"
+            class="date-field"
+            [class.date-field--empty]="!this.form.value.date"
             id="open-modal"
           >
-          </ion-input>
-          <ion-modal trigger="open-modal" class="calendar-modal-time">
-            <ng-template>
-              <ion-content>
-                <ion-datetime
-                  #bdt
-                  [value]="this.medEventDate"
-                  [min]="this.minDate"
-                  locale="es-ES"
-                  (ionChange)="dateChanged(bdt.value)"
-                  [showDefaultButtons]="true"
-                >
-                  <span slot="time-label">Tiempo</span>
-                  <ion-buttons slot="buttons">
-                    <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
-                  </ion-buttons>
-                </ion-datetime>
-              </ion-content>
-            </ng-template>
-          </ion-modal>
+            <span>{{ this.form.value.date || 'Seleccionar fecha y hora' }}</span>
+            <ion-icon name="calendar-outline"></ion-icon>
+          </button>
+          <p class="auth-field__hint">Te vamos a recordar 5 minutos antes.</p>
         </div>
+
+        <ion-modal trigger="open-modal" class="calendar-modal-time">
+          <ng-template>
+            <ion-content>
+              <ion-datetime
+                #bdt
+                [value]="this.medEventDate"
+                [min]="this.minDate"
+                locale="es-ES"
+                (ionChange)="dateChanged(bdt.value)"
+                [showDefaultButtons]="true"
+              >
+                <span slot="time-label">Tiempo</span>
+                <ion-buttons slot="buttons">
+                  <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
+                </ion-buttons>
+              </ion-datetime>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
       </form>
     </ion-content>
-    <ion-footer class="footer__light">
-      <ion-button (click)="onSubmit()" expand="block" [disabled]="!this.form.valid" color="primary">
-        Confirmar
-      </ion-button>
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="onSubmit()"
+        [disabled]="!this.form.valid || this.isSubmitting"
+      >
+        {{ isSubmitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Confirmar') }}
+      </button>
     </ion-footer>
   `,
   styleUrls: ['./create-med-event.component.scss'],
@@ -142,12 +170,6 @@ export class CreateMedEventComponent implements OnInit {
     this.form.addControl('med', new FormControl(this.med));
   }
 
-  // setAppointmentInfo() {
-  // this.form.patchValue({ description: this.appointmentDataService.data.description });
-  // this.dateChanged(this.appointmentDataService.data.date);
-  // this.setProfessionalAndType(this.appointmentDataService.data);
-  // }
-
   dateChanged(date: string | string[]) {
     const value = Array.isArray(date) ? date[0] : date;
     this.medEventDate = value;
@@ -158,6 +180,10 @@ export class CreateMedEventComponent implements OnInit {
 
   confirmDateSelection() {
     this.datetime.confirm(true);
+  }
+
+  goBack() {
+    this.navController.navigateBack([this.backUrl]);
   }
 
   async onSubmit() {
@@ -267,7 +293,7 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   viewMedEvent(id) {
-  return this.navController.navigateForward(`/meds/view/${id}`);
+    return this.navController.navigateForward(`/meds/view/${id}`);
   }
 
   private async loadMedEvent() {

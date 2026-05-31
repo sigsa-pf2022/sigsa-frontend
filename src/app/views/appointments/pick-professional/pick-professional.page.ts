@@ -9,53 +9,92 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
 
 @Component({
   selector: 'app-pick-professional',
-  template: `<ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/tabs/appointments"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">
-          {{ this.isEditMode ? 'Editar' : 'Crear' }} turno
-          <span *ngIf="dependentName" style="font-size: 0.8em; display: block;">para {{ dependentName | titlecase }}</span>
-        </ion-title>
+  template: `
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div class="auth-stepper" aria-label="Paso 1 de 2">
+            <div class="auth-stepper__bar auth-stepper__bar--current"></div>
+            <div class="auth-stepper__bar"></div>
+            <span class="auth-stepper__count">1/2</span>
+          </div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="apn">
-      <form [formGroup]="this.searchForm">
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">
+          {{ this.isEditMode ? 'Editar turno' : 'Nuevo turno' }}
+          <ng-container *ngIf="dependentName"> · para {{ dependentName | titlecase }}</ng-container>
+        </p>
+        <h1 class="listing-header__title">Elegí al profesional</h1>
+      </header>
+
+      <form [formGroup]="this.searchForm" class="listing-search">
         <ion-searchbar
+          class="listing-searchbar"
           formControlName="search"
-          placeholder="Buscar profesionales ..."
-          class="ui-search-input  ui-search-input__no-show"
+          placeholder="Buscar profesional..."
           debounce="400"
           type="string"
+          mode="md"
           (ionChange)="handleChange($event)"
         ></ion-searchbar>
       </form>
-      <ion-list *ngIf="this.filteredDoctors?.length > 0">
-        <ion-radio-group [value]="this.doctor?.id">
+
+      <div class="pick-prof__scroll">
+        <ng-container *ngIf="this.filteredDoctors?.length > 0; else emptyState">
           <app-items-list
-            class="apn__list"
             *ngFor="let doctor of this.filteredDoctors"
             (click)="setDoctor(doctor)"
             [showIcon]="false"
             [isSelectable]="true"
             [value]="doctor.id"
+            [selectedValue]="this.doctor?.id"
             [title]="'Dr/a ' + doctor.firstName + ' ' + doctor.lastName"
             img="doctor"
-            height="60%"
           ></app-items-list>
-        </ion-radio-group>
-      </ion-list>
-      <div class="apn__empty-list" *ngIf="this.filteredDoctors?.length === 0">
-        <ion-text>No se encontraron doctores con los filtros solicitados.</ion-text>
-        <ion-button (click)="goToMyProfessionals()" color="secondary" fill="outline">Usá el tuyo</ion-button>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state" role="status">
+            <div class="empty-state__icon" aria-hidden="true">
+              <ion-icon name="people-outline"></ion-icon>
+            </div>
+            <h2 class="empty-state__title">No encontramos profesionales</h2>
+            <p class="empty-state__subtitle">
+              Probá con otra búsqueda o cargá tu profesional de confianza.
+            </p>
+            <button type="button" class="empty-state__cta" (click)="goToMyProfessionals()">
+              <ion-icon name="person-add-outline"></ion-icon>
+              Usar mi profesional
+            </button>
+          </div>
+        </ng-template>
       </div>
     </ion-content>
-    <ion-footer class="footer__light">
-      <div class="apn__actions">
-        <ion-button [disabled]="!this.doctor" (click)="nextStep()">Siguiente</ion-button>
-      </div>
-    </ion-footer>`,
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="nextStep()"
+        [disabled]="!this.doctor"
+      >
+        Siguiente
+        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+      </button>
+    </ion-footer>
+  `,
   styleUrls: ['./pick-professional.page.scss'],
 })
 export class PickProfessionalPage implements OnInit {
@@ -70,7 +109,7 @@ export class PickProfessionalPage implements OnInit {
   dependentId: number;
   dependentName: string;
   groupId: string;
-  
+
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
@@ -86,9 +125,10 @@ export class PickProfessionalPage implements OnInit {
     // Capturar parámetros del dependiente si existen
     this.route.queryParams.subscribe(params => {
       const rawDependentId = params['dependentId'];
-      this.dependentId = rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
-        ? Number(rawDependentId)
-        : null;
+      this.dependentId =
+        rawDependentId !== undefined && rawDependentId !== null && rawDependentId !== ''
+          ? Number(rawDependentId)
+          : null;
       this.dependentName = params['dependentName'] || null;
       this.groupId = params['groupId'] || null;
 
@@ -125,10 +165,11 @@ export class PickProfessionalPage implements OnInit {
   }
 
   async handleChange(event) {
-    const search = event.detail.value.toLowerCase();
+    const search = (event.detail.value || '').toLowerCase();
     this.filteredDoctors = this.doctors.filter(
       (professional: Professional) =>
-        professional.firstName.toLowerCase().includes(search) || professional.lastName.toLowerCase().includes(search)
+        (professional.firstName ?? '').toLowerCase().includes(search) ||
+        (professional.lastName ?? '').toLowerCase().includes(search)
     );
   }
 
@@ -137,19 +178,23 @@ export class PickProfessionalPage implements OnInit {
     this.filteredDoctors = this.doctors;
   }
 
+  goBack() {
+    this.navController.navigateBack(['/tabs/appointments']);
+  }
+
   nextStep() {
-    this.appointmentDataService.update({ 
-      professional: this.doctor, 
+    this.appointmentDataService.update({
+      professional: this.doctor,
       isMyProfessional: false,
       dependentId: this.dependentId,
       dependentName: this.dependentName,
       groupId: this.groupId
     });
-    
+
     const url = this.isEditMode
       ? `/appointments/edit/${this.appointmentId}/appointment`
       : '/appointments/create/appointment';
-    
+
     const navigationExtras = this.dependentId ? {
       queryParams: {
         dependentId: this.dependentId,
@@ -157,7 +202,7 @@ export class PickProfessionalPage implements OnInit {
         groupId: this.groupId
       }
     } : {};
-    
+
     return this.navController.navigateForward([url], navigationExtras);
   }
 
@@ -167,7 +212,7 @@ export class PickProfessionalPage implements OnInit {
     const url = this.isEditMode
       ? `/appointments/edit/${this.appointmentId}/my-doctors`
       : '/appointments/create/my-doctors';
-    
+
     const navigationExtras = this.dependentId ? {
       queryParams: {
         dependentId: this.dependentId,
@@ -175,7 +220,7 @@ export class PickProfessionalPage implements OnInit {
         groupId: this.groupId
       }
     } : {};
-    
+
     return this.navController.navigateForward([url], navigationExtras);
   }
 }

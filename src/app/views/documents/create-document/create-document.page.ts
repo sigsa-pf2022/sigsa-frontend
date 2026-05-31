@@ -12,55 +12,98 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
 @Component({
   selector: 'app-create-document',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button [defaultHref]="dependentId ? '/groups/home/' + groupId : '/tabs/clipboard'"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">
-          {{ isEditMode ? 'Editar' : 'Nuevo' }} Documento{{ dependentName ? ' de ' + dependentName : '' }}
-        </ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="cd">
-      <form [formGroup]="form">
-        <div class="cd__preview" *ngIf="documentPreview">
-          <ion-label class="cd__preview__label">Vista previa</ion-label>
-          <img *ngIf="documentPreview" [src]="documentPreview" class="cd__preview__image" />
-          <ion-button (click)="removeDocument()" color="danger" size="small" fill="outline">
-            <ion-icon slot="start" name="trash"></ion-icon>
-            Remover
-          </ion-button>
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">
+          {{ isEditMode ? 'Editar documento' : 'Nuevo documento' }}
+          <ng-container *ngIf="dependentName"> · para {{ dependentName | titlecase }}</ng-container>
+        </p>
+        <h1 class="listing-header__title">
+          {{ isEditMode ? 'Editar datos' : 'Subí tu archivo' }}
+        </h1>
+      </header>
+
+      <div class="cd__container">
+        <div class="cd__upload" *ngIf="!isEditMode">
+          <div class="upload-preview" *ngIf="documentPreview">
+            <img [src]="documentPreview" class="upload-preview__image" />
+            <button type="button" class="upload-preview__remove" (click)="removeDocument()">
+              <ion-icon name="trash-outline"></ion-icon>
+              Remover archivo
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="upload-card"
+            *ngIf="!documentPreview"
+            (click)="presentActionSheet()"
+          >
+            <div class="upload-card__icon" aria-hidden="true">
+              <ion-icon name="cloud-upload-outline"></ion-icon>
+            </div>
+            <p class="upload-card__title">Seleccionar archivo</p>
+            <p class="upload-card__subtitle">
+              Tomá una foto o elegí una imagen de tu galería.
+            </p>
+          </button>
         </div>
 
-        <div class="cd__select" *ngIf="!documentPreview && !isEditMode">
-          <ion-button (click)="presentActionSheet()" expand="block" color="primary" fill="outline">
-            <ion-icon slot="start" name="cloud-upload"></ion-icon>
-            Seleccionar Documento
-          </ion-button>
-        </div>
+        <form [formGroup]="form" class="auth-form cd__form">
+          <div class="auth-field">
+            <label class="auth-field__label" for="cd-title">Título</label>
+            <div class="auth-input">
+              <ion-input
+                id="cd-title"
+                placeholder="Ej: Análisis de sangre"
+                formControlName="title"
+                type="text"
+              ></ion-input>
+            </div>
+          </div>
 
-        <div class="cd__form">
-          <ion-input
-            class="ui-form-input"
-            placeholder="Título del documento *"
-            formControlName="title"
-          ></ion-input>
+          <div class="auth-field">
+            <label class="auth-field__label" for="cd-description">Descripción</label>
+            <div class="auth-input cd__textarea">
+              <ion-textarea
+                id="cd-description"
+                rows="4"
+                placeholder="Notas u observaciones (opcional)"
+                formControlName="description"
+                autoGrow="true"
+              ></ion-textarea>
+            </div>
+          </div>
 
-            <ion-textarea
-              rows="4"
-              class="ui-form-input"
-              placeholder="Descripción (opcional)"
-              formControlName="description"
-            ></ion-textarea>
+          <div class="auth-field">
+            <label class="auth-field__label" for="open-modal-doc-date">Fecha del documento</label>
+            <button
+              type="button"
+              class="date-field"
+              [class.date-field--empty]="!form.value.documentDate"
+              id="open-modal-doc-date"
+            >
+              <span>{{ form.value.documentDate || 'DD/MM/AAAA' }}</span>
+              <ion-icon name="calendar-outline"></ion-icon>
+            </button>
+          </div>
 
-          <ion-input
-            class="ui-form-input"
-            placeholder="Fecha del documento *"
-            formControlName="documentDate"
-            id="open-modal-doc-date"
-            readonly
-          ></ion-input>
           <ion-modal trigger="open-modal-doc-date" class="calendar-modal-time">
             <ng-template>
               <ion-content>
@@ -80,18 +123,19 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
               </ion-content>
             </ng-template>
           </ion-modal>
-        </div>
-      </form>
+        </form>
+      </div>
     </ion-content>
-    <ion-footer class="footer__light">
-      <ion-button
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
         (click)="onSubmit()"
-        expand="block"
         [disabled]="!form.valid || (!fileContent && !isEditMode)"
-        color="primary"
       >
         {{ isEditMode ? 'Actualizar' : 'Guardar' }}
-      </ion-button>
+      </button>
     </ion-footer>
   `,
   styleUrls: ['./create-document.page.scss'],
@@ -132,23 +176,28 @@ export class CreateDocumentPage implements OnInit {
 
   ionViewWillEnter() {
     this.documentId = Number(this.route.snapshot.paramMap.get('id'));
-    
+
     // Obtener queryParams para dependiente
     this.route.queryParams.subscribe(params => {
       this.dependentId = params['dependentId'] ? Number(params['dependentId']) : null;
       this.dependentName = params['dependentName'] || null;
       this.groupId = params['groupId'] ? Number(params['groupId']) : null;
     });
-    
+
     if (this.documentId) {
       this.isEditMode = true;
       this.loadDocument();
     }
   }
 
+  goBack() {
+    const fallback = this.dependentId ? `/groups/home/${this.groupId}` : '/tabs/clipboard';
+    this.navController.navigateBack([fallback]);
+  }
+
   async loadDocument() {
     const document = await this.documentsService.getDocument(this.documentId);
-    
+
     // Formatear la fecha para mostrar
     let formattedDate = '';
     if (document.documentDate) {
@@ -158,7 +207,7 @@ export class CreateDocumentPage implements OnInit {
         const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
         const year = dateObj.getFullYear();
         formattedDate = `${day}/${month}/${year}`;
-        
+
         // Guardar el valor ISO para edición
         this.selectedDocumentDate = formatISO(dateObj, { representation: 'date' });
       } catch (error) {
@@ -166,7 +215,7 @@ export class CreateDocumentPage implements OnInit {
         formattedDate = document.documentDate.toString();
       }
     }
-    
+
     this.form.patchValue({
       title: document.title,
       description: document.description,
@@ -177,6 +226,7 @@ export class CreateDocumentPage implements OnInit {
   async presentActionSheet() {
     const actionSheet = await this.actionSheetController.create({
       header: 'Seleccionar documento',
+      mode: 'ios',
       buttons: [
         {
           text: 'Tomar foto',
@@ -217,7 +267,7 @@ export class CreateDocumentPage implements OnInit {
       this.fileName = `document_${Date.now()}.${image.format}`;
       this.fileSize = this.calculateBase64Size(this.fileContent);
       this.documentPreview = `data:${this.mimeType};base64,${this.fileContent}`;
-      
+
       // Advertir si el archivo es muy grande
       if (this.fileSize > 10 * 1024 * 1024) { // 10MB
         this.toastService.showError('La imagen es muy grande. Intenta con una de menor calidad.');
@@ -243,7 +293,7 @@ export class CreateDocumentPage implements OnInit {
       this.fileName = `document_${Date.now()}.${image.format}`;
       this.fileSize = this.calculateBase64Size(this.fileContent);
       this.documentPreview = `data:${this.mimeType};base64,${this.fileContent}`;
-      
+
       // Advertir si el archivo es muy grande
       if (this.fileSize > 10 * 1024 * 1024) { // 10MB
         this.toastService.showError('La imagen es muy grande. Intenta con una de menor calidad.');
@@ -265,7 +315,7 @@ export class CreateDocumentPage implements OnInit {
   documentDateChanged(date: string | string[]) {
     const dateValue = Array.isArray(date) ? date[0] : date;
     this.selectedDocumentDate = dateValue;
-    
+
     // Formatear la fecha para mostrar en el input (formato simple español)
     try {
       const dateObj = new Date(dateValue);
@@ -346,7 +396,7 @@ export class CreateDocumentPage implements OnInit {
     try {
       await this.documentsService.editDocument(this.documentId, payload);
       this.toastService.showSuccess('Documento actualizado correctamente');
-      
+
       if (this.dependentId) {
         // Navegar de vuelta al grupo si estamos editando un documento de dependiente
         this.navController.navigateRoot(['/groups/home/' + this.groupId]);
@@ -359,4 +409,3 @@ export class CreateDocumentPage implements OnInit {
     }
   }
 }
-
