@@ -1,46 +1,26 @@
-.login {
-  background-color: var(--ion-color-light);
-  &__logo {
-    display: flex;
-    justify-content: center;
-    padding-top: 4px;
-    padding-bottom: 32px;
-  }
-  &__content {
-    &__form {
-      display: flex;
-      align-items: center;
-      flex-direction: column;
-      background-color: var(--ion-color-white);
-      border-top-left-radius: 20px;
-      border-top-right-radius: 20px;
-      &__items {
-        margin-top: 32px;
-        display: flex;
-        flex-flow: column;
-        align-items: center;
-        gap: 16px;
-        width: 90%;
-        &__forgot-password {
-          font-size: 16px;
-          align-self: flex-end;
-        }
-      }
-      &__actions {
-        margin-top: 60px;
-        &__secondary {
-          font-size: 16px;
-          margin-top: 24px;
-          text-align: center;
-        }
-      }
-      &__title {
-        margin-top: 30px;
-      }
-    }
+.auth-page-header {
+  &::after {
+    background-image: none !important;
+    display: none;
   }
 }
 
-.form-desktop {
-  padding: 0 450px;
+.auth-page-toolbar {
+  --background: var(--color-surface-app);
+  --border-style: none;
+  --min-height: 56px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+.login__hero-icon {
+  font-size: 40px;
+  color: var(--sigsa-700);
+}
+
+.login__forgot {
+  align-self: flex-end;
+  margin-top: -8px;
 }

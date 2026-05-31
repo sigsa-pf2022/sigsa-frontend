@@ -1,25 +1,41 @@
-.pd {
-  background-color: var(--ion-color-white);
-  &__img {
-    margin-top: 25px;
-    display: flex;
-    height: 140px;
-    justify-content: center;
+.pd__type-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 6px;
+  background: var(--color-surface-subtle);
+  border-radius: 14px;
+}
+
+.pd__type-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 150ms var(--ease-out-soft),
+              color 150ms var(--ease-out-soft),
+              box-shadow 150ms var(--ease-out-soft),
+              transform 150ms var(--ease-out-soft);
+
+  ion-icon {
+    font-size: 18px;
   }
-  &__notice {
-    margin: 16px;
-    &__type{
-        font-weight: bold;
-        margin-left: 4px;
-        color: var(--ion-color-primary);
-    }
+
+  &:active {
+    transform: scale(0.98);
   }
-  &__form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin: 35px 16px 0;
+
+  &--active {
+    background: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.08);
   }
 }
