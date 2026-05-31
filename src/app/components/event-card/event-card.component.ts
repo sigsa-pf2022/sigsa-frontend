@@ -4,22 +4,33 @@ import { NextEvent } from 'src/app/views/home/shared/interfaces/next-event';
 @Component({
   selector: 'app-event-card',
   template: `
-    <div class="ec" [ngClass]="event.type === 'medication' ? 'ec-medication' : 'ec-appointment'" [attr.aria-label]="event.title" role="group">
-      <div
-        class="ec__date"
-        [ngClass]="event.type === 'medication' ? 'ec-medication__date' : 'ec-appointment__date'"
+    <div
+      class="ec"
+      [ngClass]="event.type === 'medication' ? 'ec--medication' : 'ec--appointment'"
+      [attr.aria-label]="event.title"
+      role="group"
+    >
+      <div class="ec__icon" aria-hidden="true">
+        <ion-icon [name]="event.type === 'medication' ? 'medkit' : 'calendar'"></ion-icon>
+      </div>
+
+      <div class="ec__body">
+        <div class="ec__meta">
+          <span class="ec__date">{{ event.date | date: 'dd MMM' }}</span>
+          <span class="ec__dot">·</span>
+          <span class="ec__hour">{{ event.date | date: 'HH:mm' }}</span>
+        </div>
+        <p class="ec__title">{{ event.title }}</p>
+        <p class="ec__subtitle" *ngIf="event.subtitle">{{ event.subtitle }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="ec__chevron"
+        aria-label="Ver detalle"
       >
-  <ion-label class="ec__date__calendar">{{ event.date | date: 'dd/MM' }}</ion-label>
-  <ion-label class="ec__date__day">{{ dayShortEs }}</ion-label>
-      </div>
-      <div class="ec__description">
-        <ion-label class="ec__description__hour">{{ event.date | date: 'HH:mm' }}</ion-label>
-        <ion-label class="ec__description__med">{{ event.title }}</ion-label>
-        <ion-label class="ec__description__dosis">{{ event.subtitle }}</ion-label>
-      </div>
-      <div class="ec__options" role="button" tabindex="0" aria-label="Opciones evento">
-        <ion-icon name="options-outline" aria-hidden="true"></ion-icon>
-      </div>
+        <ion-icon name="chevron-forward"></ion-icon>
+      </button>
     </div>
   `,
   styleUrls: ['./event-card.component.scss'],
@@ -31,10 +42,9 @@ export class EventCardComponent implements OnInit {
 
   ngOnInit() {
     if (this.event?.date) {
-      // Obtener abreviación en español (lun, mar, mié, etc.)
       this.dayShortEs = new Intl.DateTimeFormat('es-ES', { weekday: 'short' })
         .format(new Date(this.event.date))
-        .replace('.', '') // algunos navegadores añaden punto
+        .replace('.', '')
         .toLowerCase();
     }
   }

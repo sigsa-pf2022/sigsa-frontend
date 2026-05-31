@@ -1,5 +1,39 @@
 :host {
-  .home {
-    margin: 12px;
+  display: block;
+}
+
+.home {
+  --background: #FAFAFB;
+  --padding-bottom: calc(env(safe-area-inset-bottom, 0) + 16px);
+
+  &__container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0 0;
+  }
+
+  &__title-block {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  &__greeting {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6B7280;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+
+  &__title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #18181B;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin: 0;
   }
 }

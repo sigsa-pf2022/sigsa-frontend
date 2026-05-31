@@ -8,12 +8,20 @@ import { MedsEventsService } from '../meds/shared/services/meds-events/meds-even
   selector: 'app-home',
   template: `
     <ion-content class="home">
-      <app-next-events [events]="this.events"></app-next-events>
-      <app-reminders
-        [activeTab]="this.activeTab"
-        [reminders]="this.reminders"
-        (tabChanged)="this.changeReminders($event)"
-      ></app-reminders>
+      <div class="home__container">
+        <div class="home__title-block">
+          <p class="home__greeting">Hola 👋</p>
+          <h1 class="home__title">Próximos eventos</h1>
+        </div>
+
+        <app-next-events [events]="this.events"></app-next-events>
+
+        <app-reminders
+          [activeTab]="this.activeTab"
+          [reminders]="this.reminders"
+          (tabChanged)="this.changeReminders($event)"
+        ></app-reminders>
+      </div>
     </ion-content>
   `,
   styleUrls: ['./home.page.scss'],

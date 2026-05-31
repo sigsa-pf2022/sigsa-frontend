@@ -1,65 +1,58 @@
-// Diseño unificado (glass suave) alineado con items de listas y tarjetas vacías
 :host {
-  /* Variables base */
-  --empty-bg: rgba(255,255,255,0.82);
-  --empty-bg-alt: linear-gradient(145deg, rgba(255,255,255,0.96) 0%, rgba(250,252,255,0.94) 70%, rgba(248,250,253,0.92) 100%);
-  --empty-border: 1px solid rgba(225,229,235,0.95);
-  --empty-shadow: 0 1px 2px rgba(0,0,0,0.06);
-  --empty-shadow-hover: 0 2px 4px rgba(0,0,0,0.08);
-  --empty-radius: 18px;
-  --empty-padding-y: 18px;
-  --empty-padding-x: 18px;
-  --empty-title-size: 15px;
-  --empty-title-color: #5f6368;
-
   display: block;
   width: 100%;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   .eec {
     display: flex;
-    width: 100%;
-    min-height: 120px;
-    background: var(--empty-bg-alt, var(--empty-bg));
-    border: var(--empty-border);
-    border-radius: var(--empty-radius);
-    backdrop-filter: blur(10px) saturate(160%);
-    -webkit-backdrop-filter: blur(10px) saturate(160%);
-    box-shadow: var(--empty-shadow);
-    font-family: var(--ui-font-roboto, 'Roboto', sans-serif);
-    padding: var(--empty-padding-y) var(--empty-padding-x);
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 14px;
+    width: 100%;
+    min-height: 160px;
+    padding: 28px 20px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
     text-align: center;
-    position: relative;
-    overflow: hidden;
-    transition: box-shadow .25s ease, background-color .3s ease;
+  }
 
-    /* Hairline interno y línea inferior tenue */
-    &:before { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:0 0 0 1px rgba(255,255,255,0.9) inset; }
-    &:after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:linear-gradient(to right, rgba(0,0,0,0.08), rgba(0,0,0,0.04) 40%, rgba(0,0,0,0.02) 70%, rgba(0,0,0,0)); pointer-events:none; }
+  .eec__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #faf5fe;
 
-    &:hover { box-shadow: var(--empty-shadow-hover); }
-
-    &__description {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      max-width: 480px;
-      &__title {
-        font-weight: 600;
-        font-size: var(--empty-title-size);
-        color: var(--empty-title-color);
-        letter-spacing: .3px;
-      }
+    ion-icon {
+      font-size: 28px;
+      color: #7338ad;
     }
   }
 
-  /* Variación compacta opcional */
-  :host(.compact) .eec { min-height: 90px; --empty-padding-y: 14px; }
+  .eec__description {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    max-width: 280px;
 
-  @media (max-width: 480px) {
-    .eec { min-height: 110px; --empty-padding-y: 16px; &__description__title { font-size: 14px; } }
+    &__title {
+      font-weight: 600;
+      font-size: 16px;
+      color: #18181B;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    &__subtitle {
+      font-weight: 400;
+      font-size: 13px;
+      color: #9CA3AF;
+      line-height: 1.5;
+    }
   }
 }

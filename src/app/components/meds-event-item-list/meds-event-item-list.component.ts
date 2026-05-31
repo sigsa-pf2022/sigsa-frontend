@@ -3,19 +3,44 @@ import { isBefore } from 'date-fns';
 import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 
+const STATUS_BADGE_CLASS = {
+  danger: 'status-badge--danger',
+  primary: 'status-badge--violet',
+  success: 'status-badge--success',
+  warning: 'status-badge--warning',
+  info: 'status-badge--info',
+};
+
 @Component({
   selector: 'app-meds-event-item-list',
   template: `
-  <ion-item class="il" [ngClass]="{ 'il-due': dueDate, 'il--flush': flush }" lines="none">
-      <div class="il__img">
-        <ion-img [src]="'assets/images/reminders/pill.svg'"></ion-img>
+    <ion-item
+      class="list-item"
+      [class.list-item--due]="dueDate"
+      lines="none"
+      [button]="true"
+      detail="false"
+    >
+      <div
+        class="list-item__icon"
+        [class.list-item__icon--med]="!dueDate"
+        [class.list-item__icon--due]="dueDate"
+        aria-hidden="true"
+      >
+        <ion-icon name="medkit"></ion-icon>
       </div>
-      <div class="il__content">
-        <div class="il__content__title">
-          <ion-text>{{ this.title }}</ion-text>
-          <ion-text [color]="this.status?.color" class="il__content__title__status">{{ this.status?.text }}</ion-text>
+      <div class="list-item__body">
+        <div class="list-item__row">
+          <span class="list-item__title">{{ this.title }}</span>
+          <span
+            *ngIf="this.status"
+            class="status-badge"
+            [ngClass]="statusBadgeClass"
+          >
+            {{ this.status.text }}
+          </span>
         </div>
-        <ion-text class="il__content__subtitle">{{ this.subtitle }}</ion-text>
+        <span class="list-item__subtitle">{{ this.subtitle }}</span>
       </div>
     </ion-item>
   `,
@@ -23,11 +48,12 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 })
 export class MedsEventsItemListComponent implements OnInit, OnChanges {
   @Input() medEvent;
-  @Input() flush: boolean = false; // Quita margen horizontal cuando true
+  @Input() flush: boolean = false;
   title: string;
   subtitle: string;
   dueDate: boolean;
   status: EventStatus;
+  statusBadgeClass = '';
   constructor(private dateFormatterService: DateFormatterService) {}
   ngOnInit() {
     this.setMedEventData();
@@ -45,6 +71,7 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
       this.subtitle = '';
       this.status = null;
       this.dueDate = false;
+      this.statusBadgeClass = '';
       return;
     }
 
@@ -55,7 +82,6 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
     const dosageStr = rawDosage == null ? '' : typeof rawDosage === 'string' ? rawDosage.trim() : String(rawDosage);
     this.title = `${name}${dosageStr ? ' ' + dosageStr : ''}`.trim() || 'Medicamento';
 
-    // Fecha segura
     let formattedDate = '';
     try {
       if (this.medEvent.date) {
@@ -67,6 +93,7 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
     this.subtitle = formattedDate;
 
     this.status = EVENT_STATUS.find((es) => es.value === this.medEvent.status);
+    this.statusBadgeClass = this.status ? (STATUS_BADGE_CLASS[this.status.color] || '') : '';
     if (this.status && this.status.value === EventStatusEnum.CONFIRMADO && this.medEvent.date) {
       const date = new Date(this.medEvent.date);
       this.dueDate = !isNaN(date.getTime()) && isBefore(date, new Date());
