@@ -5,7 +5,7 @@ import { Component, Input, OnInit } from '@angular/core';
   template: `
     <ion-item
       class="picker-card"
-      [class.picker-card--selected]="isSelectable && selectedValue === value"
+      [class.picker-card--selected]="isSelectable && value != null && selectedValue === value"
       lines="none"
       [button]="true"
       detail="false"

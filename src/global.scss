@@ -1864,7 +1864,6 @@ ion-alert .alert-button.alert-button-role-cancel {
 /* FAB — floating action button, bottom-right by convention */
 .app-fab {
   margin-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
-  margin-right: 4px;
 }
 
 .app-fab-button {
@@ -1875,13 +1874,21 @@ ion-alert .alert-button.alert-button-role-cancel {
   --color: #ffffff;
   --box-shadow: var(--shadow-floating);
   --border-radius: 9999px;
-  width: 60px;
-  height: 60px;
   transition: transform 150ms var(--ease-out-soft);
 
-  ion-icon { font-size: 26px; }
+  ion-icon { font-size: 24px; }
 
   &:active {
     transform: scale(0.92);
   }
+}
+
+/* Expandable fab list (used in group-home). Force the list to be
+   anchored to the right edge of the parent ion-fab so the wider
+   .sub-fab buttons (label + pill) can grow to the LEFT instead of
+   overflowing the viewport on the right. */
+ion-fab-list[side="top"] {
+  align-items: flex-end;
+  inset-inline-start: auto;
+  inset-inline-end: 0;
 }
