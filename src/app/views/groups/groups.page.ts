@@ -8,26 +8,44 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-groups',
   template: `
-    <ion-content class="g">
-      <div class="g__content">
-  <ion-label class="view-title">Mis grupos</ion-label>
-        <ng-container *ngIf="this.groups.length > 0">
+    <ion-content class="listing groups">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Tu familia</p>
+        <h1 class="listing-header__title">Mis grupos</h1>
+      </header>
+
+      <ng-container *ngIf="this.groups.length > 0; else emptyState">
+        <div class="groups__scroll">
           <app-group-item
             *ngFor="let group of this.groups"
             [group]="group"
             (click)="goToGroupHome(group.id)"
           ></app-group-item>
-        </ng-container>
+        </div>
+      </ng-container>
 
-        <ng-container *ngIf="this.groups.length === 0">
-          <img src="/assets/images/groups/groups-empty.svg" />
-          <ion-label class="g__content__empty-title"
-            >Todavia no perteneces a ningun grupo. ¡Aprovechá para crear el tuyo!</ion-label
-          >
-        </ng-container>
-      </div>
-      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button (click)="navigateTo()" class="g__fab">
+      <ng-template #emptyState>
+        <div class="empty-state" role="status">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="people"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin grupos todavía</h2>
+          <p class="empty-state__subtitle">
+            Creá un grupo familiar para gestionar la salud de quienes dependen de vos.
+          </p>
+          <button type="button" class="empty-state__cta" (click)="navigateTo()">
+            <ion-icon name="add"></ion-icon>
+            Crear grupo
+          </button>
+        </div>
+      </ng-template>
+
+      <ion-fab class="app-fab" vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="navigateTo()"
+          aria-label="Crear grupo"
+        >
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
       </ion-fab>

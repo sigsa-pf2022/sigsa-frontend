@@ -1,17 +1,10 @@
 :host {
-  padding: 16px;
-  .g {
-    &__content {
-      display: flex;
-      gap: 16px;
-      flex-direction: column;
-      &__empty-title {
-        font-size: 18px;
-        text-align: center;
-      }
-    }
-    &__fab {
-      --box-shadow: none;
-    }
-  }
+  display: block;
+}
+
+.groups__scroll {
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }

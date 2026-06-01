@@ -1,58 +1,58 @@
 :host {
-  .am {
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --padding-top: 16px;
-    &__member,
-    &__no-member {
-      height: 50px;
-      background: var(--ion-color-light);
-      --background: var(--ion-color-light);
-      border-bottom: 1px solid var(--ion-color-medium);
-      border-right: 1px solid var(--ion-color-medium);
-      border-left: 1px solid var(--ion-color-medium);
-      border-radius: 0 0 8px 8px;
-    }
+  display: block;
+}
 
-    &__members-list {
-      &__header {
-        padding-right: 16px;
-        ion-label {
-          font-size: 20px;
-        }
-        ion-icon {
-          font-size: 24px;
-          margin-left: auto;
-        }
-        &__container {
-          display: flex;
-          width: 100%;
-          gap: 6px;
-        }
-      }
-      &__item {
-        --border-width: 1px;
-        --border-color: var(--ion-color-primary);
-        --border-radius: 8px;
-        margin-bottom: 8px;
-      }
-    }
+.am__container {
+  padding: 4px 20px calc(env(safe-area-inset-bottom, 0) + 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
 
-    &__current-members-list {
-      max-height: 150px;
-      overflow-y: auto;
-      margin-bottom: 1rem;
-    }
-  }
-  .am__members-list__header__container ion-label:first-child {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--ion-color-primary);
-  }
+.am__search-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 
-  .am__members-list__header__container ion-label:not(:first-child) {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--ion-color-medium);
+.am__search-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  .auth-field__label {
+    padding-left: 4px;
   }
+}
+
+.am__candidate {
+  background: var(--sigsa-50);
+
+  &::part(native) {
+    background: var(--sigsa-50);
+  }
+}
+
+.am__section {
+  display: flex;
+  flex-direction: column;
+}
+
+.am__section-title {
+  padding: 0 0 8px;
+}
+
+.am__section-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.am__empty {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: 16px 8px;
+  margin: 0;
 }
