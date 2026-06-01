@@ -6,6 +6,10 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
     <ion-item
       class="picker-card"
       [class.picker-card--selected]="isItemSelected"
+      [attr.data-debug-selectable]="isSelectable"
+      [attr.data-debug-value]="value"
+      [attr.data-debug-selected-value]="selectedValue"
+      [attr.data-debug-is-selected]="isItemSelected"
       lines="none"
       [button]="true"
       detail="false"
