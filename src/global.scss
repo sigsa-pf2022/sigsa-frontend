@@ -1660,6 +1660,207 @@ ion-content {
   }
 }
 
+/* ===========================================================
+ *  App modals (presented via ModalController with cssClass: 'modal')
+ *  Modernized container; legacy .modal still defined in theme/modals.scss
+ * =========================================================== */
+
+.app-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 28px 24px 24px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.app-modal__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+
+  ion-icon {
+    font-size: 32px;
+    color: var(--sigsa-700);
+  }
+
+  &--success {
+    background: #dcfce7;
+    ion-icon { color: #15803d; }
+  }
+
+  &--warning {
+    background: #fef3c7;
+    ion-icon { color: #b45309; }
+  }
+
+  &--danger {
+    background: #fee2e2;
+    ion-icon { color: #b91c1c; }
+  }
+}
+
+.app-modal__title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.app-modal__text {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 320px;
+}
+
+.app-modal__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.app-modal__actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.app-modal__actions--row {
+  flex-direction: row;
+
+  .auth-btn {
+    flex: 1;
+    min-height: 48px;
+    font-size: 15px;
+  }
+}
+
+/* Pill code input (e.g. user validation, token verification) */
+.code-input {
+  --background: var(--color-surface-subtle);
+  --color: var(--color-text);
+  --placeholder-color: var(--color-text-muted);
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-input);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-align: center;
+  min-height: 60px;
+  width: 100%;
+}
+
+/* ===========================================================
+ *  Global tweaks for Ionic overlays (toast / action sheet)
+ * =========================================================== */
+
+ion-toast {
+  --background: var(--color-text);
+  --color: #ffffff;
+  --border-radius: 16px;
+  --box-shadow: var(--shadow-elevated);
+  --start: 16px;
+  --end: 16px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+ion-toast.toast-success {
+  --background: #15803d;
+}
+
+ion-toast.toast-danger {
+  --background: #b91c1c;
+}
+
+ion-action-sheet {
+  --background: var(--color-surface-app);
+  --color: var(--color-text);
+  --button-background: var(--color-surface);
+  --button-background-selected: var(--color-surface-subtle);
+  --button-color: var(--color-text);
+  --button-color-selected: var(--color-text);
+  --button-color-activated: var(--sigsa-700);
+
+  .action-sheet-button.ion-color-danger,
+  .action-sheet-button.action-sheet-destructive {
+    color: #b91c1c;
+    font-weight: 600;
+  }
+}
+
+/* Alert controller (used by app-menu and group-members) */
+ion-alert {
+  --background: var(--color-surface);
+}
+
+ion-alert .alert-wrapper {
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-elevated) !important;
+}
+
+ion-alert .alert-head {
+  padding-top: 22px !important;
+}
+
+ion-alert .alert-title {
+  font-weight: 700 !important;
+  font-size: 17px !important;
+  letter-spacing: -0.015em !important;
+  color: var(--color-text) !important;
+}
+
+ion-alert .alert-sub-title,
+ion-alert .alert-message {
+  font-size: 14px !important;
+  color: var(--color-text-secondary) !important;
+  line-height: 1.5 !important;
+}
+
+ion-alert .alert-button-group {
+  padding: 12px !important;
+  gap: 8px !important;
+}
+
+ion-alert .alert-button {
+  border-radius: var(--radius-button) !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  margin: 0 !important;
+  padding: 12px 16px !important;
+  color: var(--sigsa-700) !important;
+  background: var(--sigsa-50) !important;
+  border: none !important;
+}
+
+ion-alert .alert-button.alert-button-role-cancel {
+  color: var(--color-text-secondary) !important;
+  background: var(--color-surface-subtle) !important;
+}
+
 /* FAB — floating action button, bottom-right by convention */
 .app-fab {
   margin-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
