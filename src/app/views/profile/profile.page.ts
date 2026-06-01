@@ -6,16 +6,43 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
 @Component({
   selector: 'app-profile',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/tabs/home"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Mi Perfil</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content>
-      <div class="p__items">
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Tu cuenta</p>
+        <h1 class="listing-header__title">Mi perfil</h1>
+      </header>
+
+      <article class="profile-hero" *ngIf="user">
+        <div class="profile-hero__avatar" aria-hidden="true">
+          {{ getInitials(user) }}
+        </div>
+        <div class="profile-hero__body">
+          <p class="profile-hero__name">
+            {{ user.firstName }} {{ user.lastName }}
+          </p>
+          <p class="profile-hero__email" *ngIf="user.email">{{ user.email }}</p>
+          <span class="profile-hero__chip" *ngIf="user.role === 'professional'">Profesional</span>
+        </div>
+      </article>
+
+      <div class="p__sections">
+        <p class="section-eyebrow">Salud</p>
         <app-profile-item
           *ngFor="let option of options"
           [title]="option.title"
@@ -24,12 +51,14 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
           [content]="option.content"
           [action]="option.action"
           (doAction)="this.doAction($event)"
-        >
-        </app-profile-item>
-        <div class="p__items__logout" (click)="logout()">
-          <ion-icon color="danger" name="log-out-outline"></ion-icon>
-          <ion-text>Salir</ion-text>
-        </div>
+        ></app-profile-item>
+
+        <button type="button" class="p__logout" (click)="logout()">
+          <span class="option-row__icon option-row__icon--danger" aria-hidden="true">
+            <ion-icon name="log-out-outline"></ion-icon>
+          </span>
+          <span class="option-row__title option-row__title--danger">Cerrar sesión</span>
+        </button>
       </div>
     </ion-content>
   `,
@@ -37,24 +66,33 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
 })
 export class ProfilePage implements OnInit {
   options = [];
+  user: any;
   constructor(private auth: AuthenticationService, private navController: NavController) {}
 
   ngOnInit() {}
   ionViewWillEnter() {
     this.buildOptions();
   }
+
+  goBack() {
+    this.navController.navigateBack(['/tabs/home']);
+  }
+
   logout() {
     this.auth.signOut();
     return this.navController.navigateRoot(['welcome']);
   }
-  buildOptions() {
-    const user = this.auth.user();
-    this.options = JSON.parse(JSON.stringify(PROFILE_OPTIONS));
-    this.options[0].title = user.firstName;
 
-    if (user.role === 'professional') {
-      // Replace "Mis Profesionales" (index 1) with "Mis Pacientes"
-      this.options[1] = {
+  buildOptions() {
+    this.user = this.auth.user();
+    // Cargar las opciones omitiendo la primera (que era el placeholder del nombre,
+    // ahora reemplazado por el profile-hero)
+    const all = JSON.parse(JSON.stringify(PROFILE_OPTIONS));
+    this.options = all.slice(1);
+
+    if (this.user.role === 'professional') {
+      // Replace "Mis Profesionales" with "Mis Pacientes"
+      this.options[0] = {
         icon: 'people-outline',
         title: 'Mis Pacientes',
         action: {
@@ -63,6 +101,12 @@ export class ProfilePage implements OnInit {
         },
       };
     }
+  }
+
+  getInitials(user: any): string {
+    const first = (user?.firstName ?? '').trim();
+    const last = (user?.lastName ?? '').trim();
+    return ((first[0] || '') + (last[0] || '')).toUpperCase() || '?';
   }
 
   doAction(event) {

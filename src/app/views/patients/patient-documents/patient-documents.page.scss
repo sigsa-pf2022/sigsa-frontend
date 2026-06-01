@@ -1,11 +1,15 @@
 :host {
-  .pd {
-    &__empty {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 60%;
-    }
-  }
+  display: block;
+}
+
+.pd__loading {
+  display: flex;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.pd__scroll {
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 32px);
+  display: flex;
+  flex-direction: column;
 }

@@ -9,74 +9,129 @@ import { PatientsService } from './shared/services/patients.service';
 @Component({
   selector: 'app-patients',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/profile"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Mis Pacientes</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="pts">
-      <form class="pts__form" [formGroup]="searchForm">
+
+    <ion-content class="listing pts">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Profesional</p>
+        <h1 class="listing-header__title">Mis pacientes</h1>
+      </header>
+
+      <form
+        class="listing-search"
+        [formGroup]="searchForm"
+        *ngIf="patients.length + pendingRequests.length > 0"
+      >
         <ion-searchbar
+          class="listing-searchbar"
           formControlName="search"
-          placeholder="Buscar pacientes ..."
-          class="ui-search-input ui-search-input__no-show"
+          placeholder="Buscar paciente..."
           debounce="400"
           type="string"
+          mode="md"
           (ionChange)="handleChange($event)"
         ></ion-searchbar>
       </form>
 
-      <!-- Sección: Mis pacientes (ACCEPTED) -->
-      <ion-list-header *ngIf="filteredPatients.length > 0">
-        <ion-label>Mis pacientes</ion-label>
-      </ion-list-header>
-      <ion-list class="pts__list" *ngIf="filteredPatients.length > 0">
-        <app-items-list
-          *ngFor="let patient of filteredPatients"
-          [title]="patient.firstName + ' ' + patient.lastName"
-          [subtitle]="patient.patientType === 'dependent' ? 'Dependiente' : 'Usuario'"
-          img="doctor"
-          [showIcon]="true"
-          (click)="viewDocuments(patient)"
-          (press)="confirmUnlink(patient)"
-        ></app-items-list>
-      </ion-list>
+      <div class="pts__scroll">
+        <section *ngIf="filteredPatients.length > 0" class="pts__section">
+          <div class="section-title">
+            <h2>Mis pacientes</h2>
+            <span>{{ filteredPatients.length }}</span>
+          </div>
 
-      <!-- Sección: Solicitudes pendientes (PENDING) -->
-      <ion-list-header *ngIf="filteredPending.length > 0">
-        <ion-label>
-          Solicitudes pendientes
-          <ion-badge color="warning" style="margin-left: 8px;">{{ filteredPending.length }}</ion-badge>
-        </ion-label>
-      </ion-list-header>
-      <ion-list *ngIf="filteredPending.length > 0">
-        <app-items-list
-          *ngFor="let patient of filteredPending"
-          [title]="patient.firstName + ' ' + patient.lastName"
-          subtitle="Esperando autorización del responsable"
-          img="doctor"
-          [showIcon]="false"
-          (press)="confirmUnlink(patient)"
-        ></app-items-list>
-      </ion-list>
+          <ion-item
+            *ngFor="let patient of filteredPatients"
+            class="list-item"
+            lines="none"
+            [button]="true"
+            detail="false"
+            (click)="viewDocuments(patient)"
+          >
+            <div class="list-item__icon list-item__icon--med" aria-hidden="true">
+              <ion-icon name="person"></ion-icon>
+            </div>
+            <div class="list-item__body">
+              <span class="list-item__title">{{ patient.firstName }} {{ patient.lastName }}</span>
+              <span class="list-item__subtitle">
+                {{ patient.patientType === 'dependent' ? 'Dependiente' : 'Usuario titular' }}
+              </span>
+            </div>
+            <button
+              type="button"
+              class="member-row__action member-row__action--neutral"
+              (click)="confirmUnlink(patient); $event.stopPropagation()"
+              aria-label="Desvincular paciente"
+            >
+              <ion-icon name="ellipsis-vertical"></ion-icon>
+            </button>
+          </ion-item>
+        </section>
 
-      <div
-        class="pts__empty"
-        *ngIf="filteredPatients.length === 0 && filteredPending.length === 0 && !isLoading"
-      >
-        <ion-icon name="people-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
-        <ion-label style="text-align: center; margin-top: 16px; color: var(--ion-color-medium);">
-          No tenés pacientes vinculados.<br />
-          Presioná + para agregar uno.
-        </ion-label>
+        <section *ngIf="filteredPending.length > 0" class="pts__section">
+          <div class="section-title">
+            <h2>Pendientes</h2>
+            <span>{{ filteredPending.length }}</span>
+          </div>
+
+          <ion-item
+            *ngFor="let patient of filteredPending"
+            class="alert-card"
+            lines="none"
+            [button]="true"
+            detail="false"
+            (click)="confirmUnlink(patient)"
+          >
+            <div class="alert-card__icon" aria-hidden="true">
+              <ion-icon name="time"></ion-icon>
+            </div>
+            <div class="alert-card__body">
+              <span class="alert-card__title">{{ patient.firstName }} {{ patient.lastName }}</span>
+              <span class="alert-card__subtitle">Esperando autorización del responsable</span>
+            </div>
+          </ion-item>
+        </section>
+
+        <div
+          *ngIf="filteredPatients.length === 0 && filteredPending.length === 0 && !isLoading"
+          class="empty-state"
+          role="status"
+        >
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="people"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin pacientes todavía</h2>
+          <p class="empty-state__subtitle">
+            Vinculá pacientes para acceder a su historia clínica y registrar consultas.
+          </p>
+          <button type="button" class="empty-state__cta" (click)="addPatient()">
+            <ion-icon name="person-add"></ion-icon>
+            Agregar paciente
+          </button>
+        </div>
       </div>
 
-      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button (click)="addPatient()" class="pts__fab">
-          <ion-icon name="add"></ion-icon>
+      <ion-fab class="app-fab" vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="addPatient()"
+          aria-label="Agregar paciente"
+        >
+          <ion-icon name="person-add"></ion-icon>
         </ion-fab-button>
       </ion-fab>
     </ion-content>
@@ -103,6 +158,10 @@ export class PatientsPage implements OnInit {
 
   async ionViewWillEnter() {
     await this.loadPatients();
+  }
+
+  goBack() {
+    this.navController.navigateBack(['/profile']);
   }
 
   private async loadPatients() {

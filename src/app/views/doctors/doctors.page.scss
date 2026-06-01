@@ -1,30 +1,7 @@
 :host {
-  .drs {
-    --padding-end: 16px;
-    --padding-start: 16px;
-    &__list{
-      padding: 0;
-    }
-    &__title {
-      font-size: 20px;
-    }
-    &__search {
-      position: relative;
-      --padding-start: 30px;
-      margin-top: 12px;
-      margin-bottom: 24px;
-      &__icon {
-        position: absolute;
-        z-index: 100;
-        left: 5px;
-      }
-    }
-    &__fab {
-      --box-shadow: none;
-    }
-    &__form {
-      margin-top: 16px;
-      margin-bottom: 16px;
-    }
-  }
+  display: block;
+}
+
+.drs__scroll {
+  padding: 0 20px calc(env(safe-area-inset-bottom, 0) + 120px);
 }

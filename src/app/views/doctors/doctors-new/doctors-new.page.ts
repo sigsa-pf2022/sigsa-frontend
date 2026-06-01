@@ -6,26 +6,79 @@ import { ProfessionalsService } from '../shared/services/professionals.service';
 
 @Component({
   selector: 'app-doctors-new',
-  template: ` <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/doctors"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Nuevo Profesional</ion-title>
+  template: `
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="dn">
-      <ion-img class="dn__img" src="assets/images/doctors/new-doctor.svg"></ion-img>
-      <form class="dn__form" [formGroup]="form">
-        <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre"> </ion-input>
-        <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido"> </ion-input>
-      </form>
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Tus profesionales</p>
+        <h1 class="listing-header__title">Nuevo profesional</h1>
+      </header>
+
+      <div class="dn__container">
+        <div class="auth-hero" aria-hidden="true">
+          <ion-icon name="medkit" class="dn__hero-icon"></ion-icon>
+        </div>
+
+        <p class="dn__caption">
+          Agregá un profesional de confianza para registrar turnos y compartir documentos.
+        </p>
+
+        <form class="auth-form dn__form" [formGroup]="form">
+          <div class="auth-field">
+            <label class="auth-field__label" for="dn-firstname">Nombre</label>
+            <div class="auth-input">
+              <ion-input
+                id="dn-firstname"
+                formControlName="firstName"
+                placeholder="Ej: Lucía"
+                type="text"
+                autocapitalize="words"
+              ></ion-input>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-field__label" for="dn-lastname">Apellido</label>
+            <div class="auth-input">
+              <ion-input
+                id="dn-lastname"
+                formControlName="lastName"
+                placeholder="Ej: Fernández"
+                type="text"
+                autocapitalize="words"
+              ></ion-input>
+            </div>
+          </div>
+        </form>
+      </div>
     </ion-content>
-    <ion-footer class="footer__light">
-      <ion-button (click)="onSubmit()" expand="block" [disabled]="!this.form.valid" color="primary">
-        Confirmar
-      </ion-button>
-    </ion-footer>`,
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="onSubmit()"
+        [disabled]="!this.form.valid"
+      >
+        Guardar profesional
+      </button>
+    </ion-footer>
+  `,
   styleUrls: ['./doctors-new.page.scss'],
 })
 export class DoctorsNewPage implements OnInit {
@@ -41,6 +94,10 @@ export class DoctorsNewPage implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  goBack() {
+    this.navController.navigateBack(['/doctors']);
+  }
 
   onSubmit() {
     return this.professionalsService.createMyProfessional(this.form.value).then(() => {
