@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 
 @Component({
   selector: 'app-items-list',
@@ -29,7 +29,7 @@ import { Component, Input, OnInit } from '@angular/core';
   `,
   styleUrls: ['./items-list.component.scss'],
 })
-export class ItemsListComponent implements OnInit {
+export class ItemsListComponent implements OnInit, OnChanges {
   @Input() img: string;
   @Input() fallbackIcon = 'cube-outline';
   @Input() title: string;
@@ -38,20 +38,39 @@ export class ItemsListComponent implements OnInit {
   @Input() isSelectable = false;
   @Input() value: any;
   @Input() selectedValue: any;
-  constructor() {}
-
-  ngOnInit() {}
 
   /**
-   * Selection only fires when the card is in selectable mode AND we
-   * have a real (non-nullish) value AND a real selectedValue AND they
-   * strictly match. This prevents the legacy issue where two undefined
-   * inputs collapsed to "all selected" because undefined === undefined.
+   * Pre-computed selected flag. We avoid a getter binding to dodge any
+   * Angular change-detection edge case where the getter could return
+   * stale or unexpected values. Recalculated on every input change.
    */
-  get isItemSelected(): boolean {
-    if (!this.isSelectable) return false;
-    if (this.value === null || this.value === undefined) return false;
-    if (this.selectedValue === null || this.selectedValue === undefined) return false;
-    return this.selectedValue === this.value;
+  isItemSelected = false;
+
+  constructor() {}
+
+  ngOnInit() {
+    this.recomputeSelection();
+  }
+
+  ngOnChanges(_changes: SimpleChanges) {
+    this.recomputeSelection();
+  }
+
+  private recomputeSelection(): void {
+    if (this.isSelectable !== true) {
+      this.isItemSelected = false;
+      return;
+    }
+    const v = this.value;
+    const sv = this.selectedValue;
+    if (v === null || v === undefined) {
+      this.isItemSelected = false;
+      return;
+    }
+    if (sv === null || sv === undefined) {
+      this.isItemSelected = false;
+      return;
+    }
+    this.isItemSelected = sv === v;
   }
 }
