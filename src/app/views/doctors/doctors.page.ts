@@ -64,14 +64,14 @@ import { ProfessionalsService } from './shared/services/professionals.service';
       <div class="drs__scroll">
         <ng-container *ngIf="this.filteredDoctors.length > 0; else emptyState">
           <app-items-list
-            *ngFor="let doctor of this.filteredDoctors"
-            [title]="'Dr/a ' + doctor.firstName + ' ' + doctor.lastName"
+            *ngFor="let doctorOption of this.filteredDoctors"
+            [title]="'Dr/a ' + doctorOption.firstName + ' ' + doctorOption.lastName"
             img="doctor"
             [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
             [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
-            [value]="doctor.id"
+            [value]="doctorOption.id"
             [selectedValue]="this.doctor?.id"
-            (click)="doAction(doctor)"
+            (click)="doAction(doctorOption)"
           ></app-items-list>
         </ng-container>
 

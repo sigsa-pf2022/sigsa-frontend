@@ -54,13 +54,13 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
       <div class="pick-prof__scroll">
         <ng-container *ngIf="this.filteredDoctors?.length > 0; else emptyState">
           <app-items-list
-            *ngFor="let doctor of this.filteredDoctors"
-            (click)="setDoctor(doctor)"
+            *ngFor="let doctorOption of this.filteredDoctors"
+            (click)="setDoctor(doctorOption)"
             [showIcon]="false"
             [isSelectable]="true"
-            [value]="doctor.id"
+            [value]="doctorOption.id"
             [selectedValue]="this.doctor?.id"
-            [title]="'Dr/a ' + doctor.firstName + ' ' + doctor.lastName"
+            [title]="'Dr/a ' + doctorOption.firstName + ' ' + doctorOption.lastName"
             img="doctor"
           ></app-items-list>
         </ng-container>

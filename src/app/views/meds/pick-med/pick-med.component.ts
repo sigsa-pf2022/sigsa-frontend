@@ -51,14 +51,14 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
       <div class="pick-med__scroll">
         <ng-container *ngIf="this.filteredMeds?.length > 0; else emptyState">
           <app-items-list
-            *ngFor="let med of this.filteredMeds"
-            (click)="setMed(med)"
+            *ngFor="let medOption of this.filteredMeds"
+            (click)="setMed(medOption)"
             [showIcon]="false"
             [isSelectable]="true"
-            [value]="med.id"
+            [value]="medOption.id"
             [selectedValue]="this.med?.id"
-            [title]="med.name"
-            [subtitle]="med.dosage"
+            [title]="medOption.name"
+            [subtitle]="medOption.dosage"
             img="pill"
           ></app-items-list>
         </ng-container>
