@@ -5,7 +5,7 @@ import { Component, Input, OnInit } from '@angular/core';
   template: `
     <ion-item
       class="picker-card"
-      [class.picker-card--selected]="isSelectable && value != null && selectedValue === value"
+      [class.picker-card--selected]="isItemSelected"
       lines="none"
       [button]="true"
       detail="false"
@@ -41,4 +41,17 @@ export class ItemsListComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
+
+  /**
+   * Selection only fires when the card is in selectable mode AND we
+   * have a real (non-nullish) value AND a real selectedValue AND they
+   * strictly match. This prevents the legacy issue where two undefined
+   * inputs collapsed to "all selected" because undefined === undefined.
+   */
+  get isItemSelected(): boolean {
+    if (!this.isSelectable) return false;
+    if (this.value === null || this.value === undefined) return false;
+    if (this.selectedValue === null || this.selectedValue === undefined) return false;
+    return this.selectedValue === this.value;
+  }
 }

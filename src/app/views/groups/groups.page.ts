@@ -40,7 +40,7 @@ import { Subscription } from 'rxjs';
         </div>
       </ng-template>
 
-      <ion-fab class="app-fab" vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
           class="app-fab-button"
           (click)="navigateTo()"

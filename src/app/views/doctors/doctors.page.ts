@@ -95,7 +95,7 @@ import { ProfessionalsService } from './shared/services/professionals.service';
       <ion-fab
         class="app-fab"
         vertical="bottom"
-        horizontal="end"
+        horizontal="center"
         slot="fixed"
         *ngIf="!isAppointmentCreation && !isAppointmentEdition"
       >

@@ -54,7 +54,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
         </ion-item>
       </div>
 
-      <ion-fab class="app-fab" vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
           class="app-fab-button"
           (click)="navigateToAddMember()"

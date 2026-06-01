@@ -110,7 +110,7 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
           (itemClicked)="onReminderItemClicked($event)"
         ></app-reminders>
 
-        <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="center" slot="fixed">
           <ion-fab-button
             class="app-fab-button"
             (click)="openFabList($event)"
@@ -119,24 +119,27 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
             <ion-icon [name]="opened ? 'close' : 'add'"></ion-icon>
           </ion-fab-button>
           <ion-fab-list side="top" class="gh__fab__list" #fabList>
-            <button type="button" class="sub-fab" (click)="createMedication()" aria-label="Crear medicamento">
-              <span class="sub-fab__label">Medicamento</span>
-              <span class="sub-fab__pill">
-                <ion-icon name="medkit"></ion-icon>
-              </span>
-            </button>
-            <button type="button" class="sub-fab" (click)="createAppointment()" aria-label="Crear turno">
-              <span class="sub-fab__label">Turno</span>
-              <span class="sub-fab__pill">
-                <ion-icon name="calendar"></ion-icon>
-              </span>
-            </button>
-            <button type="button" class="sub-fab" (click)="createDocument()" aria-label="Crear documento">
-              <span class="sub-fab__label">Documento</span>
-              <span class="sub-fab__pill">
-                <ion-icon name="document-text"></ion-icon>
-              </span>
-            </button>
+            <ion-fab-button
+              class="sub-fab-button"
+              (click)="createMedication()"
+              aria-label="Crear medicamento"
+            >
+              <ion-icon name="medkit"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-button
+              class="sub-fab-button"
+              (click)="createAppointment()"
+              aria-label="Crear turno"
+            >
+              <ion-icon name="calendar"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-button
+              class="sub-fab-button"
+              (click)="createDocument()"
+              aria-label="Crear documento"
+            >
+              <ion-icon name="document-text"></ion-icon>
+            </ion-fab-button>
           </ion-fab-list>
         </ion-fab>
       </ion-content>

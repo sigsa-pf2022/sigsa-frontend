@@ -59,7 +59,7 @@ import { MedsEventDataService } from './shared/services/meds-events-data/meds-ev
         </div>
       </ng-template>
 
-      <ion-fab class="app-fab" vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
           class="app-fab-button"
           (click)="newMedEvent()"

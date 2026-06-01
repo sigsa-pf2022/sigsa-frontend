@@ -726,10 +726,12 @@ ion-content {
   margin: 8px 0;
   padding: 0;
   background: var(--color-surface);
+  border: 2px solid transparent;
   border-radius: 16px;
   box-shadow: var(--shadow-card);
   cursor: pointer;
   transition: transform 150ms var(--ease-out-soft),
+              border-color 200ms var(--ease-out-soft),
               box-shadow 200ms var(--ease-out-soft),
               background 200ms ease;
 
@@ -737,23 +739,21 @@ ion-content {
     background: var(--color-surface);
     padding: 14px 16px;
     align-items: center;
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   &:active {
     transform: scale(0.98);
   }
+}
 
-  &.picker-card--selected {
-    background: var(--sigsa-50);
-    box-shadow:
-      0 0 0 2px var(--sigsa-500),
-      var(--shadow-card);
+.picker-card.picker-card--selected {
+  background: var(--sigsa-50);
+  border-color: var(--sigsa-500);
+}
 
-    &::part(native) {
-      background: var(--sigsa-50);
-    }
-  }
+.picker-card.picker-card--selected::part(native) {
+  background: var(--sigsa-50);
 }
 
 .picker-card__icon {
@@ -820,28 +820,32 @@ ion-content {
   border-radius: 9999px;
   border: 2px solid var(--color-hairline);
   background: var(--color-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   transition: border-color 200ms ease, background 200ms ease;
-
-  &::after {
-    content: '';
-    width: 10px;
-    height: 10px;
-    border-radius: 9999px;
-    background: var(--sigsa-500);
-    transform: scale(0);
-    transition: transform 200ms var(--ease-out-soft);
-  }
 }
 
-.picker-card--selected .picker-card__radio {
-  border-color: var(--sigsa-500);
+.picker-card__radio::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--sigsa-500);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 200ms var(--ease-out-soft),
+              transform 200ms var(--ease-out-soft);
+}
 
-  &::after {
-    transform: scale(1);
-  }
+.picker-card.picker-card--selected .picker-card__radio {
+  border-color: var(--sigsa-500);
+}
+
+.picker-card.picker-card--selected .picker-card__radio::after {
+  opacity: 1;
+  transform: scale(1);
 }
 
 /* Summary card — shown at top of step 2 to display step-1 selection */
@@ -1376,54 +1380,19 @@ ion-content {
   }
 }
 
-/* Expandable sub-fab options for group-home */
-.sub-fab {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0;
-  margin: 0;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  width: auto;
+/* Mini sub-fabs (used inside ion-fab-list for group-home) — small
+   circular white buttons stacked above the main FAB. */
+.sub-fab-button {
+  --background: var(--color-surface);
+  --background-activated: var(--color-surface-subtle);
+  --background-focused: var(--color-surface-subtle);
+  --background-hover: var(--color-surface);
+  --color: var(--sigsa-700);
+  --box-shadow: var(--shadow-elevated);
+  --border-radius: 9999px;
+
+  ion-icon { font-size: 22px; }
 }
-
-.sub-fab__label {
-  background: var(--color-text);
-  color: #ffffff;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 8px 12px;
-  border-radius: var(--radius-button);
-  box-shadow: var(--shadow-elevated);
-  white-space: nowrap;
-}
-
-.sub-fab__pill {
-  width: 48px;
-  height: 48px;
-  border-radius: 9999px;
-  background: var(--color-surface);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-elevated);
-  transition: transform 150ms var(--ease-out-soft);
-
-  ion-icon {
-    font-size: 22px;
-    color: var(--sigsa-700);
-  }
-
-  ion-img {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-.sub-fab:active .sub-fab__pill { transform: scale(0.92); }
 
 /* ===========================================================
  *  Profile / Patients / Doctors — hero, option cards
@@ -1883,12 +1852,10 @@ ion-alert .alert-button.alert-button-role-cancel {
   }
 }
 
-/* Expandable fab list (used in group-home). Force the list to be
-   anchored to the right edge of the parent ion-fab so the wider
-   .sub-fab buttons (label + pill) can grow to the LEFT instead of
-   overflowing the viewport on the right. */
+/* Expandable fab list — uses Ionic default centering. The children
+   are .sub-fab-button (circular) so they stack cleanly above the
+   centered main FAB. */
 ion-fab-list[side="top"] {
-  align-items: flex-end;
-  inset-inline-start: auto;
-  inset-inline-end: 0;
+  align-items: center;
+  gap: 8px;
 }

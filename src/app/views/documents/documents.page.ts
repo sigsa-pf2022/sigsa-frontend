@@ -59,7 +59,7 @@ import { map, startWith } from 'rxjs/operators';
         </ng-template>
       </ng-container>
 
-      <ion-fab class="app-fab" vertical="bottom" horizontal="end" slot="fixed">
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
           class="app-fab-button"
           (click)="newDocument()"
