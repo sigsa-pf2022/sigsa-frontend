@@ -104,7 +104,7 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
             </button>
           </div>
 
-          <ion-modal trigger="open-modal-doc-date" class="calendar-modal-time">
+          <ion-modal #docDateModal trigger="open-modal-doc-date" class="calendar-modal-time">
             <ng-template>
               <ion-content>
                 <ion-datetime
@@ -112,14 +112,10 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
                   [value]="selectedDocumentDate"
                   [max]="maxDate"
                   locale="es-ES"
-                  (ionChange)="documentDateChanged(docDate.value)"
-                  [showDefaultButtons]="true"
+                  (ionChange)="documentDateChanged(docDate.value); docDateModal.dismiss()"
+                  [showDefaultButtons]="false"
                   presentation="date"
-                >
-                  <ion-buttons slot="buttons">
-                    <ion-button color="primary" (click)="confirmDocumentDate()">Confirmar</ion-button>
-                  </ion-buttons>
-                </ion-datetime>
+                ></ion-datetime>
               </ion-content>
             </ng-template>
           </ion-modal>

@@ -64,7 +64,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
           <p class="auth-field__hint">Te vamos a recordar 5 minutos antes.</p>
         </div>
 
-        <ion-modal trigger="open-modal" class="calendar-modal-time">
+        <ion-modal #dateModal trigger="open-modal" class="calendar-modal-time">
           <ng-template>
             <ion-content>
               <ion-datetime
@@ -72,13 +72,10 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
                 [value]="this.medEventDate"
                 [min]="this.minDate"
                 locale="es-ES"
-                (ionChange)="dateChanged(bdt.value)"
-                [showDefaultButtons]="true"
+                (ionChange)="dateChanged(bdt.value); dateModal.dismiss()"
+                [showDefaultButtons]="false"
               >
-                <span slot="time-label">Tiempo</span>
-                <ion-buttons slot="buttons">
-                  <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
-                </ion-buttons>
+                <span slot="time-label">Hora</span>
               </ion-datetime>
             </ion-content>
           </ng-template>
@@ -93,7 +90,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
         (click)="onSubmit()"
         [disabled]="!this.form.valid || this.isSubmitting"
       >
-        {{ isSubmitting ? 'Guardando...' : (isEditMode ? 'Actualizar' : 'Confirmar') }}
+        {{ isSubmitting ? 'Guardando...' : (isEditMode ? 'Actualizar recordatorio' : 'Crear recordatorio') }}
       </button>
     </ion-footer>
   `,

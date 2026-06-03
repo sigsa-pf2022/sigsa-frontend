@@ -23,6 +23,8 @@
 
   &__brand {
     position: absolute;
+    top: 0;
+    bottom: 0;
     left: 0;
     right: 0;
     display: flex;
@@ -32,9 +34,10 @@
   }
 
   &__brand-icon {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
     color: var(--sigsa-600, #894ecc);
+    display: block;
   }
 
   &__avatar {

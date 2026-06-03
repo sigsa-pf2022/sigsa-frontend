@@ -65,7 +65,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
           </button>
         </div>
 
-        <ion-modal trigger="open-modal" class="calendar-modal-time">
+        <ion-modal #dateModal trigger="open-modal" class="calendar-modal-time">
           <ng-template>
             <ion-content>
               <ion-datetime
@@ -73,13 +73,10 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
                 [value]="this.appointmentDate"
                 [min]="this.minDate"
                 locale="es-ES"
-                (ionChange)="dateChanged(bdt.value)"
-                [showDefaultButtons]="true"
+                (ionChange)="dateChanged(bdt.value); dateModal.dismiss()"
+                [showDefaultButtons]="false"
               >
-                <span slot="time-label">Tiempo</span>
-                <ion-buttons slot="buttons">
-                  <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
-                </ion-buttons>
+                <span slot="time-label">Hora</span>
               </ion-datetime>
             </ion-content>
           </ng-template>
@@ -107,7 +104,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         (click)="onSubmit()"
         [disabled]="!this.form.valid"
       >
-        {{ isEditMode ? 'Actualizar' : 'Confirmar' }}
+        {{ isEditMode ? 'Actualizar turno' : 'Crear turno' }}
       </button>
     </ion-footer>
   `,

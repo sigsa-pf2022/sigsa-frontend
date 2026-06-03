@@ -30,10 +30,8 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
         </div>
 
         <ion-buttons slot="end">
-          <button type="button" class="app-header__icon-btn" aria-label="Notificaciones">
-            <ion-icon name="notifications-outline"></ion-icon>
-            <span class="app-header__dot" aria-hidden="true"></span>
-          </button>
+          <!-- Notifications bell intentionally removed until the
+               notifications page is implemented. -->
         </ion-buttons>
       </ion-toolbar>
     </ion-header>

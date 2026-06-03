@@ -29,7 +29,10 @@ export function createTranslateLoader(http: HttpClient) {
     GroupsModule,
     BrowserModule,
     CommonModule,
-    IonicModule.forRoot(),
+    IonicModule.forRoot({
+      mode: 'md',
+      animated: true,
+    }),
     AppRoutingModule,
     FormsModule,
     ReactiveFormsModule,

@@ -127,7 +127,7 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
             </button>
           </div>
 
-          <ion-modal trigger="open-modal" class="calendar-modal">
+          <ion-modal #dateModal trigger="open-modal" class="calendar-modal">
             <ng-template>
               <ion-content>
                 <ion-datetime
@@ -136,12 +136,9 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
                   [max]="this.maxDate"
                   locale="es-ES"
                   presentation="date"
-                  (ionChange)="dateChanged(bdt.value)"
-                >
-                  <ion-buttons slot="buttons">
-                    <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
-                  </ion-buttons>
-                </ion-datetime>
+                  (ionChange)="dateChanged(bdt.value); dateModal.dismiss()"
+                  [showDefaultButtons]="false"
+                ></ion-datetime>
               </ion-content>
             </ng-template>
           </ion-modal>
