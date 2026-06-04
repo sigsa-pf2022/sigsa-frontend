@@ -2,36 +2,35 @@
 .calendar-modal-time {
   --width: 340px;
   --max-width: calc(100vw - 32px);
-  --height: auto;
-  --max-height: 90vh;
   --border-radius: 24px;
   --background: #ffffff;
   --box-shadow:
     0 24px 64px -16px rgba(75, 37, 130, 0.28),
     0 8px 24px -8px rgba(75, 37, 130, 0.16);
+}
 
-  ion-content {
-    --background: #ffffff;
-    --padding-start: 0;
-    --padding-end: 0;
-    --padding-top: 0;
-    --padding-bottom: 0;
-  }
+.calendar-modal {
+  --height: 440px;
+}
 
-  ion-datetime {
-    --background: #ffffff;
-    width: 100%;
-    height: auto;
+.calendar-modal-time {
+  --height: 500px;
+}
 
-    .datetime-done,
-    ion-button.datetime-done {
-      --color: var(--sigsa-700);
-      text-transform: none;
-      font-weight: 600;
-      font-size: 15px;
-      letter-spacing: 0;
-    }
-  }
+.calendar-modal ion-datetime,
+.calendar-modal-time ion-datetime {
+  --background: #ffffff;
+  width: 100%;
+  height: 100%;
+}
+
+.calendar-modal ion-button.datetime-done,
+.calendar-modal-time ion-button.datetime-done {
+  --color: var(--sigsa-700);
+  text-transform: none;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0;
 }
 
 .modal{

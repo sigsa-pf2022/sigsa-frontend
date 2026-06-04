@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { IonDatetime, ModalController, NavController, ToastController } from '@ionic/angular';
+import { IonDatetime, IonModal, ModalController, NavController, ToastController } from '@ionic/angular';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { format, parseISO } from 'date-fns';
 import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
@@ -120,14 +120,14 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
               type="button"
               class="date-field"
               [class.date-field--empty]="!form.value.birthday"
-              id="open-modal"
+              (click)="openDateModal($event)"
             >
               <span>{{ form.value.birthday || 'DD/MM/AAAA' }}</span>
               <ion-icon name="calendar-outline"></ion-icon>
             </button>
           </div>
 
-          <ion-modal #dateModal trigger="open-modal" class="calendar-modal">
+          <ion-modal #dateModal class="calendar-modal">
             <ng-template>
               <ion-content>
                 <ion-datetime
@@ -166,6 +166,7 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
 })
 export class NewGroupPage implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
+  @ViewChild('dateModal') dateModal: IonModal;
   showCalendar = false;
   date = format(new Date(), 'yyyy-MM-dd');
   maxDate = format(new Date(), 'yyyy-MM-dd');
@@ -232,5 +233,13 @@ export class NewGroupPage implements OnInit {
 
   confirmDateSelection() {
     this.datetime.confirm(true);
+  }
+
+  async openDateModal(event: Event) {
+    (event?.target as HTMLElement)?.blur();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await this.dateModal?.present();
   }
 }

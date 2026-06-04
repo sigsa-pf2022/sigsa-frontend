@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { LoadingController, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { GroupsService } from './shared/services/groups/groups.service';
 import { FamilyGroup } from './shared/interfaces/family-group.interface';
 import { ActivatedRoute } from '@angular/router';
@@ -25,7 +25,7 @@ import { Subscription } from 'rxjs';
       </ng-container>
 
       <ng-template #emptyState>
-        <div class="empty-state" role="status">
+        <div class="empty-state" role="status" *ngIf="!isInitialLoad">
           <div class="empty-state__icon" aria-hidden="true">
             <ion-icon name="people"></ion-icon>
           </div>
@@ -55,16 +55,14 @@ import { Subscription } from 'rxjs';
 })
 export class GroupsPage implements OnInit, OnDestroy {
   groups: FamilyGroup[] = [];
+  isInitialLoad = true;
   private paramsSubscription: Subscription;
-  private isLoading: boolean = false;
 
   constructor(
     private groupsService: GroupsService,
     private navController: NavController,
-    private loadingController: LoadingController,
     private route: ActivatedRoute,
   ) {}
-
 
   ngOnInit() {
     this.paramsSubscription = this.route.params.subscribe(params => {
@@ -76,8 +74,6 @@ export class GroupsPage implements OnInit, OnDestroy {
     if (this.paramsSubscription) {
       this.paramsSubscription.unsubscribe();
     }
-    this.closeLoading();
-
   }
 
   ionViewWillEnter() {
@@ -90,32 +86,11 @@ export class GroupsPage implements OnInit, OnDestroy {
 
   async getGroups() {
     try {
-      if (!this.isLoading) {
-        await this.showLoading();
-      }
       this.groups = await this.groupsService.getFamilyGroupsByUser();
     } catch (error) {
       console.error('GroupsPage: error loading groups', error);
     } finally {
-      await this.closeLoading();
-    }
-  }
-
-  async showLoading() {
-    this.isLoading = true;
-    const loading = await this.loadingController.create({
-      message: 'Cargando...',
-      spinner: 'crescent',
-      cssClass: 'ui-loading',
-    });
-    await loading.present();
-  }
-
-  async closeLoading() {
-    this.isLoading = false;
-    const loading = await this.loadingController.getTop();
-    if (loading) {
-      await loading.dismiss();
+      this.isInitialLoad = false;
     }
   }
 

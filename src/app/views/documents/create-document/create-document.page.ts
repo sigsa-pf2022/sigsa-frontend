@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { NavController, ActionSheetController, IonDatetime } from '@ionic/angular';
+import { NavController, ActionSheetController, IonDatetime, IonModal } from '@ionic/angular';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { formatISO } from 'date-fns';
 import { ToastService } from 'src/app/services/toast/toast.service';
@@ -97,14 +97,14 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
               type="button"
               class="date-field"
               [class.date-field--empty]="!form.value.documentDate"
-              id="open-modal-doc-date"
+              (click)="openDateModal($event)"
             >
               <span>{{ form.value.documentDate || 'DD/MM/AAAA' }}</span>
               <ion-icon name="calendar-outline"></ion-icon>
             </button>
           </div>
 
-          <ion-modal #docDateModal trigger="open-modal-doc-date" class="calendar-modal-time">
+          <ion-modal #docDateModal class="calendar-modal-time">
             <ng-template>
               <ion-content>
                 <ion-datetime
@@ -142,6 +142,7 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
 })
 export class CreateDocumentPage implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
+  @ViewChild('docDateModal') docDateModal: IonModal;
 
   form = this.fb.group({
     title: ['', Validators.required],
@@ -332,6 +333,14 @@ export class CreateDocumentPage implements OnInit {
 
   confirmDocumentDate() {
     this.datetime.confirm(true);
+  }
+
+  async openDateModal(event: Event) {
+    (event?.target as HTMLElement)?.blur();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await this.docDateModal?.present();
   }
 
   calculateBase64Size(base64: string): number {

@@ -55,17 +55,21 @@ ion-content {
 }
 
 /* ===========================================================
- *  Tab transitions — fade between tabs. Ionic's default sets
- *  display:none on hidden tabs which is not animatable; we
- *  override to keep them in flex flow with opacity 0 so the
- *  switch fades.
+ *  Tab transitions — slide-up + fade between tabs. Ionic's
+ *  default sets display:none on hidden tabs which is not
+ *  animatable; we override to keep them in flex flow with
+ *  opacity 0 and a small translateY so the active tab slides
+ *  in cleanly.
  * =========================================================== */
 ion-tabs ion-router-outlet > .ion-page {
-  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
 }
 
 ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   opacity: 0;
+  transform: translateY(12px);
   display: flex !important;
   pointer-events: none;
 }

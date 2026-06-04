@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IonDatetime, NavController } from '@ionic/angular';
+import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
@@ -56,7 +56,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
             type="button"
             class="date-field"
             [class.date-field--empty]="!this.form.value.date"
-            id="open-modal"
+            (click)="openDateModal($event)"
           >
             <span>{{ this.form.value.date || 'Seleccionar fecha y hora' }}</span>
             <ion-icon name="calendar-outline"></ion-icon>
@@ -64,7 +64,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
           <p class="auth-field__hint">Te vamos a recordar 5 minutos antes.</p>
         </div>
 
-        <ion-modal #dateModal trigger="open-modal" class="calendar-modal-time">
+        <ion-modal #dateModal class="calendar-modal-time">
           <ng-template>
             <ion-content>
               <ion-datetime
@@ -101,6 +101,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 })
 export class CreateMedEventComponent implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
+  @ViewChild('dateModal') dateModal: IonModal;
   form = this.fb.group({
     date: null,
   });
@@ -180,6 +181,14 @@ export class CreateMedEventComponent implements OnInit {
 
   confirmDateSelection() {
     this.datetime.confirm(true);
+  }
+
+  async openDateModal(event: Event) {
+    (event?.target as HTMLElement)?.blur();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await this.dateModal?.present();
   }
 
   goBack() {

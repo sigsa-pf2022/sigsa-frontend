@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { IonDatetime, NavController } from '@ionic/angular';
+import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { GENDERS } from 'src/app/constants/Gender.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
@@ -126,16 +126,17 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
           </div>
 
           <div class="auth-field">
-            <label class="auth-field__label" for="open-modal">Fecha de nacimiento</label>
-            <div class="auth-input">
-              <ion-input
-                id="open-modal"
-                placeholder="DD/MM/AAAA"
-                formControlName="birthday"
-                readonly
-              ></ion-input>
-            </div>
-            <ion-modal #dateModal trigger="open-modal" class="calendar-modal">
+            <label class="auth-field__label">Fecha de nacimiento</label>
+            <button
+              type="button"
+              class="date-field"
+              [class.date-field--empty]="!form.value.birthday"
+              (click)="openDateModal($event)"
+            >
+              <span>{{ form.value.birthday || 'DD/MM/AAAA' }}</span>
+              <ion-icon name="calendar-outline"></ion-icon>
+            </button>
+            <ion-modal #dateModal class="calendar-modal">
               <ng-template>
                 <ion-content>
                   <ion-datetime
@@ -175,6 +176,7 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
 })
 export class PersonalDataPage {
   @ViewChild(IonDatetime) datetime: IonDatetime;
+  @ViewChild('dateModal') dateModal: IonModal;
   form = this.fb.group({
     firstName: [null, [Validators.compose([Validators.required, Validators.maxLength(50)])]],
     lastName: [null, [Validators.compose([Validators.required, Validators.maxLength(50)])]],
@@ -227,6 +229,14 @@ export class PersonalDataPage {
 
   confirmDateSelection() {
     this.datetime.confirm(true);
+  }
+
+  async openDateModal(event: Event) {
+    (event?.target as HTMLElement)?.blur();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await this.dateModal?.present();
   }
 
   goBack() {
