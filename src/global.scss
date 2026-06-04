@@ -649,8 +649,21 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing-scroll {
   height: 100%;
   width: 100%;
-  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 120px);
+  /* No horizontal padding here because cdk-virtual-scroll's inner
+     .cdk-virtual-scroll-content-wrapper is position: absolute and
+     ignores it. We inset items with their own margin below. */
+  padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 120px);
   box-sizing: border-box;
+}
+
+/* Restore the 20px horizontal inset on list-item cards that live
+   inside a virtualized scroll, so they line up with the rest of the
+   page (headers, segment switcher, etc). Outside of virtual scroll,
+   list-item keeps its base margin and the parent provides padding. */
+cdk-virtual-scroll-viewport .list-item,
+cdk-virtual-scroll-viewport .alert-card {
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 /* Empty state with icon-in-circle */

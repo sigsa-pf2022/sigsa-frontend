@@ -69,7 +69,11 @@
 cdk-virtual-scroll-viewport.rem__scroll {
   height: calc(100vh - 420px);
   width: 100%;
-  padding: 8px 20px 0;
+  /* No horizontal padding: cdk-virtual-scroll's inner content
+     wrapper is position: absolute and ignores padding. The items
+     receive their 20px lateral inset via the global
+     `cdk-virtual-scroll-viewport .list-item` rule. */
+  padding: 8px 0 0;
   box-sizing: border-box;
 }
 
