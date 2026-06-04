@@ -117,7 +117,7 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
                   presentation="date"
                 >
                   <ion-buttons slot="buttons">
-                    <ion-button class="datetime-done" (click)="docDateModal.dismiss()">Listo</ion-button>
+                    <ion-button class="datetime-done" (click)="confirmDocumentDate()">Listo</ion-button>
                   </ion-buttons>
                 </ion-datetime>
               </ion-content>

@@ -140,7 +140,7 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
                   [showDefaultButtons]="false"
                 >
                   <ion-buttons slot="buttons">
-                    <ion-button class="datetime-done" (click)="dateModal.dismiss()">Listo</ion-button>
+                    <ion-button class="datetime-done" (click)="confirmDateSelection()">Listo</ion-button>
                   </ion-buttons>
                 </ion-datetime>
               </ion-content>

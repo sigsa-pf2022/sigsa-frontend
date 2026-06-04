@@ -77,7 +77,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
               >
                 <span slot="time-label">Hora</span>
                 <ion-buttons slot="buttons">
-                  <ion-button class="datetime-done" (click)="dateModal.dismiss()">Listo</ion-button>
+                  <ion-button class="datetime-done" (click)="confirmDateSelection()">Listo</ion-button>
                 </ion-buttons>
               </ion-datetime>
             </ion-content>
