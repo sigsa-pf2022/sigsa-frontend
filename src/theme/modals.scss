@@ -33,18 +33,27 @@
   letter-spacing: 0;
 }
 
-.modal{
-  --background: transparent;
-  --max-width: 360px;
+/* Centered card modal (yes-no-modal, recovery, send-verification,
+   success-creation, user-validation). With mode: 'md' Ionic renders
+   ion-modal as fullscreen by default; we collapse the wrapper to
+   its content height and explicitly center it via ::part(content),
+   since MD does not give us a "centered card" preset like iOS does. */
+.modal {
+  --width: 360px;
+  --max-width: calc(100vw - 32px);
+  --height: auto;
+  --max-height: calc(100vh - 48px);
   --border-radius: 24px;
+  --background: var(--color-surface);
   --box-shadow:
     0 24px 64px -16px rgba(75, 37, 130, 0.28),
     0 8px 24px -8px rgba(75, 37, 130, 0.16);
+}
 
-  .modal-content{
-    background-color: #ffffff;
-    color: #18181B;
-    border-radius: 24px;
-    overflow: hidden;
-  }
+.modal::part(content) {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
 }
