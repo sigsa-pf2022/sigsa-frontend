@@ -34,10 +34,11 @@
 }
 
 /* Centered card modal (yes-no-modal, recovery, send-verification,
-   success-creation, user-validation). With mode: 'md' Ionic renders
-   ion-modal as fullscreen by default; we collapse the wrapper to
-   its content height and explicitly center it via ::part(content),
-   since MD does not give us a "centered card" preset like iOS does. */
+   success-creation, user-validation). MD mode renders ion-modal
+   fullscreen by default; we collapse the wrapper to its content
+   height and force-center it via fixed positioning over the viewport
+   so neither Ionic's default layout nor its enter-animation transform
+   shifts it off-center. */
 .modal {
   --width: 360px;
   --max-width: calc(100vw - 32px);
@@ -51,9 +52,11 @@
 }
 
 .modal::part(content) {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0;
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: translate(-50%, -50%) !important;
+  margin: 0 !important;
 }
