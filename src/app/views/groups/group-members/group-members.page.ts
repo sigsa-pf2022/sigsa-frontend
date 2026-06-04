@@ -7,29 +7,60 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 @Component({
   selector: 'app-group-members',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="" (click)="goToGroupHome()"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Miembros del grupo</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goToGroupHome()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="gh">
-      <ion-list>
-        <ion-item *ngFor="let member of members">
-          <ion-label>
-            {{ member.firstName }} {{ member.lastName }}
-            <span *ngIf="isAdmin(member.id)" style="font-size: 12px; color: var(--ion-color-medium)"> (Admin)</span>
-          </ion-label>
-          <ion-button color="danger" *ngIf="member.id != loggedUserId" (click)="deleteMember(member.id)">
-            Eliminar
-          </ion-button>
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Grupo familiar</p>
+        <h1 class="listing-header__title">Miembros</h1>
+      </header>
+
+      <div class="gm__scroll">
+        <ion-item
+          *ngFor="let member of members"
+          class="member-row"
+          lines="none"
+        >
+          <div class="member-row__avatar" aria-hidden="true">
+            {{ getInitials(member) }}
+          </div>
+          <div class="member-row__body">
+            <span class="member-row__name">{{ member.firstName }} {{ member.lastName }}</span>
+            <span class="member-row__sub" *ngIf="isAdmin(member.id)">Administrador</span>
+          </div>
+          <button
+            type="button"
+            class="member-row__action member-row__action--danger"
+            *ngIf="member.id != loggedUserId"
+            (click)="deleteMember(member.id)"
+            aria-label="Eliminar miembro"
+          >
+            <ion-icon name="trash-outline"></ion-icon>
+          </button>
         </ion-item>
-      </ion-list>
-      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button (click)="navigateToAddMember()" class="gm__fab">
-          <ion-icon name="add"></ion-icon>
+      </div>
+
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="navigateToAddMember()"
+          aria-label="Agregar miembro"
+        >
+          <ion-icon name="person-add"></ion-icon>
         </ion-fab-button>
       </ion-fab>
     </ion-content>
@@ -72,10 +103,10 @@ export class GroupMembersPage implements OnInit {
     this.members.sort((a, b) => {
       const aIsAdmin = a.id === this.adminId;
       const bIsAdmin = b.id === this.adminId;
-      
+
       if (aIsAdmin && !bIsAdmin) return -1;
       if (!aIsAdmin && bIsAdmin) return 1;
-      
+
       // Ambos no-admin: ordenar alfabéticamente
       return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
     });
@@ -127,5 +158,11 @@ export class GroupMembersPage implements OnInit {
 
   isAdmin(memberId: string): boolean {
     return this.adminId === memberId;
+  }
+
+  getInitials(member: any): string {
+    const first = (member?.firstName ?? '').trim();
+    const last = (member?.lastName ?? '').trim();
+    return ((first[0] || '') + (last[0] || '')).toUpperCase() || '?';
   }
 }

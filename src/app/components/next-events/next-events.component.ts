@@ -6,9 +6,6 @@ SwiperCore.use([Autoplay, Navigation]);
   selector: 'app-next-events',
   template: `
     <div class="ne">
-      <div style="padding: 14px 14px 0px 14px;">
-        <ion-label class="view-title view-title--small">Próximos eventos</ion-label>
-      </div>
       <div class="ne__swiper__wrapper">
         <swiper class="ne__swiper" [config]="swiperConfig">
           <ng-template *ngFor="let event of this.events" swiperSlide class="ne__swiper__slide">

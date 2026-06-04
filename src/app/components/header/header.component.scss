@@ -1,0 +1,107 @@
+:host {
+  display: block;
+}
+
+.app-header {
+  &::after {
+    background-image: none !important;
+    display: none;
+  }
+
+  &__toolbar {
+    --background: #ffffff;
+    --color: #18181B;
+    --border-style: none;
+    --min-height: 64px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    position: relative;
+    box-shadow: 0 1px 0 #F0F0F3;
+  }
+
+  &__brand {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  &__brand-icon {
+    width: 32px;
+    height: 32px;
+    color: var(--sigsa-600, #894ecc);
+    display: block;
+  }
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    background: var(--sigsa-100, #f3e7fc);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+                background 150ms ease;
+
+    &:active {
+      transform: scale(0.94);
+      background: var(--sigsa-200, #e9d2fa);
+    }
+  }
+
+  &__avatar-icon {
+    width: 22px;
+    height: 22px;
+    color: var(--sigsa-700, #7338ad);
+  }
+
+  &__icon-btn {
+    position: relative;
+    width: 40px;
+    height: 40px;
+    border-radius: 9999px;
+    background: #F4F4F6;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
+                background 150ms ease;
+
+    ion-icon {
+      font-size: 22px;
+      color: #18181B;
+    }
+
+    &:active {
+      transform: scale(0.94);
+      background: #EDEDF0;
+    }
+  }
+
+  &__dot {
+    position: absolute;
+    top: 9px;
+    right: 9px;
+    width: 9px;
+    height: 9px;
+    border-radius: 9999px;
+    background: var(--sigsa-500, #9c59e8);
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 0 1px rgba(156, 89, 232, 0.25);
+  }
+}

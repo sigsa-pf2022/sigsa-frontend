@@ -9,49 +9,120 @@ import { ProfessionalsService } from './shared/services/professionals.service';
 @Component({
   selector: 'app-doctors',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/profile"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">{{
-          isAppointmentCreation ? 'Crear turno' : this.isAppointmentEdition ? 'Editar turno' : 'Mis Profesionales'
-        }}</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div
+            class="auth-stepper"
+            *ngIf="isAppointmentCreation || isAppointmentEdition"
+            aria-label="Paso 1 de 2"
+          >
+            <div class="auth-stepper__bar auth-stepper__bar--current"></div>
+            <div class="auth-stepper__bar"></div>
+            <span class="auth-stepper__count">1/2</span>
+          </div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="drs">
-      <form class="drs__form" [formGroup]="this.searchForm">
-      <ion-searchbar
+
+    <ion-content class="listing drs">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">
+          {{ isAppointmentCreation ? 'Nuevo turno' :
+             isAppointmentEdition ? 'Editar turno' :
+             'Tus profesionales' }}
+        </p>
+        <h1 class="listing-header__title">
+          {{ isAppointmentCreation || isAppointmentEdition ? 'Elegí al profesional' : 'Mis profesionales' }}
+        </h1>
+      </header>
+
+      <form
+        class="listing-search"
+        [formGroup]="this.searchForm"
+        *ngIf="doctors.length > 0"
+      >
+        <ion-searchbar
+          class="listing-searchbar"
           formControlName="search"
-          placeholder="Buscar profesionales ..."
-          class="ui-search-input  ui-search-input__no-show"
+          placeholder="Buscar profesional..."
           debounce="400"
           type="string"
+          mode="md"
           (ionChange)="handleChange($event)"
         ></ion-searchbar>
       </form>
-      <ion-list class="drs__list" *ngIf="this.filteredDoctors.length > 0">
-        <ion-radio-group [value]="this.doctor?.id">
+
+      <div class="drs__scroll">
+        <ng-container *ngIf="this.filteredDoctors.length > 0; else emptyState">
           <app-items-list
-            *ngFor="let doctor of this.filteredDoctors"
-            [title]="doctor.firstName + ' ' + doctor.lastName"
+            *ngFor="let doctorOption of this.filteredDoctors"
+            [title]="'Dr/a ' + doctorOption.firstName + ' ' + doctorOption.lastName"
             img="doctor"
             [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
             [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
-            (click)="doAction(doctor)"
+            [value]="doctorOption.id"
+            [selectedValue]="this.doctor?.id"
+            (click)="doAction(doctorOption)"
           ></app-items-list>
-        </ion-radio-group>
-      </ion-list>
-      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button (click)="newDoctor()" class="drs__fab">
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state" role="status">
+            <div class="empty-state__icon" aria-hidden="true">
+              <ion-icon name="people"></ion-icon>
+            </div>
+            <h2 class="empty-state__title">Sin profesionales</h2>
+            <p class="empty-state__subtitle">
+              Sumá tu profesional de confianza para agendar turnos rápido.
+            </p>
+            <button type="button" class="empty-state__cta" (click)="newDoctor()">
+              <ion-icon name="add"></ion-icon>
+              Agregar profesional
+            </button>
+          </div>
+        </ng-template>
+      </div>
+
+      <ion-fab
+        class="app-fab"
+        vertical="bottom"
+        horizontal="center"
+        slot="fixed"
+        *ngIf="!isAppointmentCreation && !isAppointmentEdition"
+      >
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="newDoctor()"
+          aria-label="Agregar profesional"
+        >
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
       </ion-fab>
     </ion-content>
-    <ion-footer class="footer__light" *ngIf="this.isAppointmentCreation || this.isAppointmentEdition">
-      <div class="apn__actions">
-        <ion-button [disabled]="!this.doctor" expand="block" (click)="nextStep()">Siguiente</ion-button>
-      </div>
+
+    <ion-footer
+      class="auth-footer"
+      mode="md"
+      *ngIf="this.isAppointmentCreation || this.isAppointmentEdition"
+    >
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="nextStep()"
+        [disabled]="!this.doctor"
+      >
+        Siguiente
+        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+      </button>
     </ion-footer>
   `,
   styleUrls: ['./doctors.page.scss'],
@@ -99,6 +170,13 @@ export class DoctorsPage implements OnInit {
       this.groupId = params['groupId'] || null;
     });
   }
+  goBack() {
+    if (this.isAppointmentCreation || this.isAppointmentEdition) {
+      this.navController.navigateBack(['/tabs/appointments']);
+    } else {
+      this.navController.navigateBack(['/profile']);
+    }
+  }
   newDoctor() {
     return this.navController.navigateForward(['/doctors/new']);
   }
@@ -108,8 +186,8 @@ export class DoctorsPage implements OnInit {
     }
   }
   nextStep() {
-    this.appointmentDataService.update({ 
-      professional: this.doctor, 
+    this.appointmentDataService.update({
+      professional: this.doctor,
       isMyProfessional: true,
       // Persistir info de dependiente para siguiente paso
       dependentId: this.dependentId,
@@ -128,12 +206,13 @@ export class DoctorsPage implements OnInit {
     } : {};
     return this.navController.navigateForward([url], navigationExtras);
   }
-  
+
   async handleChange(event) {
-    const search = event.detail.value.toLowerCase();
+    const search = (event.detail.value || '').toLowerCase();
     this.filteredDoctors = this.doctors.filter(
       (professional: Professional) =>
-        professional.firstName.toLowerCase().includes(search) || professional.lastName.toLowerCase().includes(search)
+        (professional.firstName ?? '').toLowerCase().includes(search) ||
+        (professional.lastName ?? '').toLowerCase().includes(search)
     );
   }
 }

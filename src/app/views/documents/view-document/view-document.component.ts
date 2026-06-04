@@ -7,63 +7,91 @@ import { MedicalDocument } from '../shared/interfaces/Document.interface';
 @Component({
   selector: 'app-view-document',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/tabs/clipboard"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Documento Médico</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="vd" *ngIf="document">
-      <div class="vd__header">
-        <ion-icon
-          [name]="getIconByMimeType(document.mimeType)"
-          class="vd__header__icon"
-        ></ion-icon>
-        <h2 class="vd__header__title">{{ document.title }}</h2>
-        <p class="vd__header__date">{{ document.documentDate | date: 'dd/MM/yyyy' }}</p>
+
+    <ion-content class="listing">
+      <div *ngIf="!document" class="vd__loading">
+        <ion-spinner color="primary"></ion-spinner>
       </div>
-      <div class="vd__info">
-        <ion-list lines="none">
-          <ion-item>
-            <ion-label>
-              <p>Descripción</p>
-              <h3>{{ document.description || 'Sin descripción' }}</h3>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-label>
-              <p>Nombre del archivo</p>
-              <h3>{{ document.fileName }}</h3>
-            </ion-label>
-          </ion-item>
-          <ion-item>
-            <ion-label>
-              <p>Tamaño</p>
-              <h3>{{ formatFileSize(document.fileSize) }}</h3>
-            </ion-label>
-          </ion-item>
-        </ion-list>
-      </div>
-      <div class="vd__preview" *ngIf="fileContent">
-        <ion-label class="vd__preview__title">Vista previa</ion-label>
-        <img
-          *ngIf="document.mimeType.includes('image')"
-          [src]="'data:' + document.mimeType + ';base64,' + fileContent"
-          class="vd__preview__image"
-        />
-        <iframe
-          *ngIf="document.mimeType.includes('pdf')"
-          [src]="pdfUrl"
-          class="vd__preview__pdf"
-        ></iframe>
-      </div>
+
+      <ng-container *ngIf="document">
+        <header class="listing-header">
+          <p class="listing-header__eyebrow">Documento médico</p>
+          <h1 class="listing-header__title">{{ document.title }}</h1>
+        </header>
+
+        <article class="vd__summary">
+          <div class="vd__summary-icon" [ngClass]="iconColorClass" aria-hidden="true">
+            <ion-icon [name]="getIconByMimeType(document.mimeType)"></ion-icon>
+          </div>
+          <div class="vd__summary-body">
+            <p class="vd__summary-name">{{ document.fileName }}</p>
+            <p class="vd__summary-meta">
+              <span>{{ document.documentDate | date: 'dd/MM/yyyy' }}</span>
+              <span class="vd__dot">·</span>
+              <span>{{ formatFileSize(document.fileSize) }}</span>
+            </p>
+          </div>
+        </article>
+
+        <section class="vd__section">
+          <div class="section-title vd__section-title">
+            <h2>Descripción</h2>
+          </div>
+          <div class="vd__card vd__card--text">
+            <p [class.vd__muted]="!document.description">
+              {{ document.description || 'Sin descripción' }}
+            </p>
+          </div>
+        </section>
+
+        <section class="vd__section" *ngIf="fileContent">
+          <div class="section-title vd__section-title">
+            <h2>Vista previa</h2>
+          </div>
+          <div class="vd__card vd__card--preview">
+            <img
+              *ngIf="document.mimeType.includes('image')"
+              [src]="'data:' + document.mimeType + ';base64,' + fileContent"
+              class="vd__image"
+              [alt]="document.title"
+            />
+            <iframe
+              *ngIf="document.mimeType.includes('pdf')"
+              [src]="pdfUrl"
+              class="vd__pdf"
+              [title]="document.title"
+            ></iframe>
+          </div>
+        </section>
+
+        <div class="vd__bottom-spacer"></div>
+      </ng-container>
     </ion-content>
-    <ion-footer class="footer__light" *ngIf="document">
-      <ion-button (click)="downloadDocument()" expand="block" color="primary">
+
+    <ion-footer class="auth-footer" mode="md" *ngIf="document">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="downloadDocument()"
+      >
+        <ion-icon name="download" aria-hidden="true"></ion-icon>
         Descargar
-      </ion-button>
+      </button>
     </ion-footer>
   `,
   styleUrls: ['./view-document.component.scss'],
@@ -98,17 +126,29 @@ export class ViewDocumentComponent implements OnInit {
     }
   }
 
+  goBack() {
+    this.navController.navigateBack(['/tabs/clipboard']);
+  }
+
   getIconByMimeType(mimeType: string): string {
-    if (mimeType.includes('pdf')) {
+    if (mimeType?.includes('pdf')) {
       return 'document-text';
-    } else if (mimeType.includes('image')) {
+    } else if (mimeType?.includes('image')) {
       return 'image';
     } else {
       return 'document';
     }
   }
 
+  get iconColorClass(): string {
+    const t = this.document?.mimeType || '';
+    if (t.includes('image')) return 'vd__summary-icon--image';
+    if (t.includes('pdf')) return 'vd__summary-icon--pdf';
+    return 'vd__summary-icon--generic';
+  }
+
   formatFileSize(bytes: number): string {
+    if (!bytes) return '0 B';
     if (bytes < 1024) {
       return bytes + ' B';
     } else if (bytes < 1024 * 1024) {

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { LoadingController, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { GroupsService } from './shared/services/groups/groups.service';
 import { FamilyGroup } from './shared/interfaces/family-group.interface';
 import { ActivatedRoute } from '@angular/router';
@@ -8,26 +8,44 @@ import { Subscription } from 'rxjs';
 @Component({
   selector: 'app-groups',
   template: `
-    <ion-content class="g">
-      <div class="g__content">
-  <ion-label class="view-title">Mis grupos</ion-label>
-        <ng-container *ngIf="this.groups.length > 0">
+    <ion-content class="listing groups">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Tu familia</p>
+        <h1 class="listing-header__title">Mis grupos</h1>
+      </header>
+
+      <ng-container *ngIf="this.groups.length > 0; else emptyState">
+        <div class="groups__scroll">
           <app-group-item
             *ngFor="let group of this.groups"
             [group]="group"
             (click)="goToGroupHome(group.id)"
           ></app-group-item>
-        </ng-container>
+        </div>
+      </ng-container>
 
-        <ng-container *ngIf="this.groups.length === 0">
-          <img src="/assets/images/groups/groups-empty.svg" />
-          <ion-label class="g__content__empty-title"
-            >Todavia no perteneces a ningun grupo. ¡Aprovechá para crear el tuyo!</ion-label
-          >
-        </ng-container>
-      </div>
-      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button (click)="navigateTo()" class="g__fab">
+      <ng-template #emptyState>
+        <div class="empty-state" role="status" *ngIf="!isInitialLoad">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="people"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin grupos todavía</h2>
+          <p class="empty-state__subtitle">
+            Creá un grupo familiar para gestionar la salud de quienes dependen de vos.
+          </p>
+          <button type="button" class="empty-state__cta" (click)="navigateTo()">
+            <ion-icon name="add"></ion-icon>
+            Crear grupo
+          </button>
+        </div>
+      </ng-template>
+
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="navigateTo()"
+          aria-label="Crear grupo"
+        >
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
       </ion-fab>
@@ -37,16 +55,14 @@ import { Subscription } from 'rxjs';
 })
 export class GroupsPage implements OnInit, OnDestroy {
   groups: FamilyGroup[] = [];
+  isInitialLoad = true;
   private paramsSubscription: Subscription;
-  private isLoading: boolean = false;
 
   constructor(
     private groupsService: GroupsService,
     private navController: NavController,
-    private loadingController: LoadingController,
     private route: ActivatedRoute,
   ) {}
-
 
   ngOnInit() {
     this.paramsSubscription = this.route.params.subscribe(params => {
@@ -58,8 +74,6 @@ export class GroupsPage implements OnInit, OnDestroy {
     if (this.paramsSubscription) {
       this.paramsSubscription.unsubscribe();
     }
-    this.closeLoading();
-
   }
 
   ionViewWillEnter() {
@@ -72,32 +86,11 @@ export class GroupsPage implements OnInit, OnDestroy {
 
   async getGroups() {
     try {
-      if (!this.isLoading) {
-        await this.showLoading();
-      }
       this.groups = await this.groupsService.getFamilyGroupsByUser();
     } catch (error) {
       console.error('GroupsPage: error loading groups', error);
     } finally {
-      await this.closeLoading();
-    }
-  }
-
-  async showLoading() {
-    this.isLoading = true;
-    const loading = await this.loadingController.create({
-      message: 'Cargando...',
-      spinner: 'crescent',
-      cssClass: 'ui-loading',
-    });
-    await loading.present();
-  }
-
-  async closeLoading() {
-    this.isLoading = false;
-    const loading = await this.loadingController.getTop();
-    if (loading) {
-      await loading.dismiss();
+      this.isInitialLoad = false;
     }
   }
 

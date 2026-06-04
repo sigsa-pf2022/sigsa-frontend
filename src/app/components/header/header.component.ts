@@ -5,21 +5,34 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 @Component({
   selector: 'app-header',
   template: `
-    <ion-header class="ui-background__primary">
-      <ion-toolbar class="ui-toolbar__primary">
+    <ion-header class="app-header" mode="md">
+      <ion-toolbar class="app-header__toolbar" mode="md">
         <ion-buttons slot="start">
-          <ion-button (click)="navigateToProfile()">
-            <ion-icon src="./assets/images/home/personal-profile.svg"></ion-icon>
-          </ion-button>
+          <button
+            type="button"
+            class="app-header__avatar"
+            (click)="navigateToProfile()"
+            aria-label="Perfil"
+          >
+            <ion-icon
+              class="app-header__avatar-icon"
+              src="./assets/images/home/personal-profile.svg"
+            ></ion-icon>
+          </button>
         </ion-buttons>
-        <ion-buttons slot="end">
-          <ion-button>
-            <ion-icon name="notifications"></ion-icon>
-          </ion-button>
-        </ion-buttons>
-        <div class="toolbar-content">
-          <ion-icon src="./assets/images/logos/logo-white.svg"></ion-icon>
+
+        <div class="app-header__brand">
+          <ion-icon
+            class="app-header__brand-icon"
+            src="./assets/images/logos/logo.svg"
+            aria-label="SIGSA"
+          ></ion-icon>
         </div>
+
+        <ion-buttons slot="end">
+          <!-- Notifications bell intentionally removed until the
+               notifications page is implemented. -->
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
   `,

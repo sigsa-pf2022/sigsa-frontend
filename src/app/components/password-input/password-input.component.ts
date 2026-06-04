@@ -8,21 +8,24 @@ import {
 @Component({
   selector: 'app-password-input',
   template: `
-    <ion-input
-      [type]="showPassword ? 'text' : 'password'"
-      class="ui-form-input pi__input"
-      [formControlName]="this.controlName"
-      [placeholder]="this.placeholder"
-      [clearOnEdit]="false"
-    ></ion-input>
-    <ion-icon
-      class="pi__icon"
-      color="medium"
-      slot="end"
-      [name]="pwdIcon"
-      (click)="togglePassword()"
-    >
-    </ion-icon>
+    <div class="auth-input auth-input--with-suffix">
+      <ion-input
+        [type]="showPassword ? 'text' : 'password'"
+        [formControlName]="this.controlName"
+        [placeholder]="this.placeholder"
+        [clearOnEdit]="false"
+        autocomplete="current-password"
+      ></ion-input>
+      <button
+        type="button"
+        class="auth-input__suffix"
+        (click)="togglePassword()"
+        [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+        [attr.aria-pressed]="showPassword"
+      >
+        <ion-icon [name]="pwdIcon"></ion-icon>
+      </button>
+    </div>
   `,
   styleUrls: ['./password-input.component.scss'],
   viewProviders: [

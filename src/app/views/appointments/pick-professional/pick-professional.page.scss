@@ -1,17 +1,9 @@
 :host {
-  .apn {
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --padding-top: 20px;
-    &__actions {
-      display: flex;
-      flex-direction: column;
-    }
-    &__empty-list{
-      margin-top: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-  }
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.pick-prof__scroll {
+  padding: 0 20px calc(env(safe-area-inset-bottom, 0) + 120px);
 }

@@ -11,67 +11,87 @@ import { map, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-documents',
-  template: `<ion-content class="docs">
-    <ion-label class="view-title">Mis documentos</ion-label>
-    <ng-container *ngIf="(documents$ | async) as documents">
-      <ng-container *ngIf="documents.length > 0">
-        <form [formGroup]="searchForm" class="docs__search">
-          <ion-searchbar
-            formControlName="search"
-            placeholder="Buscar documento ..."
-            class="ui-search-input ui-search-input__no-show"
-            debounce="400"
-            type="string"
-            (ionChange)="handleChange($event)"
-          ></ion-searchbar>
-        </form>
-        <cdk-virtual-scroll-viewport itemSize="1">
-          <app-document-item-list
-            *ngFor="let document of (filteredDocuments$ | async)"
-            [document]="document"
-            [flush]="true"
-            (click)="presentActionSheet(document)"
-          ></app-document-item-list>
-        </cdk-virtual-scroll-viewport>
+  template: `
+    <ion-content class="listing docs">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Tu historia clínica</p>
+        <h1 class="listing-header__title">Mis documentos</h1>
+      </header>
+
+      <ng-container *ngIf="(documents$ | async) as documents">
+        <ng-container *ngIf="documents.length > 0; else emptyState">
+          <form [formGroup]="searchForm" class="listing-search">
+            <ion-searchbar
+              class="listing-searchbar"
+              formControlName="search"
+              placeholder="Buscar documento..."
+              debounce="400"
+              type="string"
+              mode="md"
+              (ionChange)="handleChange($event)"
+            ></ion-searchbar>
+          </form>
+
+          <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
+            <app-document-item-list
+              *cdkVirtualFor="let document of (filteredDocuments$ | async)"
+              [document]="document"
+              [flush]="true"
+              (click)="presentActionSheet(document)"
+            ></app-document-item-list>
+          </cdk-virtual-scroll-viewport>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state" role="status" *ngIf="!(isLoading$ | async)">
+            <div class="empty-state__icon" aria-hidden="true">
+              <ion-icon name="document-text"></ion-icon>
+            </div>
+            <h2 class="empty-state__title">Sin documentos todavía</h2>
+            <p class="empty-state__subtitle">
+              Subí estudios, recetas o informes y los tenés siempre a mano.
+            </p>
+            <button type="button" class="empty-state__cta" (click)="newDocument()">
+              <ion-icon name="add"></ion-icon>
+              Agregar documento
+            </button>
+          </div>
+        </ng-template>
       </ng-container>
-    </ng-container>
-    <div class="docs__empty" *ngIf="(documents$ | async)?.length === 0 && !(isLoading$ | async)">
-      <img src="/assets/images/documents/documents-empty.svg" />
-      <ion-label class="docs__empty__title"
-        >Todavía no tienes ningún documento<br />
-        ¿Qué esperas para agregar tu primer documento médico?</ion-label
-      >
-    </div>
-    <div>
-      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button (click)="newDocument()" class="docs__fab">
+
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="newDocument()"
+          aria-label="Agregar documento"
+        >
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
       </ion-fab>
-    </div>
-  </ion-content>`,
+    </ion-content>
+  `,
   styleUrls: ['./documents.page.scss'],
 })
 export class DocumentsPage implements OnInit {
   private documentsSubject$ = new BehaviorSubject<MedicalDocument[]>([]);
   private searchSubject$ = new BehaviorSubject<string>('');
   private isLoadingSubject$ = new BehaviorSubject<boolean>(false);
-  
+
   documents$ = this.documentsSubject$.asObservable();
   isLoading$ = this.isLoadingSubject$.asObservable();
-  
+
   filteredDocuments$: Observable<MedicalDocument[]> = combineLatest([
     this.documents$,
     this.searchSubject$
   ]).pipe(
     map(([documents, search]) => {
       if (!search) return documents;
-      return documents.filter(doc => 
+      return documents.filter(doc =>
         doc.title.toLowerCase().includes(search.toLowerCase())
       );
     })
   );
-  
+
   searchForm = this.fb.group({
     search: '',
   });

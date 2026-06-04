@@ -3,16 +3,23 @@ import { ModalController, NavController } from '@ionic/angular';
 
 @Component({
   selector: 'app-success-creation-acount',
-  template: `<div class="modal-content">
-    <div class="body">
-      <ion-img src="/assets/images/register/success-creation.svg"></ion-img>
-      <ion-label class="ui-font-modal-title">¡Felicitaciones su cuenta fue creada con éxito!</ion-label>
-      <ion-label class="ui-font-text">Le hemos enviado un email para validar su identidad a su correo electrónico</ion-label>
-      <div class="body__actions">
-        <ion-button (click)="continue()">Continuar</ion-button>
+  template: `
+    <div class="app-modal">
+      <div class="app-modal__icon app-modal__icon--success" aria-hidden="true">
+        <ion-icon name="checkmark-circle"></ion-icon>
+      </div>
+      <h2 class="app-modal__title">¡Cuenta creada!</h2>
+      <p class="app-modal__text">
+        Te enviamos un email para validar tu identidad. Revisá tu casilla para activar la cuenta.
+      </p>
+
+      <div class="app-modal__actions">
+        <button type="button" class="auth-btn auth-btn--primary" (click)="continue()">
+          Continuar
+        </button>
       </div>
     </div>
-  </div>`,
+  `,
   styleUrls: ['./success-creation-acount.component.scss'],
 })
 export class SuccessCreationAcountComponent implements OnInit {

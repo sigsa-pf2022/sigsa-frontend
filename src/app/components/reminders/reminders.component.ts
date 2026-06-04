@@ -5,7 +5,16 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
   selector: 'app-reminders',
   template: `
     <div class="rem">
-      <ion-segment class="rem__segment" (ionChange)="changeReminders($event)" [value]="activeTab">
+      <div class="rem__section-title">
+        <h2>Tus recordatorios</h2>
+      </div>
+
+      <ion-segment
+        class="rem__segment"
+        (ionChange)="changeReminders($event)"
+        [value]="activeTab"
+        mode="md"
+      >
         <ion-segment-button class="rem__segment__button" [value]="remindersTypes.medications">
           <ion-label>Medicamentos</ion-label>
         </ion-segment-button>
@@ -17,21 +26,22 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
         </ion-segment-button>
       </ion-segment>
     </div>
-    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.medications" itemSize="3">
+
+    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.medications" itemSize="3" class="rem__scroll">
       <app-meds-event-item-list
         *cdkVirtualFor="let medEvent of this.reminders"
         [medEvent]="medEvent"
         (click)="onItemClick(medEvent)"
       ></app-meds-event-item-list>
     </cdk-virtual-scroll-viewport>
-    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.appointments" itemSize="3">
+    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.appointments" itemSize="3" class="rem__scroll">
       <app-appointments-item-list
         *cdkVirtualFor="let appointment of this.reminders"
         [appointment]="appointment"
         (click)="onItemClick(appointment)"
       ></app-appointments-item-list>
     </cdk-virtual-scroll-viewport>
-    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.documents" itemSize="3">
+    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.documents" itemSize="3" class="rem__scroll">
       <app-document-item-list
         *cdkVirtualFor="let document of this.reminders"
         [document]="document"

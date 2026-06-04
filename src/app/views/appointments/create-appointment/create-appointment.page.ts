@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { IonDatetime, NavController } from '@ionic/angular';
+import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
@@ -11,76 +11,111 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
 
 @Component({
   selector: 'app-create-appointment',
-  template: `<ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
-        <ion-buttons slot="start">
-          <ion-back-button [defaultHref]="this.backUrl"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">
-          {{ this.isEditMode ? 'Editar' : 'Crear' }} turno
-          <span *ngIf="dependentName" style="font-size: 0.8em; display: block;"
-            >para {{ dependentName | titlecase }}</span
+  template: `
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
           >
-        </ion-title>
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div class="auth-stepper" aria-label="Paso 2 de 2">
+            <div class="auth-stepper__bar auth-stepper__bar--done"></div>
+            <div class="auth-stepper__bar auth-stepper__bar--current"></div>
+            <span class="auth-stepper__count">2/2</span>
+          </div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ca">
-      <div class="ca__doctor">
-        <div class="ca__doctor__background">
-          <ion-item lines="none" class="ca__doctor__item no-padding">
-            <div class="ca__doctor__item__wrapper">
-              <ion-img [src]="'assets/images/reminders/doctor-colored.svg'"></ion-img>
-              <div class="ca__doctor__item__wrapper__content">
-                <ion-text class="ui-font-profile-title"> Dr/a. {{ this.doctor?.lastName }}</ion-text>
-              </div>
-            </div>
-          </ion-item>
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">
+          {{ this.isEditMode ? 'Editar turno' : 'Nuevo turno' }}
+          <ng-container *ngIf="dependentName"> · para {{ dependentName | titlecase }}</ng-container>
+        </p>
+        <h1 class="listing-header__title">Fecha del turno</h1>
+      </header>
+
+      <div class="wizard-summary" *ngIf="this.doctor">
+        <div class="wizard-summary__icon" aria-hidden="true">
+          <ion-img src="assets/images/reminders/doctor-colored.svg"></ion-img>
+        </div>
+        <div class="wizard-summary__body">
+          <p class="wizard-summary__eyebrow">Profesional</p>
+          <p class="wizard-summary__title">Dr/a. {{ this.doctor?.firstName }} {{ this.doctor?.lastName }}</p>
         </div>
       </div>
-      <form [formGroup]="this.form">
-        <div class="ca__data">
-          <!-- <ion-text class="ui-font-profile-label" -->
-          <!-- >Dirección de atención: {{ this.doctor?.streetName }} {{ this.doctor?.streetNumber }}</ion-text -->
-          <!-- > -->
-          <ion-input class="ui-form-input" placeholder="Fecha de Atencion" formControlName="date" id="open-modal">
-          </ion-input>
-          <ion-modal trigger="open-modal" class="calendar-modal-time">
-            <ng-template>
-              <ion-content>
-                <ion-datetime
-                  #bdt
-                  [value]="this.appointmentDate"
-                  [min]="this.minDate"
-                  locale="es-ES"
-                  (ionChange)="dateChanged(bdt.value)"
-                  [showDefaultButtons]="true"
-                >
-                  <span slot="time-label">Tiempo</span>
-                  <ion-buttons slot="buttons">
-                    <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
-                  </ion-buttons>
-                </ion-datetime>
-              </ion-content>
-            </ng-template>
-          </ion-modal>
-          <ion-textarea
-            rows="8"
-            class="ui-form-input"
-            placeholder="Comentarios"
-            formControlName="description"
-          ></ion-textarea>
+
+      <form [formGroup]="this.form" class="auth-form ca__form">
+        <div class="auth-field">
+          <label class="auth-field__label" for="open-modal">Fecha y hora del turno</label>
+          <button
+            type="button"
+            class="date-field"
+            [class.date-field--empty]="!this.form.value.date"
+            (click)="openDateModal($event)"
+          >
+            <span>{{ this.form.value.date || 'Seleccionar fecha y hora' }}</span>
+            <ion-icon name="calendar-outline"></ion-icon>
+          </button>
+        </div>
+
+        <ion-modal #dateModal class="calendar-modal-time">
+          <ng-template>
+            <ion-content>
+              <ion-datetime
+                #bdt
+                [value]="this.appointmentDate"
+                [min]="this.minDate"
+                locale="es-ES"
+                (ionChange)="dateChanged(bdt.value)"
+                [showDefaultButtons]="false"
+              >
+                <span slot="time-label">Hora</span>
+                <ion-buttons slot="buttons">
+                  <ion-button class="datetime-done" (click)="confirmDateSelection()">Listo</ion-button>
+                </ion-buttons>
+              </ion-datetime>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+
+        <div class="auth-field">
+          <label class="auth-field__label" for="ca-description">Comentarios</label>
+          <div class="auth-input ca__textarea">
+            <ion-textarea
+              id="ca-description"
+              rows="5"
+              placeholder="Notas sobre el turno (opcional)"
+              formControlName="description"
+              autoGrow="true"
+            ></ion-textarea>
+          </div>
         </div>
       </form>
     </ion-content>
-    <ion-footer class="footer__light">
-      <ion-button (click)="onSubmit()" expand="block" [disabled]="!this.form.valid" color="primary">
-        Confirmar
-      </ion-button>
-    </ion-footer>`,
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="onSubmit()"
+        [disabled]="!this.form.valid"
+      >
+        {{ isEditMode ? 'Actualizar turno' : 'Crear turno' }}
+      </button>
+    </ion-footer>
+  `,
   styleUrls: ['./create-appointment.page.scss'],
 })
 export class CreateAppointmentPage implements OnInit {
   @ViewChild(IonDatetime) datetime: IonDatetime;
+  @ViewChild('dateModal') dateModal: IonModal;
   form = this.fb.group({
     date: [null, Validators.required],
     description: '',
@@ -174,6 +209,23 @@ export class CreateAppointmentPage implements OnInit {
     this.datetime.confirm(true);
   }
 
+  /**
+   * Blur the trigger BEFORE opening the modal so Chrome 124+ does
+   * not block the modal's backdrop aria-hidden because of a
+   * focused descendant.
+   */
+  async openDateModal(event: Event) {
+    (event?.target as HTMLElement)?.blur();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await this.dateModal?.present();
+  }
+
+  goBack() {
+    this.navController.navigateBack([this.backUrl]);
+  }
+
   async onSubmit() {
     // Asegurar que tenemos una fecha seleccionada antes de enviar
     if (!this.appointmentDate) {
@@ -224,15 +276,10 @@ export class CreateAppointmentPage implements OnInit {
       });
     }
 
-    // Debug log temporal (remover en producción)
-    // eslint-disable-next-line no-console
-    console.log('[CreateAppointment] Payload enviado', appointmentData);
     try {
       const res: any = await this.appointmentsService.createAppointment(appointmentData);
       this.successCreation(res.appointment);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('[CreateAppointment] Error creación', err);
       this.toastService.showError?.('No se pudo crear el turno');
     }
   }
@@ -244,10 +291,10 @@ export class CreateAppointmentPage implements OnInit {
 
     // Si venimos de un grupo específico, regresar a ese grupo
     if (this.dependentId && this.groupId) {
-    return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
+      return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
     } else if (this.dependentId) {
-        // Si solo tenemos dependentId pero no groupId, ir al listado de grupos
-        return this.navController.navigateBack(['/groups']);
+      // Si solo tenemos dependentId pero no groupId, ir al listado de grupos
+      return this.navController.navigateBack(['/groups']);
     } else {
       // Usuario normal, ir a appointments
       return this.navController.navigateForward(['/tabs/appointments']);

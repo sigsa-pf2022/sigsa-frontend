@@ -5,21 +5,31 @@ import { Component, OnInit } from '@angular/core';
     <app-header></app-header>
     <ion-content>
       <ion-tabs>
-        <ion-tab-bar slot="bottom">
-          <ion-tab-button tab="home">
-            <ion-icon name="home"></ion-icon>
+        <ion-tab-bar slot="bottom" class="app-tabbar">
+          <ion-tab-button tab="home" aria-label="Inicio">
+            <ion-icon class="tab-icon tab-icon--outline" name="home-outline"></ion-icon>
+            <ion-icon class="tab-icon tab-icon--filled" name="home"></ion-icon>
+            <ion-label>Inicio</ion-label>
           </ion-tab-button>
-          <ion-tab-button tab="appointments">
-            <ion-icon name="calendar-number"></ion-icon>
+          <ion-tab-button tab="appointments" aria-label="Turnos">
+            <ion-icon class="tab-icon tab-icon--outline" name="calendar-outline"></ion-icon>
+            <ion-icon class="tab-icon tab-icon--filled" name="calendar"></ion-icon>
+            <ion-label>Turnos</ion-label>
           </ion-tab-button>
-          <ion-tab-button tab="clipboard">
-            <ion-icon name="clipboard"></ion-icon>
+          <ion-tab-button tab="clipboard" aria-label="Documentos">
+            <ion-icon class="tab-icon tab-icon--outline" name="document-text-outline"></ion-icon>
+            <ion-icon class="tab-icon tab-icon--filled" name="document-text"></ion-icon>
+            <ion-label>Documentos</ion-label>
           </ion-tab-button>
-          <ion-tab-button tab="groups">
-            <ion-icon name="people"></ion-icon>
+          <ion-tab-button tab="groups" aria-label="Grupos">
+            <ion-icon class="tab-icon tab-icon--outline" name="people-outline"></ion-icon>
+            <ion-icon class="tab-icon tab-icon--filled" name="people"></ion-icon>
+            <ion-label>Grupos</ion-label>
           </ion-tab-button>
-          <ion-tab-button tab="meds">
-            <ion-icon name="medkit"></ion-icon>
+          <ion-tab-button tab="meds" aria-label="Medicamentos">
+            <ion-icon class="tab-icon tab-icon--outline" name="medkit-outline"></ion-icon>
+            <ion-icon class="tab-icon tab-icon--filled" name="medkit"></ion-icon>
+            <ion-label>Medicación</ion-label>
           </ion-tab-button>
         </ion-tab-bar>
       </ion-tabs>

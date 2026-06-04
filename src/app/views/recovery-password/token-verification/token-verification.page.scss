@@ -1,13 +1,10 @@
-.tv{
-    --padding-start: 16px;
-    --padding-end: 16px;
-    &__img{
-        width: 300px;
-        margin: auto;
-    }
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-    &__title{
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
+.tv__hero-icon {
+  font-size: 40px;
+  color: var(--sigsa-700);
 }

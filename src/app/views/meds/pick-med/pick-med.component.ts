@@ -7,51 +7,88 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 
 @Component({
   selector: 'app-pick-med',
-  template: ` 
-  <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/tabs/meds"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">{{ this.isEditMode ? 'Editar' : 'Crear' }} recordatorio</ion-title>
+  template: `
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div class="auth-stepper" aria-label="Paso 1 de 2">
+            <div class="auth-stepper__bar auth-stepper__bar--current"></div>
+            <div class="auth-stepper__bar"></div>
+            <span class="auth-stepper__count">1/2</span>
+          </div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="apm">
-      <form [formGroup]="this.searchForm">
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">
+          {{ this.isEditMode ? 'Editar recordatorio' : 'Nuevo recordatorio' }}
+        </p>
+        <h1 class="listing-header__title">Elegí el medicamento</h1>
+      </header>
+
+      <form [formGroup]="this.searchForm" class="listing-search">
         <ion-searchbar
+          class="listing-searchbar"
           formControlName="search"
-          placeholder="Buscar medicamentos ..."
-          class="ui-search-input  ui-search-input__no-show"
+          placeholder="Buscar medicamento..."
           debounce="400"
           type="string"
+          mode="md"
           (ionChange)="handleChange($event)"
         ></ion-searchbar>
       </form>
-      <ion-list *ngIf="this.filteredMeds?.length > 0">
-        <ion-radio-group [value]="this.med?.id">
+
+      <div class="pick-med__scroll">
+        <ng-container *ngIf="this.filteredMeds?.length > 0; else emptyState">
           <app-items-list
-            class="apm__list"
-            *ngFor="let med of this.filteredMeds"
-            (click)="setMed(med)"
+            *ngFor="let medOption of this.filteredMeds"
+            (click)="setMed(medOption)"
             [showIcon]="false"
             [isSelectable]="true"
-            [value]="med.id"
-            [title]="med.name + ' ' + med.dosage"
+            [value]="medOption.id"
+            [selectedValue]="this.med?.id"
+            [title]="medOption.name"
+            [subtitle]="medOption.dosage"
             img="pill"
-            height="60%"
           ></app-items-list>
-        </ion-radio-group>
-      </ion-list>
-      <!-- <div class="apm__empty-list" *ngIf="this.meds?.length === 0">
-        <ion-text>No se encontraron medicamentos con los filtros solicitados.</ion-text>
-        <ion-button (click)="goToMyProfessionals()" color="secondary" fill="outline">Usá el tuyo</ion-button>
-      </div> -->
-    </ion-content>
-    <ion-footer class="footer__light">
-      <div class="apm__actions">
-        <ion-button [disabled]="!this.med" (click)="nextStep()">Siguiente</ion-button>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state" role="status">
+            <div class="empty-state__icon" aria-hidden="true">
+              <ion-icon name="search-outline"></ion-icon>
+            </div>
+            <h2 class="empty-state__title">Sin resultados</h2>
+            <p class="empty-state__subtitle">
+              Probá con otro nombre o revisá la ortografía.
+            </p>
+          </div>
+        </ng-template>
       </div>
-    </ion-footer>`,
+    </ion-content>
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="nextStep()"
+        [disabled]="!this.med"
+      >
+        Siguiente
+        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+      </button>
+    </ion-footer>
+  `,
   styleUrls: ['./pick-med.component.scss'],
 })
 export class PickMedComponent implements OnInit, OnDestroy {
@@ -131,13 +168,19 @@ export class PickMedComponent implements OnInit, OnDestroy {
   }
 
   async handleChange(event) {
-    const search = event.detail.value;
-    this.filteredMeds = this.meds.filter((d) => d.name.includes(search));
+    const search = (event.detail.value || '').toLowerCase();
+    this.filteredMeds = this.meds.filter((d) =>
+      String(d?.name ?? '').toLowerCase().includes(search)
+    );
   }
 
   async getMeds() {
     this.meds = await this.medsEventsService.getMeds();
     this.filteredMeds = this.meds;
+  }
+
+  goBack() {
+    this.navController.navigateBack(['/tabs/meds']);
   }
 
   nextStep() {

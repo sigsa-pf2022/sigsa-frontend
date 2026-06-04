@@ -4,17 +4,23 @@ import { Professional } from '../../interfaces/Professional.interface';
 @Component({
   selector: 'app-doctors-list',
   template: `
-    <ion-list class="dl" [ngStyle]="{ 'min-height': this.height }">
-      <ion-item *ngFor="let doctor of this.doctors" class="dl__item" lines="full">
-        <div class="dl__item__img">
-          <ion-img [src]="'assets/images/reminders/doctor.svg'"></ion-img>
+    <div class="dl" [ngStyle]="{ 'min-height': this.height }">
+      <ion-item
+        *ngFor="let doctor of this.doctors"
+        class="list-item"
+        lines="none"
+        [button]="true"
+        detail="false"
+      >
+        <div class="list-item__icon list-item__icon--med" aria-hidden="true">
+          <ion-icon name="medkit"></ion-icon>
         </div>
-        <div class="dl__item__content">
-          <ion-label>{{ doctor.firstName }} {{ doctor.lastName }}</ion-label>
+        <div class="list-item__body">
+          <span class="list-item__title">Dr/a {{ doctor.firstName }} {{ doctor.lastName }}</span>
         </div>
-        <ion-icon class="dl__item__action" name="chevron-forward-outline" color="primary"></ion-icon>
+        <ion-icon name="chevron-forward" class="dl__chevron" aria-hidden="true"></ion-icon>
       </ion-item>
-    </ion-list>
+    </div>
   `,
   styleUrls: ['./doctors-list.component.scss'],
 })

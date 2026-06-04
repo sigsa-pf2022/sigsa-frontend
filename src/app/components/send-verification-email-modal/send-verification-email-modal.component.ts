@@ -3,19 +3,26 @@ import { ModalController } from '@ionic/angular';
 
 @Component({
   selector: 'app-send-verification-email-modal',
-  template: `<div class="modal-content">
-    <div class="body">
-      <ion-title>¡Atención!</ion-title>
-      <ion-label
-        >La cuenta debe confirmar el correo para continuar. Revise la casilla de
-        correo o solicite un reenvío</ion-label
-      >
-      <div class="body__actions">
-        <ion-button (click)="close()">Cerrar</ion-button>
-        <ion-button (click)="resend()">Reenviar</ion-button>
+  template: `
+    <div class="app-modal">
+      <div class="app-modal__icon app-modal__icon--warning" aria-hidden="true">
+        <ion-icon name="mail-unread"></ion-icon>
+      </div>
+      <h2 class="app-modal__title">Verificá tu correo</h2>
+      <p class="app-modal__text">
+        Antes de continuar, confirmá tu cuenta desde el email que te enviamos. Si no llegó, podés solicitar un reenvío.
+      </p>
+
+      <div class="app-modal__actions app-modal__actions--row">
+        <button type="button" class="auth-btn auth-btn--secondary" (click)="close()">
+          Cerrar
+        </button>
+        <button type="button" class="auth-btn auth-btn--primary" (click)="resend()">
+          Reenviar
+        </button>
       </div>
     </div>
-  </div>`,
+  `,
   styleUrls: ['./send-verification-email-modal.component.scss'],
 })
 export class SendVerificationEmailModalComponent implements OnInit {

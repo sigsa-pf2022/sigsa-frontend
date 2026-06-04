@@ -1,6 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { IonDatetime, NavController } from '@ionic/angular';
+import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { format, parseISO } from 'date-fns';
 import { GENDERS } from 'src/app/constants/Gender.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
@@ -10,78 +10,173 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
 @Component({
   selector: 'app-personal-data',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/welcome"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Registrarse</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+
+          <div class="auth-stepper" aria-label="Paso 1">
+            <div class="auth-stepper__bar auth-stepper__bar--current"></div>
+            <div class="auth-stepper__bar"></div>
+            <div class="auth-stepper__bar" *ngIf="this.userType === 'profesional'"></div>
+            <span class="auth-stepper__count">1/{{ this.userType === 'profesional' ? 3 : 2 }}</span>
+          </div>
+        </div>
       </ion-toolbar>
     </ion-header>
 
-    <ion-content class="pd">
-      <ion-img class="pd__img" src="/assets/images/register/personal-data.svg"></ion-img>
-      <div class="pd__notice">
-        <ion-text class=" ui-font-profile-text">Atencion: Usted se esta registrando como</ion-text
-        ><ion-text class="pd__notice__type">{{ this.userType | uppercase }}</ion-text>
-      </div>
+    <ion-content class="auth">
+      <div class="auth-container">
+        <div class="auth-header">
+          <p class="auth-header__eyebrow">Crear cuenta</p>
+          <h1 class="auth-header__title">Tus datos personales</h1>
+          <p class="auth-header__subtitle">
+            Empezamos por lo básico. Después configurás tu acceso.
+          </p>
+        </div>
 
-      <form class="pd__form" [formGroup]="this.form">
-        <ion-input class="ui-form-input" formControlName="firstName" placeholder="Nombre" type="text"></ion-input>
-        <ion-input class="ui-form-input" formControlName="lastName" placeholder="Apellido" type="text"></ion-input>
-        <ion-input class="ui-form-input" formControlName="dni" placeholder="DNI" type="text"></ion-input>
-        <ion-select
-          okText="Confirmar"
-          cancelText="Cancelar"
-          class="ui-form-input"
-          formControlName="gender"
-          placeholder="Genero"
-          interface="alert"
-        >
-          <ion-select-option *ngFor="let gender of this.genders" [value]="gender.value">{{
-            gender.text
-          }}</ion-select-option>
-        </ion-select>
-        <ion-input
-          class="ui-form-input"
-          placeholder="Fecha de Nacimiento"
-          formControlName="birthday"
-          id="open-modal"
-        >
-        </ion-input>
-        <ion-modal trigger="open-modal" class="calendar-modal">
-          <ng-template>
-            <ion-content>
-              <ion-datetime
-                #bdt
-                [value]="this.maxDate"
-                [max]="this.maxDate"
-                locale="es-ES"
-                presentation="date"
-                (ionChange)="dateChanged(bdt.value)"
+        <div class="pd__type-switch" role="tablist" aria-label="Tipo de cuenta">
+          <button
+            type="button"
+            class="pd__type-option"
+            [class.pd__type-option--active]="this.userType === 'usuario'"
+            (click)="setUserType()"
+            role="tab"
+            [attr.aria-selected]="this.userType === 'usuario'"
+          >
+            <ion-icon name="person-outline"></ion-icon>
+            Usuario
+          </button>
+          <button
+            type="button"
+            class="pd__type-option"
+            [class.pd__type-option--active]="this.userType === 'profesional'"
+            (click)="setProfessionalType()"
+            role="tab"
+            [attr.aria-selected]="this.userType === 'profesional'"
+          >
+            <ion-icon name="medkit-outline"></ion-icon>
+            Profesional
+          </button>
+        </div>
+
+        <form class="auth-form" [formGroup]="this.form">
+          <div class="auth-field">
+            <label class="auth-field__label" for="pd-firstname">Nombre</label>
+            <div class="auth-input">
+              <ion-input
+                id="pd-firstname"
+                formControlName="firstName"
+                placeholder="Ej: Pedro"
+                type="text"
+                autocapitalize="words"
+              ></ion-input>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-field__label" for="pd-lastname">Apellido</label>
+            <div class="auth-input">
+              <ion-input
+                id="pd-lastname"
+                formControlName="lastName"
+                placeholder="Ej: Martínez"
+                type="text"
+                autocapitalize="words"
+              ></ion-input>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-field__label" for="pd-dni">DNI</label>
+            <div class="auth-input">
+              <ion-input
+                id="pd-dni"
+                formControlName="dni"
+                placeholder="Sin puntos ni espacios"
+                type="text"
+                inputmode="numeric"
+              ></ion-input>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-field__label" for="pd-gender">Género</label>
+            <div class="auth-input">
+              <ion-select
+                id="pd-gender"
+                okText="Confirmar"
+                cancelText="Cancelar"
+                formControlName="gender"
+                placeholder="Seleccioná una opción"
+                interface="alert"
               >
-                <ion-buttons slot="buttons">
-                  <ion-button color="primary" (click)="confirmDateSelection()">Confirmar</ion-button>
-                </ion-buttons>
-              </ion-datetime>
-            </ion-content>
-          </ng-template>
-        </ion-modal>
-      </form>
+                <ion-select-option *ngFor="let gender of this.genders" [value]="gender.value">{{
+                  gender.text
+                }}</ion-select-option>
+              </ion-select>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label class="auth-field__label">Fecha de nacimiento</label>
+            <button
+              type="button"
+              class="date-field"
+              [class.date-field--empty]="!form.value.birthday"
+              (click)="openDateModal($event)"
+            >
+              <span>{{ form.value.birthday || 'DD/MM/AAAA' }}</span>
+              <ion-icon name="calendar-outline"></ion-icon>
+            </button>
+            <ion-modal #dateModal class="calendar-modal">
+              <ng-template>
+                <ion-content>
+                  <ion-datetime
+                    #bdt
+                    [value]="this.maxDate"
+                    [max]="this.maxDate"
+                    locale="es-ES"
+                    presentation="date"
+                    (ionChange)="dateChanged(bdt.value)"
+                    [showDefaultButtons]="false"
+                  >
+                    <ion-buttons slot="buttons">
+                      <ion-button class="datetime-done" (click)="confirmDateSelection()">Listo</ion-button>
+                    </ion-buttons>
+                  </ion-datetime>
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          </div>
+        </form>
+      </div>
     </ion-content>
-    <ion-footer class="footer__light">
-      <ion-button class="ui-button-outlined" expand="block" (click)="changeUserType()"
-        >Registrese como {{ this.userType === 'usuario' ? 'profesional' : 'usuario' }}</ion-button
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="navigate()"
+        [disabled]="!this.form.valid"
       >
-      <ion-button (click)="navigate()" expand="block" [disabled]="!this.form.valid" color="primary">
         Siguiente
-      </ion-button>
+        <ion-icon name="arrow-forward" aria-hidden="true"></ion-icon>
+      </button>
     </ion-footer>
   `,
   styleUrls: ['./personal-data.page.scss'],
 })
 export class PersonalDataPage {
   @ViewChild(IonDatetime) datetime: IonDatetime;
+  @ViewChild('dateModal') dateModal: IonModal;
   form = this.fb.group({
     firstName: [null, [Validators.compose([Validators.required, Validators.maxLength(50)])]],
     lastName: [null, [Validators.compose([Validators.required, Validators.maxLength(50)])]],
@@ -111,7 +206,7 @@ export class PersonalDataPage {
     this.registerFormDataService.setData(this.form.value);
     this.getUserByDNI()
   }
-  
+
   getUserByDNI() {
     throw new Error('Method not implemented.');
   }
@@ -136,7 +231,17 @@ export class PersonalDataPage {
     this.datetime.confirm(true);
   }
 
+  async openDateModal(event: Event) {
+    (event?.target as HTMLElement)?.blur();
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    await this.dateModal?.present();
+  }
 
+  goBack() {
+    this.navController.navigateBack(['/welcome']);
+  }
 
   navigate() {
     this.registerFormDataService.setData(this.form.value);

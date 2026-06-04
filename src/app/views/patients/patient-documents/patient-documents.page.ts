@@ -8,31 +8,55 @@ import { PatientsService } from '../shared/services/patients.service';
 @Component({
   selector: 'app-patient-documents',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/patients"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">{{ patientName }}</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="pd">
-      <ion-label class="view-title" style="padding: 16px;">Documentos del paciente</ion-label>
-      <ion-list *ngIf="documents.length > 0">
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Paciente</p>
+        <h1 class="listing-header__title">{{ patientName }}</h1>
+      </header>
+
+      <div *ngIf="isLoading" class="pd__loading">
+        <ion-spinner color="primary"></ion-spinner>
+      </div>
+
+      <div *ngIf="!isLoading && documents.length > 0" class="pd__scroll">
+        <div class="section-title">
+          <h2>Documentos</h2>
+          <span>{{ documents.length }}</span>
+        </div>
+
         <app-document-item-list
           *ngFor="let doc of documents"
           [document]="doc"
           [flush]="true"
           (click)="viewDocument(doc.id)"
         ></app-document-item-list>
-      </ion-list>
-      <div class="pd__empty" *ngIf="documents.length === 0 && !isLoading">
-        <ion-icon name="document-text-outline" style="font-size: 64px; color: var(--ion-color-medium);"></ion-icon>
-        <ion-label style="text-align: center; margin-top: 16px; color: var(--ion-color-medium);">
-          Este paciente no tiene documentos cargados.
-        </ion-label>
       </div>
-      <ion-spinner *ngIf="isLoading" name="crescent" style="display: block; margin: 32px auto;"></ion-spinner>
+
+      <div *ngIf="!isLoading && documents.length === 0" class="empty-state" role="status">
+        <div class="empty-state__icon" aria-hidden="true">
+          <ion-icon name="document-text"></ion-icon>
+        </div>
+        <h2 class="empty-state__title">Sin documentos</h2>
+        <p class="empty-state__subtitle">
+          Este paciente todavía no cargó estudios, recetas ni informes.
+        </p>
+      </div>
     </ion-content>
   `,
   styleUrls: ['./patient-documents.page.scss'],
@@ -60,6 +84,10 @@ export class PatientDocumentsPage implements OnInit {
       this.patientName = params['name'] || 'Documentos';
     });
     await this.loadDocuments();
+  }
+
+  goBack() {
+    this.navController.navigateBack(['/patients']);
   }
 
   private async loadDocuments() {

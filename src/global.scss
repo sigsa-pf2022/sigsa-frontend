@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Core CSS required for Ionic components to work properly */
 @import "~@ionic/angular/css/core.css";
 
@@ -15,6 +19,7 @@
 @import "~@ionic/angular/css/flex-utils.css";
 
 /* User Interface Theme */
+@import "./theme/design-tokens.scss";
 @import "./theme/backgrounds.scss";
 @import "./theme/buttons.scss";
 @import "./theme/datetime.scss";
@@ -36,4 +41,1854 @@
 
 .swiper .swiper-slide{
     justify-content: left;
+}
+
+/* App typography baseline (Inter as primary font, doesn't override Ionic tokens) */
+:root {
+  --ion-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --ion-background-color: var(--color-surface-app);
+  --ion-text-color: var(--color-text);
+}
+
+ion-content {
+  --background: var(--color-surface-app);
+}
+
+/* ===========================================================
+ *  Tab transitions — slide-up + fade between tabs. Ionic's
+ *  default sets display:none on hidden tabs which is not
+ *  animatable; we override to keep them in flex flow with
+ *  opacity 0 and a small translateY so the active tab slides
+ *  in cleanly.
+ * =========================================================== */
+ion-tabs ion-router-outlet > .ion-page {
+  transition: opacity 280ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
+  opacity: 0;
+  transform: translateY(12px);
+  display: flex !important;
+  pointer-events: none;
+}
+
+/* ===========================================================
+ *  Auth pages — shared modern form/wizard classes
+ *  Used by: login, register/personal-data, register/professional-data,
+ *           register/user-data
+ * =========================================================== */
+
+.auth {
+  --background: var(--color-surface-app);
+}
+
+.auth-container {
+  padding: 8px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.auth-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 20px 0;
+  min-height: 48px;
+}
+
+.auth-back {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 150ms var(--ease-out-soft), background 150ms ease;
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--color-text);
+  }
+
+  &:active {
+    transform: scale(0.94);
+    background: var(--color-surface-subtle);
+  }
+}
+
+.auth-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-header__eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sigsa-600);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.auth-header__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.auth-header__subtitle {
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.auth-hero {
+  align-self: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 4px 0 4px;
+  box-shadow: inset 0 0 0 1px rgba(115, 56, 173, 0.08);
+
+  ion-img, img {
+    width: 56px;
+    height: 56px;
+    object-fit: contain;
+  }
+}
+
+/* ---------- Form fields ---------- */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.auth-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.auth-field__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+  letter-spacing: -0.005em;
+  padding-left: 4px;
+}
+
+.auth-field__hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  padding-left: 4px;
+  margin-top: 2px;
+}
+
+.auth-field__error {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-danger);
+  padding-left: 4px;
+  margin-top: 2px;
+}
+
+.auth-input,
+.auth-input ion-input,
+.auth-input ion-select {
+  --background: var(--color-surface-subtle);
+  --color: var(--color-text);
+  --placeholder-color: var(--color-text-muted);
+  --placeholder-opacity: 1;
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-input);
+  font-size: 15px;
+  font-weight: 500;
+  min-height: 52px;
+  width: 100%;
+  border: 1px solid transparent;
+  transition: border-color 150ms ease, background 150ms ease,
+              box-shadow 150ms ease;
+}
+
+.auth-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input:focus-within {
+  border-color: var(--sigsa-500);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 4px rgba(156, 89, 232, 0.15);
+}
+
+.auth-input--with-suffix {
+  padding-right: 12px;
+
+  ion-input {
+    --padding-end: 48px;
+  }
+}
+
+.auth-input__suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+  color: var(--color-text-secondary);
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--color-text-secondary);
+  }
+
+  &:active {
+    background: var(--color-surface-subtle);
+  }
+}
+
+/* ---------- Buttons ---------- */
+
+.auth-btn {
+  width: 100%;
+  min-height: 54px;
+  border-radius: var(--radius-button);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  cursor: pointer;
+  transition: transform 150ms var(--ease-out-soft),
+              box-shadow 150ms var(--ease-out-soft),
+              background 150ms ease,
+              opacity 150ms ease;
+}
+
+.auth-btn--primary {
+  background: linear-gradient(135deg, var(--sigsa-500) 0%, var(--sigsa-600) 100%);
+  color: #ffffff;
+  box-shadow: var(--shadow-floating);
+}
+
+.auth-btn--primary:active:not(:disabled) {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-floating-soft);
+}
+
+.auth-btn--secondary {
+  background: var(--sigsa-50);
+  color: var(--sigsa-700);
+}
+
+.auth-btn--secondary:active:not(:disabled) {
+  background: var(--sigsa-100);
+  transform: scale(0.97);
+}
+
+.auth-btn--ghost {
+  background: transparent;
+  color: var(--sigsa-700);
+  min-height: auto;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.auth-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ---------- Footer (sticky bottom) ---------- */
+
+.auth-footer {
+  background: var(--color-surface-app);
+  padding: 12px 20px calc(env(safe-area-inset-bottom, 0) + 12px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-top: 1px solid var(--color-hairline);
+}
+
+.auth-footer__inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 14px;
+
+  span { color: var(--color-text-secondary); }
+  a, button {
+    background: transparent;
+    border: none;
+    color: var(--sigsa-700);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 6px;
+  }
+}
+
+/* ---------- Stepper ---------- */
+
+.auth-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  max-width: 220px;
+}
+
+.auth-stepper__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--color-hairline);
+  overflow: hidden;
+  transition: background 240ms ease;
+}
+
+.auth-stepper__bar--done {
+  background: var(--sigsa-500);
+}
+
+.auth-stepper__bar--current {
+  background: var(--sigsa-500);
+  opacity: 0.4;
+}
+
+.auth-stepper__count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ===========================================================
+ *  Shared list-item — used by appointments / meds / documents
+ *  item lists rendered inside the reminders virtual scroll.
+ * =========================================================== */
+
+.list-item {
+  --background: var(--color-surface);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 0;
+  --border-radius: 20px;
+  --background-hover: var(--color-surface);
+  --background-activated: var(--color-surface);
+  --background-focused: var(--color-surface);
+  margin: 6px 0;
+  padding: 0;
+  background: var(--color-surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 150ms var(--ease-out-soft),
+              box-shadow 200ms var(--ease-out-soft);
+
+  &::part(native) {
+    background: var(--color-surface);
+    padding: 14px 16px;
+    align-items: center;
+  }
+
+  &:active {
+    transform: scale(0.98);
+    box-shadow: var(--shadow-elevated);
+  }
+}
+
+.list-item__icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+
+  ion-icon {
+    font-size: 20px;
+  }
+
+  ion-img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.list-item__icon--med {
+  background: var(--sigsa-50);
+  ion-icon { color: var(--sigsa-700); }
+}
+
+.list-item__icon--appointment {
+  background: #fff3df;
+  ion-icon { color: #d97706; }
+}
+
+.list-item__icon--document {
+  background: #e0f2fe;
+  ion-icon { color: #0369a1; }
+}
+
+.list-item__icon--due {
+  background: #fee2e2;
+  ion-icon { color: #b91c1c; }
+}
+
+.list-item__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.list-item__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.list-item__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.list-item__subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.list-item__meta {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  .list-item__dot { opacity: 0.5; }
+}
+
+/* Small inline pill status badge */
+.status-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  white-space: nowrap;
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+
+  &--success { background: #dcfce7; color: #15803d; }
+  &--warning { background: #fef3c7; color: #b45309; }
+  &--danger  { background: #fee2e2; color: #b91c1c; }
+  &--info    { background: #e0f2fe; color: #0369a1; }
+  &--violet  { background: var(--sigsa-50); color: var(--sigsa-700); }
+}
+
+/* "Due" / overdue indicator (subtle red tint on whole row) */
+.list-item--due {
+  background: #fff5f5;
+  box-shadow: 0 1px 3px rgba(185, 28, 28, 0.06), 0 1px 2px rgba(185, 28, 28, 0.04);
+
+  &::part(native) { background: #fff5f5; }
+}
+
+/* ===========================================================
+ *  Listing pages (meds, appointments, documents) — shared
+ *  pattern: large title + searchbar + virtual scroll + FAB
+ *  + empty state.
+ * =========================================================== */
+
+.listing {
+  --background: var(--color-surface-app);
+}
+
+.listing-header {
+  padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.listing-header__eyebrow {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  letter-spacing: -0.005em;
+  margin: 0;
+}
+
+.listing-header__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.listing-search {
+  padding: 16px 20px 8px;
+}
+
+.listing-searchbar {
+  --background: var(--color-surface-subtle);
+  --color: var(--color-text);
+  --placeholder-color: var(--color-text-muted);
+  --placeholder-opacity: 1;
+  --icon-color: var(--color-text-muted);
+  --clear-button-color: var(--color-text-muted);
+  --border-radius: var(--radius-input);
+  --box-shadow: none;
+  --cancel-button-color: var(--sigsa-700);
+  padding: 0;
+  min-height: 52px;
+  font-size: 15px;
+  font-weight: 500;
+
+  .searchbar-input.sc-ion-searchbar-md {
+    border-radius: var(--radius-input);
+    padding-inline-start: 44px !important;
+    padding-inline-end: 44px !important;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: border-color 150ms ease, background 150ms ease,
+                box-shadow 150ms ease;
+  }
+
+  .searchbar-input-container {
+    height: 52px;
+  }
+
+  &.searchbar-has-focus .searchbar-input.sc-ion-searchbar-md {
+    border-color: var(--sigsa-500);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 4px rgba(156, 89, 232, 0.15);
+  }
+
+  .searchbar-search-icon.sc-ion-searchbar-md {
+    inset-inline-start: 14px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .searchbar-clear-button.sc-ion-searchbar-md {
+    inset-inline-end: 6px;
+  }
+}
+
+.listing-scroll {
+  height: 100%;
+  width: 100%;
+  /* No horizontal padding here because cdk-virtual-scroll's inner
+     .cdk-virtual-scroll-content-wrapper is position: absolute and
+     ignores it. We inset items with their own margin below. */
+  padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 120px);
+  box-sizing: border-box;
+}
+
+/* Restore the 20px horizontal inset on list-item cards that live
+   inside a virtualized scroll, so they line up with the rest of the
+   page (headers, segment switcher, etc). Outside of virtual scroll,
+   list-item keeps its base margin and the parent provides padding. */
+cdk-virtual-scroll-viewport .list-item,
+cdk-virtual-scroll-viewport .alert-card {
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+/* Empty state with icon-in-circle */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 14px;
+  padding: 48px 24px calc(env(safe-area-inset-bottom, 0) + 96px);
+  margin: 0 auto;
+  max-width: 380px;
+  min-height: 60vh;
+}
+
+.empty-state__icon {
+  width: 96px;
+  height: 96px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+  box-shadow: inset 0 0 0 1px rgba(115, 56, 173, 0.08);
+
+  ion-icon {
+    font-size: 44px;
+    color: var(--sigsa-700);
+  }
+}
+
+.empty-state__title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.empty-state__subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.empty-state__cta {
+  margin-top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, var(--sigsa-500) 0%, var(--sigsa-600) 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-button);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: var(--shadow-floating);
+  transition: transform 150ms var(--ease-out-soft),
+              box-shadow 150ms var(--ease-out-soft);
+
+  ion-icon { font-size: 18px; }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: var(--shadow-floating-soft);
+  }
+}
+
+/* ===========================================================
+ *  Wizards — create/edit flows for meds, appointments, documents
+ *  Reuses .auth-* topbar/back/stepper/header/btn/footer.
+ * =========================================================== */
+
+/* Selectable card used in pick-med / pick-professional */
+.picker-card {
+  --background: var(--color-surface);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 0;
+  --border-radius: 16px;
+  --background-hover: var(--color-surface);
+  --background-activated: var(--color-surface);
+  --background-focused: var(--color-surface);
+  position: relative;
+  margin: 8px 0;
+  padding: 0;
+  background: var(--color-surface);
+  border: 2px solid transparent;
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform 150ms var(--ease-out-soft),
+              border-color 200ms var(--ease-out-soft),
+              box-shadow 200ms var(--ease-out-soft),
+              background 200ms ease;
+
+  &::part(native) {
+    background: var(--color-surface);
+    padding: 14px 16px;
+    align-items: center;
+    border-radius: 14px;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.picker-card.picker-card--selected {
+  background: var(--sigsa-50);
+  border-color: var(--sigsa-500);
+}
+
+.picker-card.picker-card--selected::part(native) {
+  background: var(--sigsa-50);
+}
+
+.picker-card__icon {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+  transition: background 200ms ease;
+
+  ion-icon {
+    font-size: 20px;
+    color: var(--sigsa-700);
+  }
+
+  ion-img {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.picker-card--selected .picker-card__icon {
+  background: var(--sigsa-100);
+}
+
+.picker-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.picker-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker-card__subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker-card__radio {
+  flex: 0 0 auto;
+  margin-left: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  border: 2px solid var(--color-hairline);
+  background: var(--color-surface);
+  position: relative;
+  transition: border-color 200ms ease, background 200ms ease;
+}
+
+.picker-card__radio::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--sigsa-500);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 200ms var(--ease-out-soft),
+              transform 200ms var(--ease-out-soft);
+}
+
+.picker-card.picker-card--selected .picker-card__radio {
+  border-color: var(--sigsa-500);
+}
+
+.picker-card.picker-card--selected .picker-card__radio::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Summary card — shown at top of step 2 to display step-1 selection */
+.wizard-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 4px 20px 0;
+  padding: 14px 16px;
+  background: var(--color-surface);
+  border-radius: 20px;
+  box-shadow: var(--shadow-card);
+}
+
+.wizard-summary__icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 22px;
+    color: var(--sigsa-700);
+  }
+
+  ion-img {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.wizard-summary__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wizard-summary__eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sigsa-700);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.wizard-summary__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Upload card (dropzone) for create-document */
+.upload-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 10px;
+  padding: 28px 20px;
+  border: 2px dashed var(--color-hairline);
+  border-radius: 20px;
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: border-color 200ms ease, background 200ms ease,
+              transform 150ms var(--ease-out-soft);
+  font-family: inherit;
+  width: 100%;
+
+  &:active {
+    transform: scale(0.99);
+    border-color: var(--sigsa-400);
+    background: var(--sigsa-50);
+  }
+}
+
+.upload-card__icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 28px;
+    color: var(--sigsa-700);
+  }
+}
+
+.upload-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 4px 0 0;
+  letter-spacing: -0.01em;
+}
+
+.upload-card__subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* File preview card after upload */
+.upload-preview {
+  position: relative;
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: 20px;
+  padding: 12px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.upload-preview__image {
+  width: 100%;
+  max-height: 240px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: var(--color-surface-subtle);
+}
+
+.upload-preview__remove {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  border-radius: var(--radius-button);
+  border: 1px solid #fecaca;
+  background: #fff5f5;
+  color: #b91c1c;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 150ms ease, transform 150ms var(--ease-out-soft);
+
+  ion-icon { font-size: 16px; }
+
+  &:active {
+    background: #fee2e2;
+    transform: scale(0.98);
+  }
+}
+
+/* Hides an ion-input visually but keeps it in the DOM as the
+   ion-modal trigger target for date pickers. */
+.wizard-date-trigger {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: auto;
+  inset: 0;
+  border-radius: var(--radius-input);
+}
+
+/* Date input "button" that opens the datetime modal */
+.date-field {
+  width: 100%;
+  min-height: 52px;
+  border-radius: var(--radius-input);
+  padding: 0 16px;
+  background: var(--color-surface-subtle);
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text);
+  text-align: left;
+  transition: background 150ms ease, border-color 150ms ease;
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--color-text-secondary);
+    flex: 0 0 auto;
+  }
+}
+
+.date-field--empty {
+  color: var(--color-text-muted);
+}
+
+.date-field:active {
+  background: var(--color-surface);
+  border-color: var(--sigsa-500);
+}
+
+/* ===========================================================
+ *  Group pages — family groups, group home, members, etc.
+ * =========================================================== */
+
+/* Hero card of a group: large avatar + dependent name + meta rows */
+.group-card {
+  margin: 8px 20px 0;
+  padding: 22px 20px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.group-card__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.group-card__avatar {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--sigsa-100) 0%, var(--sigsa-200) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(115, 56, 173, 0.10);
+
+  ion-icon {
+    font-size: 34px;
+    color: var(--sigsa-700);
+  }
+}
+
+.group-card__heading {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.group-card__name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.group-card__role {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sigsa-700);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.group-card__meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-hairline);
+}
+
+.group-card__meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.group-card__meta-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.group-card__meta-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Alert / callout card (e.g. pending professional requests) */
+.alert-card {
+  --background: var(--color-surface);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 0;
+  margin: 12px 20px 0;
+  padding: 0;
+  background: #fff8eb;
+  border: 1px solid #fde68a;
+  border-radius: 18px;
+  cursor: pointer;
+  transition: transform 150ms var(--ease-out-soft);
+
+  &::part(native) {
+    background: #fff8eb;
+    padding: 14px 16px;
+    align-items: center;
+    border-radius: 18px;
+  }
+
+  &:active {
+    transform: scale(0.99);
+  }
+}
+
+.alert-card__icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 9999px;
+  background: #fef3c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+
+  ion-icon {
+    font-size: 22px;
+    color: #b45309;
+  }
+}
+
+.alert-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alert-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #78350f;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.alert-card__subtitle {
+  font-size: 13px;
+  font-weight: 400;
+  color: #b45309;
+  line-height: 1.4;
+}
+
+.alert-card__badge {
+  flex: 0 0 auto;
+  margin-left: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 8px;
+  border-radius: 9999px;
+  background: #d97706;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Member row used in add-members and group-members */
+.member-row {
+  --background: var(--color-surface);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 0;
+  --border-radius: 16px;
+  margin: 8px 0;
+  background: var(--color-surface);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+
+  &::part(native) {
+    background: var(--color-surface);
+    padding: 12px 14px;
+    align-items: center;
+    border-radius: 16px;
+  }
+}
+
+.member-row__avatar {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--sigsa-700);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.member-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.member-row__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-row__sub {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-row__action {
+  flex: 0 0 auto;
+  margin-left: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 150ms ease, transform 150ms var(--ease-out-soft);
+
+  ion-icon {
+    font-size: 20px;
+  }
+
+  &--danger ion-icon { color: #b91c1c; }
+  &--primary ion-icon { color: var(--sigsa-700); }
+  &--neutral ion-icon { color: var(--color-text-secondary); }
+
+  &:active {
+    background: var(--color-surface-subtle);
+    transform: scale(0.92);
+  }
+}
+
+/* Section title within a content area */
+.section-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 8px;
+
+  h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: -0.015em;
+    margin: 0;
+  }
+
+  span {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+}
+
+/* Hamburger button used in group-home topbar */
+.app-menu-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 150ms var(--ease-out-soft), background 150ms ease;
+
+  ion-icon { font-size: 22px; color: var(--color-text); }
+
+  &:active {
+    transform: scale(0.94);
+    background: var(--color-surface-subtle);
+  }
+}
+
+/* Mini sub-fabs (used inside ion-fab-list for group-home) — small
+   circular white buttons stacked above the main FAB. */
+.sub-fab-button {
+  --background: var(--color-surface);
+  --background-activated: var(--color-surface-subtle);
+  --background-focused: var(--color-surface-subtle);
+  --background-hover: var(--color-surface);
+  --color: var(--sigsa-700);
+  --box-shadow: var(--shadow-elevated);
+  --border-radius: 9999px;
+
+  ion-icon { font-size: 22px; }
+}
+
+/* ===========================================================
+ *  Profile / Patients / Doctors — hero, option cards
+ * =========================================================== */
+
+/* Hero card for profile-like pages (avatar + name + meta) */
+.profile-hero {
+  margin: 4px 20px 0;
+  padding: 22px 20px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.profile-hero__avatar {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--sigsa-100) 0%, var(--sigsa-200) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--sigsa-700);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(115, 56, 173, 0.08);
+}
+
+.profile-hero__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-hero__name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-hero__email {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-hero__chip {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  color: var(--sigsa-700);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* Section title (small caps) used inside profile / patients */
+.section-eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0 24px 6px;
+  margin: 0;
+}
+
+/* Stacked options group — visually grouped white card with hairlines */
+.options-group {
+  margin: 0 20px;
+  background: var(--color-surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.option-row {
+  --background: var(--color-surface);
+  --background-hover: var(--color-surface);
+  --background-activated: var(--color-surface);
+  --background-focused: var(--color-surface);
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --min-height: 0;
+  --border-radius: 0;
+  margin: 0;
+  background: var(--color-surface);
+  cursor: pointer;
+  position: relative;
+  transition: background 150ms ease;
+
+  &::part(native) {
+    background: var(--color-surface);
+    padding: 14px 16px;
+    align-items: center;
+    border-radius: 0;
+  }
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 60px;
+    right: 16px;
+    bottom: 0;
+    height: 1px;
+    background: var(--color-hairline);
+    pointer-events: none;
+  }
+
+  &:active {
+    background: var(--color-surface-subtle);
+
+    &::part(native) {
+      background: var(--color-surface-subtle);
+    }
+  }
+}
+
+.option-row__icon {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 14px;
+
+  ion-icon {
+    font-size: 18px;
+    color: var(--sigsa-700);
+  }
+
+  ion-img {
+    width: 20px;
+    height: 20px;
+  }
+
+  &--danger {
+    background: #fee2e2;
+    ion-icon { color: #b91c1c; }
+  }
+}
+
+.option-row__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.option-row__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &--danger {
+    color: #b91c1c;
+  }
+}
+
+.option-row__subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option-row__chevron {
+  flex: 0 0 auto;
+  font-size: 18px;
+  color: var(--color-text-muted);
+  margin-left: 8px;
+}
+
+.option-row__toggle {
+  flex: 0 0 auto;
+  margin-left: 8px;
+}
+
+/* Sub-content (list of secondary actions inside a parent option) */
+.option-sub {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0 16px 12px 60px;
+
+  &__item {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    padding: 8px 0;
+    border-top: 1px solid var(--color-hairline);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    &:first-child { border-top: none; padding-top: 2px; }
+  }
+}
+
+/* ===========================================================
+ *  App modals (presented via ModalController with cssClass: 'modal')
+ *  Modernized container; legacy .modal still defined in theme/modals.scss
+ * =========================================================== */
+
+.app-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 28px 24px 24px;
+  background: var(--color-surface);
+  border-radius: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.app-modal__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+
+  ion-icon {
+    font-size: 32px;
+    color: var(--sigsa-700);
+  }
+
+  &--success {
+    background: #dcfce7;
+    ion-icon { color: #15803d; }
+  }
+
+  &--warning {
+    background: #fef3c7;
+    ion-icon { color: #b45309; }
+  }
+
+  &--danger {
+    background: #fee2e2;
+    ion-icon { color: #b91c1c; }
+  }
+}
+
+.app-modal__title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.app-modal__text {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+  margin: 0;
+  max-width: 320px;
+}
+
+.app-modal__form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+
+.app-modal__actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.app-modal__actions--row {
+  flex-direction: row;
+
+  .auth-btn {
+    flex: 1;
+    min-height: 48px;
+    font-size: 15px;
+  }
+}
+
+/* Pill code input (e.g. user validation, token verification) */
+.code-input {
+  --background: var(--color-surface-subtle);
+  --color: var(--color-text);
+  --placeholder-color: var(--color-text-muted);
+  --padding-start: 16px;
+  --padding-end: 16px;
+  --padding-top: 14px;
+  --padding-bottom: 14px;
+  background: var(--color-surface-subtle);
+  border-radius: var(--radius-input);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-align: center;
+  min-height: 60px;
+  width: 100%;
+}
+
+/* ===========================================================
+ *  Global tweaks for Ionic overlays (toast / action sheet)
+ * =========================================================== */
+
+ion-toast {
+  --background: var(--color-text);
+  --color: #ffffff;
+  --border-radius: 16px;
+  --box-shadow: var(--shadow-elevated);
+  --start: 16px;
+  --end: 16px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+ion-toast.toast-success {
+  --background: #15803d;
+}
+
+ion-toast.toast-danger {
+  --background: #b91c1c;
+}
+
+ion-action-sheet {
+  --background: var(--color-surface-app);
+  --color: var(--color-text);
+  --button-background: var(--color-surface);
+  --button-background-selected: var(--color-surface-subtle);
+  --button-color: var(--color-text);
+  --button-color-selected: var(--color-text);
+  --button-color-activated: var(--sigsa-700);
+
+  .action-sheet-button.ion-color-danger,
+  .action-sheet-button.action-sheet-destructive {
+    color: #b91c1c;
+    font-weight: 600;
+  }
+}
+
+/* Alert controller (used by app-menu and group-members) */
+ion-alert {
+  --background: var(--color-surface);
+}
+
+ion-alert .alert-wrapper {
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-elevated) !important;
+}
+
+ion-alert .alert-head {
+  padding-top: 22px !important;
+}
+
+ion-alert .alert-title {
+  font-weight: 700 !important;
+  font-size: 17px !important;
+  letter-spacing: -0.015em !important;
+  color: var(--color-text) !important;
+}
+
+ion-alert .alert-sub-title,
+ion-alert .alert-message {
+  font-size: 14px !important;
+  color: var(--color-text-secondary) !important;
+  line-height: 1.5 !important;
+}
+
+ion-alert .alert-button-group {
+  padding: 12px !important;
+  gap: 8px !important;
+}
+
+ion-alert .alert-button {
+  border-radius: var(--radius-button) !important;
+  text-transform: none !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  margin: 0 !important;
+  padding: 12px 16px !important;
+  color: var(--sigsa-700) !important;
+  background: var(--sigsa-50) !important;
+  border: none !important;
+}
+
+ion-alert .alert-button.alert-button-role-cancel {
+  color: var(--color-text-secondary) !important;
+  background: var(--color-surface-subtle) !important;
+}
+
+/* FAB — floating action button, bottom-right by convention */
+.app-fab {
+  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
+}
+
+.app-fab-button {
+  --background: linear-gradient(135deg, var(--sigsa-500) 0%, var(--sigsa-600) 100%);
+  --background-activated: var(--sigsa-700);
+  --background-focused: var(--sigsa-700);
+  --background-hover: var(--sigsa-600);
+  --color: #ffffff;
+  --box-shadow: var(--shadow-floating);
+  --border-radius: 9999px;
+  transition: transform 150ms var(--ease-out-soft);
+
+  ion-icon { font-size: 24px; }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+/* Expandable fab list — uses Ionic default centering. The children
+   are .sub-fab-button (circular) so they stack cleanly above the
+   centered main FAB. */
+ion-fab-list[side="top"] {
+  align-items: center;
+  gap: 8px;
 }

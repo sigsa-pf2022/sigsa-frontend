@@ -6,37 +6,68 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 @Component({
   selector: 'app-view-med-event',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary ui-toolbar__counter">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/meds"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Medicamento</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="vm">
-      <div class="vm__med">
-        <div class="vm__med__background">
-          <ion-item lines="none" class="vm__med__item no-padding">
-            <div class="vm__med__item__wrapper">
-              <ion-img [src]="'assets/images/reminders/pill-colored.svg'"></ion-img>
-              <div class="vm__med__item__wrapper__content">
-                <ion-text class="ui-font-profile-title"> {{ medEvent?.med?.name }} {{ medEvent?.med?.dosage }} </ion-text>
-              </div>
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Recordatorio</p>
+        <h1 class="listing-header__title">Medicamento</h1>
+      </header>
+
+      <div *ngIf="loading" class="vm__loading">
+        <ion-spinner color="primary"></ion-spinner>
+      </div>
+
+      <ng-container *ngIf="medEvent && !loading">
+        <article class="vm__summary">
+          <div class="vm__summary-icon" aria-hidden="true">
+            <ion-icon name="medkit"></ion-icon>
+          </div>
+          <div class="vm__summary-body">
+            <p class="vm__summary-name">{{ medEvent?.med?.name }}</p>
+            <p class="vm__summary-meta">
+              <span *ngIf="medEvent?.med?.dosage">{{ medEvent?.med?.dosage }}</span>
+            </p>
+          </div>
+          <span
+            *ngIf="medEvent?.status"
+            class="status-badge"
+            [ngClass]="statusBadgeClass"
+          >
+            {{ statusLabel }}
+          </span>
+        </article>
+
+        <section class="vm__section">
+          <div class="section-title vm__section-title">
+            <h2>Detalles</h2>
+          </div>
+          <div class="vm__card">
+            <div class="vm__row">
+              <span class="vm__row-label">Fecha y hora</span>
+              <span class="vm__row-value">{{ medEvent?.date | date: 'dd/MM/yyyy HH:mm' }}</span>
             </div>
-          </ion-item>
-        </div>
-      </div>
-      <div class="vm__data">
-        <div class="vm__data__item">
-          <ion-text class="vm__data__item__label">Fecha:</ion-text>
-          <ion-text class="vm__data__item__value">{{ medEvent?.date | date : 'dd/MM/YYYY HH:mm' }}</ion-text>
-        </div>
-        <div class="vm__data__item" *ngIf="medEvent?.description">
-          <ion-text class="vm__data__item__label">Descripción:</ion-text>
-          <ion-text class="vm__data__item__value">{{ medEvent?.description }}</ion-text>
-        </div>
-      </div>
+            <div class="vm__row" *ngIf="medEvent?.description">
+              <span class="vm__row-label">Descripción</span>
+              <span class="vm__row-value">{{ medEvent?.description }}</span>
+            </div>
+          </div>
+        </section>
+      </ng-container>
     </ion-content>
   `,
   styleUrls: ['./view-med-event.component.scss']
@@ -59,6 +90,28 @@ export class ViewMedEventComponent implements OnInit {
     const dependentIdParam = this.route.snapshot.queryParamMap.get('dependentId');
     const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
     this.load(dependentId);
+  }
+
+  goBack() {
+    this.navController.navigateBack(['/tabs/meds']);
+  }
+
+  get statusLabel(): string {
+    const map: Record<string, string> = {
+      confirmed: 'CONFIRMADO',
+      created: 'CREADO',
+      canceled: 'CANCELADO',
+    };
+    return map[this.medEvent?.status] || (this.medEvent?.status || '').toUpperCase();
+  }
+
+  get statusBadgeClass(): string {
+    const map: Record<string, string> = {
+      confirmed: 'status-badge--success',
+      created: 'status-badge--violet',
+      canceled: 'status-badge--danger',
+    };
+    return map[this.medEvent?.status] || '';
   }
 
   async load(dependentId?: number) {

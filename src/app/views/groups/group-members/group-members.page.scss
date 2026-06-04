@@ -1,0 +1,10 @@
+:host {
+  display: block;
+}
+
+.gm__scroll {
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 120px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

@@ -1,16 +1,25 @@
-:host{
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-  .ng {
-    background-color: var(--ion-color-white);
-    &__img {
-      margin-top: 35px;
-    }
-    &__form {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 16px;
-      margin: 35px 16px 0;
-    }
-  }
+.ng__form {
+  margin: 20px;
+  gap: 24px;
+}
+
+.ng__section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ng__section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sigsa-700);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
 }

@@ -1,18 +1,33 @@
 :host {
-  .dn {
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --padding-top: 20px;
-    &__img {
-      display: flex;
-      margin: auto;
-      width: 200px;
-    }
-    &__form {
-      margin-top: 24px;
-      display: flex;
-      flex-direction: column;
-      row-gap: 24px;
-    }
-  }
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dn__container {
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dn__hero-icon {
+  font-size: 40px;
+  color: var(--sigsa-700);
+}
+
+.dn__caption {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  max-width: 320px;
+  margin: 0 auto 8px;
+}
+
+.dn__form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }

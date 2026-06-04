@@ -23,86 +23,125 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
   template: `
     <app-menu contentId="group-home" title="Menu del grupo" [options]="this.options"></app-menu>
     <div class="ui-main-menu-content" id="group-home">
-      <ion-header class="ui-background__light">
-        <ion-toolbar class="ui-toolbar__primary">
-          <ion-buttons slot="start">
-            <ion-menu-button></ion-menu-button>
-          </ion-buttons>
-          <ion-title *ngIf="this.group" class="ui-header__title-center">{{ this.group.name | titlecase }}</ion-title>
-          <ion-buttons slot="end">
-            <ion-icon (click)="exitGroup()" name="log-out-outline"></ion-icon>
-          </ion-buttons>
+      <ion-header class="auth-page-header" mode="md">
+        <ion-toolbar class="auth-page-toolbar" mode="md">
+          <div class="auth-topbar">
+            <ion-menu-button class="app-menu-button" aria-label="Menú del grupo">
+              <ion-icon name="menu-outline"></ion-icon>
+            </ion-menu-button>
+            <button
+              type="button"
+              class="auth-back"
+              (click)="exitGroup()"
+              aria-label="Volver"
+            >
+              <ion-icon name="close"></ion-icon>
+            </button>
+          </div>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="gh" *ngIf="this.group">
-        <div>
-          <ion-item lines="none" class="gh__item ion-no-padding">
-            <div class="gh__item__wrapper">
-              <!-- <div class="gh__item__wrapper__img"> -->
-              <!-- <ion-img [src]="this.group.imgUrl"></ion-img> -->
-              <!-- </div> -->
-              <div class="gh__item__wrapper__icon">
-                <ion-icon color="primary" name="person-circle"></ion-icon>
-              </div>
-              <div class="gh__item__wrapper__data">
-                <ion-text class="item__wrapper__data__title"
-                  >{{ this.group.dependent.lastName | titlecase }}, {{ this.group.dependent.firstName | titlecase }}</ion-text
-                >
-                <ion-text class="gh__item__wrapper__data__info"
-                  ><b>Fecha de nacimiento:</b> {{ this.group.dependent.birthday | date : 'dd/MM/YYYY' }}</ion-text
-                >
-                <ion-text class="gh__item__wrapper__data__info"><b>DNI:</b> {{ this.group.dependent.dni }}</ion-text>
-                <ion-text class="gh__item__wrapper__data__info"
-                  ><b>Grupo sanguíneo:</b> {{ this.group.dependent.bloodType }}</ion-text
-                >
-              </div>
-            </div>
-          </ion-item>
-          <!-- Solicitudes de profesionales pendientes (solo visible para el admin del grupo) -->
-          <ion-item
-            *ngIf="pendingRequestsCount > 0"
-            lines="full"
-            button
-            detail
-            (click)="openProfessionalRequests()"
-            style="margin: 8px 0;"
-          >
-            <ion-icon slot="start" name="shield-checkmark-outline" color="warning"></ion-icon>
-            <ion-label>
-              <h3>Solicitudes de profesionales</h3>
-              <p>{{ pendingRequestsCount }} solicitud(es) pendiente(s)</p>
-            </ion-label>
-            <ion-badge slot="end" color="warning">{{ pendingRequestsCount }}</ion-badge>
-          </ion-item>
 
-          <app-next-events [events]="this.events"></app-next-events>
-          <app-reminders
-            height="37vh"
-            [reminders]="this.reminders"
-            [activeTab]="this.currentReminderType"
-            (tabChanged)="changeReminders($event)"
-            (itemClicked)="onReminderItemClicked($event)"
-          ></app-reminders>
-          <ion-fab class="gh__fab" vertical="bottom" horizontal="center" slot="fixed">
-            <ion-fab-button (click)="openFabList($event)">
-              <ion-icon name="add"></ion-icon>
-            </ion-fab-button>
-            <ion-fab-list side="top" class="gh__fab__list" #fabList>
-              <div class="gh__fab__list__button" (click)="createMedication()">
-                <img [src]="'/assets/images/reminders/pill.svg'" />
-                <ion-text color="light">Medicamento</ion-text>
-              </div>
-              <div class="gh__fab__list__button" (click)="createAppointment()">
-                <img [src]="'/assets/images/reminders/doctor.svg'" />
-                <ion-text color="light">Turno</ion-text>
-              </div>
-              <div class="gh__fab__list__button" (click)="createDocument()">
-                <img [src]="'/assets/images/reminders/document.svg'" />
-                <ion-text color="light">Documento</ion-text>
-              </div>
-            </ion-fab-list>
-          </ion-fab>
+      <ion-content class="listing gh" *ngIf="this.group">
+        <header class="listing-header gh__header">
+          <p class="listing-header__eyebrow">Grupo familiar</p>
+          <h1 class="listing-header__title">{{ this.group.name | titlecase }}</h1>
+        </header>
+
+        <article class="group-card" *ngIf="this.group.dependent">
+          <div class="group-card__head">
+            <div class="group-card__avatar" aria-hidden="true">
+              <ion-icon name="person"></ion-icon>
+            </div>
+            <div class="group-card__heading">
+              <p class="group-card__role">Dependiente</p>
+              <p class="group-card__name">
+                {{ this.group.dependent.firstName | titlecase }} {{ this.group.dependent.lastName | titlecase }}
+              </p>
+            </div>
+          </div>
+          <div class="group-card__meta">
+            <div class="group-card__meta-item">
+              <span class="group-card__meta-label">Nacimiento</span>
+              <span class="group-card__meta-value">{{ this.group.dependent.birthday | date: 'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="group-card__meta-item">
+              <span class="group-card__meta-label">DNI</span>
+              <span class="group-card__meta-value">{{ this.group.dependent.dni }}</span>
+            </div>
+            <div class="group-card__meta-item">
+              <span class="group-card__meta-label">Grupo sanguíneo</span>
+              <span class="group-card__meta-value">{{ this.group.dependent.bloodType || '—' }}</span>
+            </div>
+          </div>
+        </article>
+
+        <ion-item
+          *ngIf="pendingRequestsCount > 0"
+          class="alert-card"
+          lines="none"
+          [button]="true"
+          detail="false"
+          (click)="openProfessionalRequests()"
+        >
+          <div class="alert-card__icon" aria-hidden="true">
+            <ion-icon name="shield-checkmark"></ion-icon>
+          </div>
+          <div class="alert-card__body">
+            <span class="alert-card__title">Solicitudes de profesionales</span>
+            <span class="alert-card__subtitle">
+              {{ pendingRequestsCount }} pendiente{{ pendingRequestsCount === 1 ? '' : 's' }} para revisar
+            </span>
+          </div>
+          <span class="alert-card__badge">{{ pendingRequestsCount }}</span>
+        </ion-item>
+
+        <div class="section-title">
+          <h2>Próximos eventos</h2>
+          <span *ngIf="events?.length">{{ events.length }}</span>
         </div>
+
+        <app-next-events [events]="this.events"></app-next-events>
+
+        <app-reminders
+          height="37vh"
+          [reminders]="this.reminders"
+          [activeTab]="this.currentReminderType"
+          (tabChanged)="changeReminders($event)"
+          (itemClicked)="onReminderItemClicked($event)"
+        ></app-reminders>
+
+        <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="center" slot="fixed">
+          <ion-fab-button
+            class="app-fab-button"
+            (click)="openFabList($event)"
+            aria-label="Crear recordatorio"
+          >
+            <ion-icon [name]="opened ? 'close' : 'add'"></ion-icon>
+          </ion-fab-button>
+          <ion-fab-list side="top" class="gh__fab__list" #fabList>
+            <ion-fab-button
+              class="sub-fab-button"
+              (click)="createMedication()"
+              aria-label="Crear medicamento"
+            >
+              <ion-icon name="medkit"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-button
+              class="sub-fab-button"
+              (click)="createAppointment()"
+              aria-label="Crear turno"
+            >
+              <ion-icon name="calendar"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-button
+              class="sub-fab-button"
+              (click)="createDocument()"
+              aria-label="Crear documento"
+            >
+              <ion-icon name="document-text"></ion-icon>
+            </ion-fab-button>
+          </ion-fab-list>
+        </ion-fab>
       </ion-content>
     </div>
   `,
@@ -159,7 +198,7 @@ export class GroupHomePage implements OnInit {
   }
 
   async ionViewDidEnter() {
-  // Ya se cargó en ionViewWillEnter; evitar doble carga que puede mostrar datos viejos momentáneamente
+    // Ya se cargó en ionViewWillEnter; evitar doble carga que puede mostrar datos viejos momentáneamente
   }
 
   private async loadDependentEvents() {
@@ -482,7 +521,7 @@ export class GroupHomePage implements OnInit {
       this.closeAnimation();
       this.opened = false;
     }
-    
+
     // Navegar a la creación de turno para el dependiente
     this.navController.navigateForward(['/appointments/create/pick-doctor'], {
       queryParams: {
@@ -515,7 +554,7 @@ export class GroupHomePage implements OnInit {
       this.closeAnimation();
       this.opened = false;
     }
-    
+
     // Navegar a la creación de documento para el dependiente
     this.navController.navigateForward(['/documents/create'], {
       queryParams: {

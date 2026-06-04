@@ -12,48 +12,84 @@ import { UserValidationModalComponent } from './shared-login/components/user-val
 @Component({
   selector: 'app-login',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__transparent">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/welcome"></ion-back-button>
-        </ion-buttons>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="login">
-      <div class="login__logo ui-background__light">
-        <ion-img class="ui-logo__small" src="/assets/images/logos/logo-with-title.png"></ion-img>
-      </div>
-      <div class="login__content ui-background__light">
-        <form class="login__content__form" [formGroup]="this.loginForm" (submit)="login()">
-          <ion-text class="login__content__form__title ui-font-title" color="complementary">Bienvenido</ion-text>
-          <div class="login__content__form__items">
-            <ion-input class="ui-form-input" formControlName="email" placeholder="Email"></ion-input>
-            <app-password-input controlName="password" placeholder="Contraseña"> </app-password-input>
-            <ion-text
-              class="login__content__form__items__forgot-password ui-font-text"
-              color="complementary"
-              (click)="openRecoveryPassword()"
-              >¿Olvido su contraseña?</ion-text
-            >
-          </div>
-          <div class="login__content__form__actions">
-            <ion-button
-              class="ui-button"
-              type="submit"
-              color="primary"
-              expand="block"
-              [disabled]="!this.loginForm.valid"
-            >
-              Ingresar
-            </ion-button>
-            <div class="login__content__form__actions__secondary">
-              <ion-text class="ui-font-text" color="medium">No tiene una cuenta?</ion-text>
-              <ion-text (click)="goToRegister()" class="ui-font-text" color="complementary"> Registrese</ion-text>
+
+    <ion-content class="auth">
+      <div class="auth-container">
+        <div class="auth-hero" aria-hidden="true">
+          <ion-icon name="lock-closed" class="login__hero-icon"></ion-icon>
+        </div>
+
+        <div class="auth-header">
+          <p class="auth-header__eyebrow">SIGSA</p>
+          <h1 class="auth-header__title">Bienvenido</h1>
+          <p class="auth-header__subtitle">
+            Iniciá sesión para gestionar tu salud y la de tu familia.
+          </p>
+        </div>
+
+        <form class="auth-form" [formGroup]="this.loginForm" (submit)="login()">
+          <div class="auth-field">
+            <label class="auth-field__label" for="login-email">Email</label>
+            <div class="auth-input">
+              <ion-input
+                id="login-email"
+                formControlName="email"
+                placeholder="tu@email.com"
+                type="email"
+                autocomplete="email"
+                inputmode="email"
+              ></ion-input>
             </div>
           </div>
+
+          <div class="auth-field">
+            <label class="auth-field__label" for="login-password">Contraseña</label>
+            <app-password-input controlName="password" placeholder="Ingresá tu contraseña"></app-password-input>
+          </div>
+
+          <button
+            type="button"
+            class="auth-btn auth-btn--ghost login__forgot"
+            (click)="openRecoveryPassword()"
+          >
+            ¿Olvidaste tu contraseña?
+          </button>
+
+          <button type="submit" hidden></button>
         </form>
       </div>
     </ion-content>
+
+    <ion-footer class="auth-footer" mode="md">
+      <button
+        type="button"
+        class="auth-btn auth-btn--primary"
+        (click)="login()"
+        [disabled]="!this.loginForm.valid"
+      >
+        Ingresar
+      </button>
+
+      <div class="auth-footer__inline">
+        <span>¿No tenés una cuenta?</span>
+        <button type="button" (click)="goToRegister()">Registrate</button>
+      </div>
+    </ion-footer>
   `,
   styleUrls: ['./login.page.scss'],
 })
@@ -76,7 +112,12 @@ export class LoginPage implements OnInit {
 
   ionViewWillEnter() {}
 
+  goBack() {
+    this.navController.navigateBack(['/welcome']);
+  }
+
   async login() {
+    if (!this.loginForm.valid) return;
     await this.auth
       .userStatus(this.loginForm.value.email)
       .then(async (isValidatedUser) => {

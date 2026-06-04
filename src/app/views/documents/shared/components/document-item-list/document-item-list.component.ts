@@ -4,17 +4,22 @@ import { MedicalDocument } from '../../interfaces/Document.interface';
 @Component({
   selector: 'app-document-item-list',
   template: `
-    <ion-item [class.dil--flush]="flush" class="dil">
-      <div class="dil__img">
+    <ion-item
+      class="list-item"
+      lines="none"
+      [button]="true"
+      detail="false"
+    >
+      <div class="list-item__icon list-item__icon--document" aria-hidden="true">
         <ion-icon [name]="getIconByMimeType(document.mimeType)"></ion-icon>
       </div>
-      <div class="dil__content">
-        <div class="dil__content__title">
-          <ion-text>{{ document.title }}</ion-text>
-        </div>
-        <div class="dil__content__subtitle">
-          {{ document.documentDate | date: 'dd/MM/yyyy' }} • {{ formatFileSize(document.fileSize) }}
-        </div>
+      <div class="list-item__body">
+        <span class="list-item__title">{{ document.title }}</span>
+        <span class="list-item__meta">
+          <span>{{ document.documentDate | date: 'dd/MM/yyyy' }}</span>
+          <span class="list-item__dot">·</span>
+          <span>{{ formatFileSize(document.fileSize) }}</span>
+        </span>
       </div>
     </ion-item>
   `,

@@ -9,43 +9,63 @@ import { AppointmentsService } from './shared/services/appointments/appointments
 
 @Component({
   selector: 'app-appointments',
-  template: `<ion-content class="apts">
-    <ion-label class="view-title">Mis turnos</ion-label>
-    <ng-container *ngIf="this.appointments.length > 0">
-      <form [formGroup]="this.searchForm" class="apts__search">
-        <ion-searchbar
-          formControlName="search"
-          placeholder="Buscar turno ..."
-          class="ui-search-input  ui-search-input__no-show"
-          debounce="400"
-          type="string"
-          (ionChange)="handleChange($event)"
-        ></ion-searchbar>
-      </form>
-      <cdk-virtual-scroll-viewport itemSize="1">
-        <app-appointments-item-list
-          *ngFor="let appointment of this.filteredAppointments"
-          [appointment]="appointment"
-          [flush]="true"
-          (click)="presentActionSheet(appointment)"
-        ></app-appointments-item-list>
-      </cdk-virtual-scroll-viewport>
-    </ng-container>
-    <div class="apts__empty" *ngIf="this.appointments.length === 0">
-      <img src="/assets/images/appointments/appointments-empty.svg" />
-      <ion-label class="apts__empty__title"
-        >Todavia no tienes ningun turno<br />
-        ¿Qué esperas para agendar tu próximo turno?</ion-label
-      >
-    </div>
-    <div>
-      <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-        <ion-fab-button (click)="newAppointment()" class="apts__fab">
+  template: `
+    <ion-content class="listing apts">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Tus consultas</p>
+        <h1 class="listing-header__title">Mis turnos</h1>
+      </header>
+
+      <ng-container *ngIf="this.appointments.length > 0; else emptyState">
+        <form [formGroup]="this.searchForm" class="listing-search">
+          <ion-searchbar
+            class="listing-searchbar"
+            formControlName="search"
+            placeholder="Buscar profesional..."
+            debounce="400"
+            type="string"
+            mode="md"
+            (ionChange)="handleChange($event)"
+          ></ion-searchbar>
+        </form>
+
+        <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
+          <app-appointments-item-list
+            *cdkVirtualFor="let appointment of this.filteredAppointments"
+            [appointment]="appointment"
+            [flush]="true"
+            (click)="presentActionSheet(appointment)"
+          ></app-appointments-item-list>
+        </cdk-virtual-scroll-viewport>
+      </ng-container>
+
+      <ng-template #emptyState>
+        <div class="empty-state" role="status">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="calendar"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin turnos por ahora</h2>
+          <p class="empty-state__subtitle">
+            Agendá tu próxima consulta y la vas a ver acá con todos los recordatorios.
+          </p>
+          <button type="button" class="empty-state__cta" (click)="newAppointment()">
+            <ion-icon name="add"></ion-icon>
+            Agendar turno
+          </button>
+        </div>
+      </ng-template>
+
+      <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
+        <ion-fab-button
+          class="app-fab-button"
+          (click)="newAppointment()"
+          aria-label="Agendar turno"
+        >
           <ion-icon name="add"></ion-icon>
         </ion-fab-button>
       </ion-fab>
-    </div>
-  </ion-content>`,
+    </ion-content>
+  `,
   styleUrls: ['./appointments.page.scss'],
 })
 export class AppointmentsPage implements OnInit {
@@ -124,9 +144,11 @@ export class AppointmentsPage implements OnInit {
   }
 
   async handleChange(event) {
-    const search = event.detail.value.toLowerCase();
+    const search = (event.detail.value || '').toLowerCase();
     this.filteredAppointments = this.appointments.filter(
-      (d) => d.professional.firstName.toLowerCase().includes(search) || d.professional.lastName.toLowerCase().includes(search)
+      (d) =>
+        (d?.professional?.firstName ?? '').toLowerCase().includes(search) ||
+        (d?.professional?.lastName ?? '').toLowerCase().includes(search)
     );
   }
 

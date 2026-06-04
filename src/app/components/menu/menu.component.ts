@@ -4,37 +4,50 @@ import { GroupsService } from 'src/app/views/groups/shared/services/groups/group
 
 @Component({
   selector: 'app-menu',
-  template: ` <ion-menu [contentId]="this.contentId" [swipeGesture]="true">
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-title>{{ this.title }}</ion-title>
-      </ion-toolbar>
-    </ion-header>
-    <ion-content class="ion-padding">
-      <ion-item
-        class="mi"
-        lines="none"
-        *ngFor="let option of this.options"
-        (click)="onOptionClick(option)"
-      >
-        <div class="mi__wrapper">
-          <div class="mi__wrapper__title">
-            <ion-icon 
-              color="primary" 
-              [src]="getIconPath(option)"
-              *ngIf="getIconPath(option)"
-            ></ion-icon>
-            <ion-icon 
-              color="primary" 
-              [name]="getIonicIcon(option)"
-              *ngIf="!getIconPath(option) && getIonicIcon(option)"
-            ></ion-icon>
-            <ion-title class="ui-font-profile-title">{{ option.title }}</ion-title>
-          </div>
+  template: `
+    <ion-menu [contentId]="this.contentId" [swipeGesture]="true" mode="md">
+      <ion-header class="app-menu__header" mode="md">
+        <ion-toolbar class="app-menu__toolbar" mode="md">
+          <p class="app-menu__eyebrow">Acciones</p>
+          <h2 class="app-menu__title">{{ this.title }}</h2>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="app-menu__content">
+        <div class="app-menu__list">
+          <ion-item
+            class="app-menu__item"
+            lines="none"
+            *ngFor="let option of this.options"
+            (click)="onOptionClick(option)"
+            [button]="true"
+            detail="false"
+          >
+            <div
+              class="app-menu__icon"
+              [class.app-menu__icon--danger]="option.color === 'danger'"
+              aria-hidden="true"
+            >
+              <ion-icon
+                *ngIf="getIconPath(option)"
+                [src]="getIconPath(option)"
+              ></ion-icon>
+              <ion-icon
+                *ngIf="!getIconPath(option) && getIonicIcon(option)"
+                [name]="getIonicIcon(option)"
+              ></ion-icon>
+            </div>
+            <span
+              class="app-menu__label"
+              [class.app-menu__label--danger]="option.color === 'danger'"
+            >
+              {{ option.title }}
+            </span>
+            <ion-icon name="chevron-forward" class="app-menu__chevron" aria-hidden="true"></ion-icon>
+          </ion-item>
         </div>
-      </ion-item>
-    </ion-content>
-  </ion-menu>`,
+      </ion-content>
+    </ion-menu>
+  `,
   styleUrls: ['./menu.component.scss'],
 })
 export class MenuComponent implements OnInit {

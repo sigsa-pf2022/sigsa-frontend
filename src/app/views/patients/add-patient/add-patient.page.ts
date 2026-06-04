@@ -8,86 +8,121 @@ import { PatientsService } from '../shared/services/patients.service';
 @Component({
   selector: 'app-add-patient',
   template: `
-    <ion-header class="ui-background__light">
-      <ion-toolbar class="ui-toolbar__primary">
-        <ion-buttons slot="start">
-          <ion-back-button defaultHref="/patients"></ion-back-button>
-        </ion-buttons>
-        <ion-title class="ui-header__title-center">Agregar Paciente</ion-title>
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goBack()"
+            aria-label="Volver"
+          >
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
       </ion-toolbar>
     </ion-header>
-    <ion-content class="ap">
-      <div class="ap__search">
-        <ion-label class="ap__search__label">Ingrese el DNI del paciente</ion-label>
-        <form [formGroup]="searchForm">
-          <ion-item>
-            <ion-input
-              formControlName="dni"
-              placeholder="DNI"
-              type="text"
-              inputmode="numeric"
-              (keyup.enter)="searchPatient()"
-            ></ion-input>
-          </ion-item>
-          <ion-button
-            expand="block"
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Profesional</p>
+        <h1 class="listing-header__title">Agregar paciente</h1>
+      </header>
+
+      <div class="ap__container">
+        <form class="auth-form ap__search-form" [formGroup]="searchForm">
+          <div class="auth-field">
+            <label class="auth-field__label" for="ap-dni">DNI del paciente</label>
+            <div class="auth-input">
+              <ion-input
+                id="ap-dni"
+                formControlName="dni"
+                placeholder="Sin puntos ni espacios"
+                type="text"
+                inputmode="numeric"
+                (keyup.enter)="searchPatient()"
+              ></ion-input>
+            </div>
+            <p class="auth-field__hint">
+              Buscamos primero entre titulares; si no, en dependientes de grupos familiares.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="auth-btn auth-btn--primary"
             (click)="searchPatient()"
             [disabled]="searchForm.invalid || isSearching"
-            style="margin-top: 16px;"
           >
+            <ion-icon name="search" aria-hidden="true"></ion-icon>
             {{ isSearching ? 'Buscando...' : 'Buscar' }}
-          </ion-button>
+          </button>
         </form>
-      </div>
 
-      <!-- Resultado: usuario titular -->
-      <div class="ap__result" *ngIf="foundPatient && foundPatient.patientType === 'user'">
-        <ion-card>
-          <ion-card-header>
-            <ion-card-subtitle>
-              <ion-badge color="primary">Titular de cuenta</ion-badge>
-            </ion-card-subtitle>
-            <ion-card-title>{{ foundPatient.firstName }} {{ foundPatient.lastName }}</ion-card-title>
-            <ion-card-subtitle>DNI: {{ foundPatient.dni }}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <ion-button expand="block" (click)="linkPatient()" [disabled]="isLinking">
-              {{ isLinking ? 'Vinculando...' : 'Vincular paciente' }}
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
-      </div>
+        <article class="ap__result-card" *ngIf="foundPatient && foundPatient.patientType === 'user'">
+          <div class="ap__result-head">
+            <div class="ap__result-avatar" aria-hidden="true">
+              {{ getInitials(foundPatient.firstName, foundPatient.lastName) }}
+            </div>
+            <div class="ap__result-info">
+              <span class="status-badge status-badge--violet">Titular</span>
+              <p class="ap__result-name">{{ foundPatient.firstName }} {{ foundPatient.lastName }}</p>
+              <p class="ap__result-meta">DNI: {{ foundPatient.dni }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="auth-btn auth-btn--primary"
+            (click)="linkPatient()"
+            [disabled]="isLinking"
+          >
+            {{ isLinking ? 'Vinculando...' : 'Vincular paciente' }}
+          </button>
+        </article>
 
-      <!-- Resultado: dependiente -->
-      <div class="ap__result" *ngIf="foundPatient && foundPatient.patientType === 'dependent'">
-        <ion-card>
-          <ion-card-header>
-            <ion-card-subtitle>
-              <ion-badge color="warning">Dependiente de grupo familiar</ion-badge>
-            </ion-card-subtitle>
-            <ion-card-title>
-              {{ foundPatient.dependentFirstName }} {{ foundPatient.dependentLastName }}
-            </ion-card-title>
-            <ion-card-subtitle>DNI: {{ foundPatient.dependentDni }}</ion-card-subtitle>
-          </ion-card-header>
-          <ion-card-content>
-            <p style="margin-bottom: 12px; color: var(--ion-color-medium); font-size: 0.9em;">
-              Este dependiente pertenece al grupo <strong>{{ foundPatient.groupName }}</strong>,
-              administrado por <strong>{{ foundPatient.responsibleFirstName }} {{ foundPatient.responsibleLastName }}</strong>.
-              Al enviar la solicitud, el responsable recibirá una notificación para autorizarla.
+        <article class="ap__result-card" *ngIf="foundPatient && foundPatient.patientType === 'dependent'">
+          <div class="ap__result-head">
+            <div class="ap__result-avatar" aria-hidden="true">
+              {{ getInitials(foundPatient.dependentFirstName, foundPatient.dependentLastName) }}
+            </div>
+            <div class="ap__result-info">
+              <span class="status-badge status-badge--warning">Dependiente</span>
+              <p class="ap__result-name">
+                {{ foundPatient.dependentFirstName }} {{ foundPatient.dependentLastName }}
+              </p>
+              <p class="ap__result-meta">DNI: {{ foundPatient.dependentDni }}</p>
+            </div>
+          </div>
+
+          <div class="ap__notice">
+            <ion-icon name="information-circle" aria-hidden="true"></ion-icon>
+            <p>
+              Pertenece al grupo <strong>{{ foundPatient.groupName }}</strong>, administrado por
+              <strong>{{ foundPatient.responsibleFirstName }} {{ foundPatient.responsibleLastName }}</strong>.
+              El responsable va a recibir una notificación para autorizar la solicitud.
             </p>
-            <ion-button expand="block" (click)="linkPatient()" [disabled]="isLinking" color="warning">
-              {{ isLinking ? 'Enviando...' : 'Solicitar vinculación' }}
-            </ion-button>
-          </ion-card-content>
-        </ion-card>
-      </div>
+          </div>
 
-      <div class="ap__not-found" *ngIf="searchDone && !foundPatient">
-        <ion-icon name="alert-circle-outline" style="font-size: 48px; color: var(--ion-color-warning);"></ion-icon>
-        <ion-label style="text-align: center; margin-top: 12px;">
-          No se encontró un paciente con ese DNI.
-        </ion-label>
+          <button
+            type="button"
+            class="auth-btn auth-btn--primary"
+            (click)="linkPatient()"
+            [disabled]="isLinking"
+          >
+            {{ isLinking ? 'Enviando...' : 'Solicitar vinculación' }}
+          </button>
+        </article>
+
+        <div class="empty-state" *ngIf="searchDone && !foundPatient" role="status">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="alert-circle"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">No encontramos a esa persona</h2>
+          <p class="empty-state__subtitle">
+            Revisá el DNI y probá de nuevo. Si la persona no tiene cuenta todavía, pedile que se registre primero.
+          </p>
+        </div>
       </div>
     </ion-content>
   `,
@@ -112,6 +147,16 @@ export class AddPatientPage implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  goBack() {
+    this.navController.navigateBack(['/patients']);
+  }
+
+  getInitials(first: string, last: string): string {
+    const f = (first ?? '').trim();
+    const l = (last ?? '').trim();
+    return ((f[0] || '') + (l[0] || '')).toUpperCase() || '?';
+  }
 
   async searchPatient() {
     const dni = this.searchForm.get('dni').value;
