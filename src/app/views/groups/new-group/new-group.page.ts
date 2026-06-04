@@ -136,9 +136,13 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
                   [max]="this.maxDate"
                   locale="es-ES"
                   presentation="date"
-                  (ionChange)="dateChanged(bdt.value); dateModal.dismiss()"
+                  (ionChange)="dateChanged(bdt.value)"
                   [showDefaultButtons]="false"
-                ></ion-datetime>
+                >
+                  <ion-buttons slot="buttons">
+                    <ion-button class="datetime-done" (click)="dateModal.dismiss()">Listo</ion-button>
+                  </ion-buttons>
+                </ion-datetime>
               </ion-content>
             </ng-template>
           </ion-modal>

@@ -112,10 +112,14 @@ import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
                   [value]="selectedDocumentDate"
                   [max]="maxDate"
                   locale="es-ES"
-                  (ionChange)="documentDateChanged(docDate.value); docDateModal.dismiss()"
+                  (ionChange)="documentDateChanged(docDate.value)"
                   [showDefaultButtons]="false"
                   presentation="date"
-                ></ion-datetime>
+                >
+                  <ion-buttons slot="buttons">
+                    <ion-button class="datetime-done" (click)="docDateModal.dismiss()">Listo</ion-button>
+                  </ion-buttons>
+                </ion-datetime>
               </ion-content>
             </ng-template>
           </ion-modal>

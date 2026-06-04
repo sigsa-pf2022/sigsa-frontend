@@ -55,6 +55,22 @@ ion-content {
 }
 
 /* ===========================================================
+ *  Tab transitions — fade between tabs. Ionic's default sets
+ *  display:none on hidden tabs which is not animatable; we
+ *  override to keep them in flex flow with opacity 0 so the
+ *  switch fades.
+ * =========================================================== */
+ion-tabs ion-router-outlet > .ion-page {
+  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
+  opacity: 0;
+  display: flex !important;
+  pointer-events: none;
+}
+
+/* ===========================================================
  *  Auth pages — shared modern form/wizard classes
  *  Used by: login, register/personal-data, register/professional-data,
  *           register/user-data

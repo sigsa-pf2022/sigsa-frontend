@@ -73,10 +73,13 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
                 [value]="this.appointmentDate"
                 [min]="this.minDate"
                 locale="es-ES"
-                (ionChange)="dateChanged(bdt.value); dateModal.dismiss()"
+                (ionChange)="dateChanged(bdt.value)"
                 [showDefaultButtons]="false"
               >
                 <span slot="time-label">Hora</span>
+                <ion-buttons slot="buttons">
+                  <ion-button class="datetime-done" (click)="dateModal.dismiss()">Listo</ion-button>
+                </ion-buttons>
               </ion-datetime>
             </ion-content>
           </ng-template>
