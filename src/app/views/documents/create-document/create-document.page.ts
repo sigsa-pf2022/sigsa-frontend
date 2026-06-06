@@ -8,6 +8,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { DocumentsService } from '../shared/services/documents.service';
 import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 
 @Component({
   selector: 'app-create-document',
@@ -193,7 +194,7 @@ export class CreateDocumentPage implements OnInit {
 
   goBack() {
     const fallback = this.dependentId ? `/groups/home/${this.groupId}` : '/tabs/clipboard';
-    this.navController.navigateBack([fallback]);
+    this.navController.navigateBack([fallback], { animation: slideUpAnimation });
   }
 
   async loadDocument() {

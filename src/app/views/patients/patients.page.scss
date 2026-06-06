@@ -2,6 +2,10 @@
   display: block;
 }
 
+.app-fab {
+  margin-bottom: calc(env(safe-area-inset-bottom, 48px) + 24px);
+}
+
 .pts__scroll {
   padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 120px);
   display: flex;

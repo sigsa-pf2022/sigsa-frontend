@@ -5,6 +5,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 import { format, parseISO } from 'date-fns';
 import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
 import { NewGroupDataService } from '../shared/services/new-group-data/new-group-data.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
 
 @Component({
@@ -192,7 +193,7 @@ export class NewGroupPage implements OnInit {
   ionViewWillEnter() {}
 
   goBack() {
-    this.navController.navigateBack(['/tabs/home']);
+    this.navController.navigateBack(['/tabs/groups'], { animation: slideUpAnimation });
   }
 
   isFormValid() {

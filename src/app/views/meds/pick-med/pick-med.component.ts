@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { MedsEventDataService } from '../shared/services/meds-events-data/meds-events-data.service';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 
 @Component({
   selector: 'app-pick-med',
@@ -180,7 +181,7 @@ export class PickMedComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/meds']);
+    this.navController.navigateBack(['/tabs/meds'], { animation: slideUpAnimation });
   }
 
   nextStep() {

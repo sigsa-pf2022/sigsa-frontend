@@ -6,6 +6,7 @@ import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-moda
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { AppointmentsService } from './shared/services/appointments/appointments.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 
 @Component({
   selector: 'app-appointments',
@@ -153,7 +154,7 @@ export class AppointmentsPage implements OnInit {
   }
 
   newAppointment() {
-    return this.navController.navigateRoot(['/appointments/create/pick-doctor']);
+    return this.navController.navigateForward(['/appointments/create/pick-doctor'], { animation: slideUpAnimation });
   }
 
   editAppointment(id) {

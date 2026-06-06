@@ -10,6 +10,7 @@ import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.s
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { MedsEventsService } from './shared/services/meds-events/meds-events.service';
 import { MedsEventDataService } from './shared/services/meds-events-data/meds-events-data.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 
 @Component({
   selector: 'app-meds',
@@ -168,7 +169,7 @@ export class MedsPage implements OnInit, OnDestroy {
   }
 
   newMedEvent() {
-    return this.navController.navigateForward(['/meds/create/pick-med']);
+    return this.navController.navigateForward(['/meds/create/pick-med'], { animation: slideUpAnimation });
   }
 
   editMedEvent(id) {

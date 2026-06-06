@@ -5,6 +5,7 @@ import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-moda
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { DocumentsService } from './shared/services/documents.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 import { MedicalDocument } from './shared/interfaces/Document.interface';
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
@@ -173,7 +174,7 @@ export class DocumentsPage implements OnInit {
   }
 
   newDocument() {
-    return this.navController.navigateRoot(['/documents/create']);
+    return this.navController.navigateForward(['/documents/create'], { animation: slideUpAnimation });
   }
 
   editDocument(id: number) {
