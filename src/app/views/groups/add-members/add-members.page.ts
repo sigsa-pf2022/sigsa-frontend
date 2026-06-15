@@ -53,6 +53,9 @@ import { ActivatedRoute } from '@angular/router';
               mode="md"
               (ionChange)="handleChange($event)"
             ></ion-searchbar>
+            <p class="auth-field__error" *ngIf="form.get('search')?.value?.length > 0 && form.get('search')?.value?.length < 7">
+              El DNI debe tener al menos 7 dígitos.
+            </p>
           </div>
 
           <ion-item

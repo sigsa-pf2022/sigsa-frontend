@@ -79,6 +79,9 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
                 autocapitalize="words"
               ></ion-input>
             </div>
+            <p class="auth-field__error" *ngIf="form.get('firstName')?.touched && form.get('firstName')?.invalid">
+              Ingresá tu nombre.
+            </p>
           </div>
 
           <div class="auth-field">
@@ -92,6 +95,9 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
                 autocapitalize="words"
               ></ion-input>
             </div>
+            <p class="auth-field__error" *ngIf="form.get('lastName')?.touched && form.get('lastName')?.invalid">
+              Ingresá tu apellido.
+            </p>
           </div>
 
           <div class="auth-field">
@@ -105,6 +111,10 @@ import { ProfessionalsService } from '../../doctors/shared/services/professional
                 inputmode="numeric"
               ></ion-input>
             </div>
+            <p class="auth-field__error" *ngIf="form.get('dni')?.touched && form.get('dni')?.invalid">
+              <ng-container *ngIf="form.get('dni')?.hasError('pattern')">El DNI solo puede contener números.</ng-container>
+              <ng-container *ngIf="!form.get('dni')?.hasError('pattern')">El DNI debe tener al menos 7 dígitos.</ng-container>
+            </p>
           </div>
 
           <div class="auth-field">
