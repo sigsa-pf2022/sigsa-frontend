@@ -1,12 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AppointmentsService {
+  private appointmentsChanged = new Subject<void>();
+  /** Emite cada vez que se crea, edita o cancela un turno para refrescar los listados. */
+  appointmentsChanged$ = this.appointmentsChanged.asObservable();
+
   constructor(private http: HttpClient) {}
+
+  notifyAppointmentsChanged() {
+    this.appointmentsChanged.next();
+  }
 
   createAppointment(data) {
     return this.http.post(`${environment.apiUrl}/appointments/create`, data).toPromise();
