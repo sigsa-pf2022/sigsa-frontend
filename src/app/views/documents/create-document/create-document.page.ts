@@ -389,7 +389,9 @@ export class CreateDocumentPage implements OnInit {
         // Crear documento para usuario
         await this.documentsService.createDocument(payload);
         this.toastService.showSuccess('Documento creado correctamente');
-        this.navController.navigateRoot(['/tabs/clipboard']);
+        // Notificar para que el listado de documentos se refresque al volver.
+        this.documentsService.notifyDocumentsChanged();
+        this.navController.navigateForward(['/tabs/clipboard']);
       }
     } catch (error) {
       this.toastService.showError('Error al crear el documento');
@@ -406,13 +408,14 @@ export class CreateDocumentPage implements OnInit {
     try {
       await this.documentsService.editDocument(this.documentId, payload);
       this.toastService.showSuccess('Documento actualizado correctamente');
+      this.documentsService.notifyDocumentsChanged();
 
       if (this.dependentId) {
         // Navegar de vuelta al grupo si estamos editando un documento de dependiente
         this.navController.navigateRoot(['/groups/home/' + this.groupId]);
       } else {
         // Navegar a la lista de documentos si estamos editando un documento propio
-        this.navController.navigateRoot(['/tabs/clipboard']);
+        this.navController.navigateForward(['/tabs/clipboard']);
       }
     } catch (error) {
       this.toastService.showError('Error al actualizar el documento');

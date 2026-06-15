@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Subject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import {
   MedicalDocument,
@@ -12,7 +13,15 @@ import {
   providedIn: 'root',
 })
 export class DocumentsService {
+  private documentsChanged = new Subject<void>();
+  /** Emite cada vez que se crea, edita o elimina un documento para refrescar los listados. */
+  documentsChanged$ = this.documentsChanged.asObservable();
+
   constructor(private http: HttpClient) {}
+
+  notifyDocumentsChanged() {
+    this.documentsChanged.next();
+  }
 
   createDocument(data: CreateDocumentDTO) {
     return this.http

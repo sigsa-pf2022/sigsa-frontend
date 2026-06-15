@@ -1,14 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ModalController, NavController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { DocumentsService } from './shared/services/documents.service';
 import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 import { MedicalDocument } from './shared/interfaces/Document.interface';
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-documents',
@@ -19,46 +18,44 @@ import { map, startWith } from 'rxjs/operators';
         <h1 class="listing-header__title">Mis documentos</h1>
       </header>
 
-      <ng-container *ngIf="(documents$ | async) as documents">
-        <ng-container *ngIf="documents.length > 0; else emptyState">
-          <form [formGroup]="searchForm" class="listing-search">
-            <ion-searchbar
-              class="listing-searchbar"
-              formControlName="search"
-              placeholder="Buscar documento..."
-              debounce="400"
-              type="string"
-              mode="md"
-              (ionChange)="handleChange($event)"
-            ></ion-searchbar>
-          </form>
+      <ng-container *ngIf="this.documents.length > 0; else emptyState">
+        <form [formGroup]="this.searchForm" class="listing-search">
+          <ion-searchbar
+            class="listing-searchbar"
+            formControlName="search"
+            placeholder="Buscar documento..."
+            debounce="400"
+            type="string"
+            mode="md"
+            (ionChange)="handleChange($event)"
+          ></ion-searchbar>
+        </form>
 
-          <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
-            <app-document-item-list
-              *cdkVirtualFor="let document of (filteredDocuments$ | async)"
-              [document]="document"
-              [flush]="true"
-              (click)="presentActionSheet(document)"
-            ></app-document-item-list>
-          </cdk-virtual-scroll-viewport>
-        </ng-container>
-
-        <ng-template #emptyState>
-          <div class="empty-state" role="status" *ngIf="!(isLoading$ | async)">
-            <div class="empty-state__icon" aria-hidden="true">
-              <ion-icon name="document-text"></ion-icon>
-            </div>
-            <h2 class="empty-state__title">Sin documentos todavía</h2>
-            <p class="empty-state__subtitle">
-              Subí estudios, recetas o informes y los tenés siempre a mano.
-            </p>
-            <button type="button" class="empty-state__cta" (click)="newDocument()">
-              <ion-icon name="add"></ion-icon>
-              Agregar documento
-            </button>
-          </div>
-        </ng-template>
+        <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
+          <app-document-item-list
+            *cdkVirtualFor="let document of this.filteredDocuments"
+            [document]="document"
+            [flush]="true"
+            (click)="presentActionSheet(document)"
+          ></app-document-item-list>
+        </cdk-virtual-scroll-viewport>
       </ng-container>
+
+      <ng-template #emptyState>
+        <div class="empty-state" role="status" *ngIf="!this.isLoading">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="document-text"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin documentos todavía</h2>
+          <p class="empty-state__subtitle">
+            Subí estudios, recetas o informes y los tenés siempre a mano.
+          </p>
+          <button type="button" class="empty-state__cta" (click)="newDocument()">
+            <ion-icon name="add"></ion-icon>
+            Agregar documento
+          </button>
+        </div>
+      </ng-template>
 
       <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
@@ -73,29 +70,14 @@ import { map, startWith } from 'rxjs/operators';
   `,
   styleUrls: ['./documents.page.scss'],
 })
-export class DocumentsPage implements OnInit {
-  private documentsSubject$ = new BehaviorSubject<MedicalDocument[]>([]);
-  private searchSubject$ = new BehaviorSubject<string>('');
-  private isLoadingSubject$ = new BehaviorSubject<boolean>(false);
-
-  documents$ = this.documentsSubject$.asObservable();
-  isLoading$ = this.isLoadingSubject$.asObservable();
-
-  filteredDocuments$: Observable<MedicalDocument[]> = combineLatest([
-    this.documents$,
-    this.searchSubject$
-  ]).pipe(
-    map(([documents, search]) => {
-      if (!search) return documents;
-      return documents.filter(doc =>
-        doc.title.toLowerCase().includes(search.toLowerCase())
-      );
-    })
-  );
-
+export class DocumentsPage implements OnInit, OnDestroy {
+  documents: MedicalDocument[] = [];
+  filteredDocuments: MedicalDocument[] = [];
+  isLoading = false;
   searchForm = this.fb.group({
     search: '',
   });
+  private documentsSub?: Subscription;
 
   constructor(
     private fb: FormBuilder,
@@ -106,24 +88,44 @@ export class DocumentsPage implements OnInit {
     private toastService: ToastService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    // El flujo de creación vive en una ruta fuera de los tabs, por lo que al
+    // volver a /tabs/clipboard la página cacheada no siempre dispara
+    // ionViewWillEnter. Nos suscribimos a los cambios para refrescar el listado.
+    this.documentsSub = this.documentsService.documentsChanged$.subscribe(() =>
+      this.loadDocuments()
+    );
+  }
+
+  ngOnDestroy() {
+    this.documentsSub?.unsubscribe();
+  }
 
   async ionViewWillEnter() {
     await this.loadDocuments();
   }
 
-  private async loadDocuments() {
-    this.isLoadingSubject$.next(true);
+  async loadDocuments() {
+    this.isLoading = true;
     try {
       const docs = await this.documentsService.getDocumentsByUser();
-      this.documentsSubject$.next(docs || []);
+      this.documents = [...(docs || [])];
+      this.applyFilter(this.searchForm.value.search || '');
     } catch (error) {
       console.error('Error loading documents:', error);
       this.toastService.showError('Error al cargar documentos');
-      this.documentsSubject$.next([]);
+      this.documents = [];
+      this.filteredDocuments = [];
     } finally {
-      this.isLoadingSubject$.next(false);
+      this.isLoading = false;
     }
+  }
+
+  private applyFilter(search: string) {
+    const term = search.toLowerCase();
+    this.filteredDocuments = this.documents.filter((d) =>
+      (d?.title ?? '').toLowerCase().includes(term)
+    );
   }
 
   async presentActionSheet(document: MedicalDocument) {
@@ -169,8 +171,7 @@ export class DocumentsPage implements OnInit {
   }
 
   handleChange(event) {
-    const search = event.detail.value;
-    this.searchSubject$.next(search || '');
+    this.applyFilter(event.detail.value || '');
   }
 
   newDocument() {
