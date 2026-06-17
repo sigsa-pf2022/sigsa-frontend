@@ -157,7 +157,10 @@ export class CreateDocumentPage implements OnInit {
   fileSize: number = 0;
   documentPreview: string = null;
   selectedDocumentDate: string = formatISO(new Date(), { representation: 'date' });
-  maxDate = formatISO(new Date());
+  // Sólo fecha local (YYYY-MM-DD), igual que new-group/register. Evita el
+  // corrimiento de .toISOString() (que en UTC-3 empujaba el max al día siguiente
+  // y habilitaba mañana). El max queda exactamente en el día de hoy.
+  maxDate = formatISO(new Date(), { representation: 'date' });
   isEditMode = false;
   documentId: number;
   dependentId: number;
@@ -200,22 +203,12 @@ export class CreateDocumentPage implements OnInit {
   async loadDocument() {
     const document = await this.documentsService.getDocument(this.documentId);
 
-    // Formatear la fecha para mostrar
+    // documentDate llega como "YYYY-MM-DD" (columna date). Trabajamos sobre el
+    // string para no arrastrar zona horaria (ver toDisplayDate).
     let formattedDate = '';
     if (document.documentDate) {
-      try {
-        const dateObj = new Date(document.documentDate);
-        const day = dateObj.getDate().toString().padStart(2, '0');
-        const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-        const year = dateObj.getFullYear();
-        formattedDate = `${day}/${month}/${year}`;
-
-        // Guardar el valor ISO para edición
-        this.selectedDocumentDate = formatISO(dateObj, { representation: 'date' });
-      } catch (error) {
-        console.error('Error formatting date:', error);
-        formattedDate = document.documentDate.toString();
-      }
+      this.selectedDocumentDate = String(document.documentDate).slice(0, 10);
+      formattedDate = this.toDisplayDate(this.selectedDocumentDate);
     }
 
     this.form.patchValue({
@@ -316,23 +309,36 @@ export class CreateDocumentPage implements OnInit {
 
   documentDateChanged(date: string | string[]) {
     const dateValue = Array.isArray(date) ? date[0] : date;
-    this.selectedDocumentDate = dateValue;
-
-    // Formatear la fecha para mostrar en el input (formato simple español)
-    try {
-      const dateObj = new Date(dateValue);
-      const day = dateObj.getDate().toString().padStart(2, '0');
-      const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
-      const year = dateObj.getFullYear();
-      const formattedDate = `${day}/${month}/${year}`;
-      this.form.get('documentDate')?.setValue(formattedDate);
-    } catch (error) {
-      console.error('Error formatting date:', error);
-      this.form.get('documentDate')?.setValue(dateValue);
+    if (!dateValue) {
+      return;
     }
+    // Guardamos sólo la parte de fecha (YYYY-MM-DD). No usamos new Date(): un
+    // string sólo-fecha se interpreta como UTC y, en zonas negativas (UTC-3),
+    // corre la fecha un día.
+    this.selectedDocumentDate = dateValue.slice(0, 10);
+    this.form.get('documentDate')?.setValue(this.toDisplayDate(this.selectedDocumentDate));
+  }
+
+  /**
+   * Convierte "YYYY-MM-DD" (o "YYYY-MM-DDTHH:mm...") a "DD/MM/YYYY" operando
+   * sobre el string, sin crear un Date, para evitar corrimientos de zona horaria.
+   */
+  private toDisplayDate(isoDate: string): string {
+    const [year, month, day] = isoDate.slice(0, 10).split('-');
+    return `${day}/${month}/${year}`;
   }
 
   confirmDocumentDate() {
+    // (ionChange) no se dispara al tocar el día que ya viene preseleccionado
+    // (hoy es el valor inicial), así que seleccionar hoy "de una" no llenaba el
+    // input. Al confirmar leemos el valor actual del datetime para capturarlo
+    // igual, sin depender de que haya habido un cambio.
+    const current = this.datetime?.value;
+    const value = Array.isArray(current) ? current[0] : current;
+    if (value) {
+      this.selectedDocumentDate = value.slice(0, 10);
+      this.form.get('documentDate')?.setValue(this.toDisplayDate(this.selectedDocumentDate));
+    }
     this.datetime.confirm(true);
   }
 
@@ -375,7 +381,9 @@ export class CreateDocumentPage implements OnInit {
       fileName: this.fileName,
       mimeType: this.mimeType,
       fileSize: this.fileSize,
-      documentDate: this.selectedDocumentDate,
+      // Hora local 00:00 (sin Z) para que el backend guarde el día correcto
+      // sin importar la zona horaria del servidor.
+      documentDate: `${this.selectedDocumentDate}T00:00:00`,
       date: formatISO(new Date()),
     };
 
@@ -402,7 +410,9 @@ export class CreateDocumentPage implements OnInit {
     const payload = {
       title: this.form.value.title,
       description: this.form.value.description,
-      documentDate: this.selectedDocumentDate || this.form.value.documentDate,
+      documentDate: this.selectedDocumentDate
+        ? `${this.selectedDocumentDate}T00:00:00`
+        : this.form.value.documentDate,
     };
 
     try {
