@@ -660,6 +660,113 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   box-sizing: border-box;
 }
 
+/* ============================================================
+ *  Tabs y vistas con listado: el header (y la búsqueda) quedan
+ *  FIJOS y sólo la lista interna scrollea. Antes el viewport
+ *  virtual usaba height:100% / calc(...) y desbordaba el
+ *  ion-content, por lo que se scrolleaba toda la vista.
+ *  No aplica a `.listing` "pelado" (p.ej. perfil), que mantiene
+ *  el scroll de página normal.
+ * ============================================================ */
+.listing.docs,
+.listing.apts,
+.listing.meds,
+.listing.groups,
+.listing.gh,
+.home {
+  --overflow: hidden;
+}
+
+.listing.docs::part(scroll),
+.listing.apts::part(scroll),
+.listing.meds::part(scroll),
+.listing.groups::part(scroll),
+.listing.gh::part(scroll),
+.home::part(scroll) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* La lista ocupa el alto restante y scrollea internamente. */
+.listing.docs .listing-scroll,
+.listing.apts .listing-scroll,
+.listing.meds .listing-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+}
+
+.listing.groups .groups__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* Header y búsqueda fijos (no se encogen). */
+.listing.docs .listing-header, .listing.docs .listing-search,
+.listing.apts .listing-header, .listing.apts .listing-search,
+.listing.meds .listing-header, .listing.meds .listing-search,
+.listing.groups .listing-header,
+.listing.gh .listing-header {
+  flex: 0 0 auto;
+}
+
+/* Empty-state ocupa el resto para quedar centrado. */
+.listing.docs .empty-state,
+.listing.apts .empty-state,
+.listing.meds .empty-state,
+.listing.groups .empty-state {
+  flex: 1 1 auto;
+}
+
+/* grupo/home: la info de arriba queda fija y el listado de
+   recordatorios ocupa el alto restante. */
+.listing.gh > .group-card,
+.listing.gh > .alert-card,
+.listing.gh > .section-title,
+.listing.gh > app-next-events {
+  flex: 0 0 auto;
+}
+.listing.gh > app-reminders,
+.home app-reminders {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* En grupo/home, separar "Tus recordatorios" del carrusel de arriba. */
+.listing.gh > app-reminders {
+  margin-top: 14px;
+}
+
+/* Cortar el listado de recordatorios ANTES del FAB. Usamos margin-bottom
+   (fuera del viewport) en vez de padding interno: el cdk-virtual-scroll no
+   respeta bien el padding para extender el área scrolleable, así que el
+   margin reduce el alto del viewport y deja libre la zona donde flota el FAB. */
+.listing.gh .rem__scroll {
+  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 88px);
+}
+
+/* Compactar la tarjeta del dependiente para ganar lugar al listado. */
+.listing.gh .group-card {
+  margin-top: 4px;
+  padding: 14px 16px;
+  gap: 10px;
+}
+.listing.gh .group-card__avatar {
+  width: 48px;
+  height: 48px;
+}
+.listing.gh .group-card__avatar ion-icon {
+  font-size: 26px;
+}
+.listing.gh .group-card__meta {
+  padding-top: 8px;
+  gap: 8px 12px;
+}
+
 /* Restore the 20px horizontal inset on list-item cards that live
    inside a virtualized scroll, so they line up with the rest of the
    page (headers, segment switcher, etc). Outside of virtual scroll,
@@ -668,6 +775,23 @@ cdk-virtual-scroll-viewport .list-item,
 cdk-virtual-scroll-viewport .alert-card {
   margin-left: 20px;
   margin-right: 20px;
+}
+
+/* Las listas verticales nunca deben scrollear horizontalmente: todas las
+   cards quedan al ancho del viewport (como en meds). Antes, contenido ancho
+   en algún item habilitaba el scroll lateral en turnos/home. */
+cdk-virtual-scroll-viewport.listing-scroll,
+cdk-virtual-scroll-viewport.rem__scroll {
+  overflow-x: hidden;
+}
+
+/* En scroll vertical, el content-wrapper del cdk es position:absolute SIN ancho
+   fijo, por lo que toma el ancho del item más ancho (un subtítulo largo
+   ensancha la card y la desborda). Lo fijamos al ancho del viewport para que
+   todas las cards midan igual y el contenido se trunque con ellipsis. */
+cdk-virtual-scroll-viewport.listing-scroll .cdk-virtual-scroll-content-wrapper,
+cdk-virtual-scroll-viewport.rem__scroll .cdk-virtual-scroll-content-wrapper {
+  width: 100%;
 }
 
 /* Empty state with icon-in-circle */
@@ -1869,7 +1993,9 @@ ion-alert .alert-button.alert-button-role-cancel {
 
 /* FAB — floating action button, bottom-right by convention */
 .app-fab {
-  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
+  /* +16px para que en páginas fuera de tabs (group-members, etc.), que llegan
+     al borde inferior de la pantalla, el FAB no quede cortado por el borde. */
+  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 16px);
 }
 
 .app-fab-button {

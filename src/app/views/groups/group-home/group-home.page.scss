@@ -15,5 +15,8 @@
 }
 
 .gh__fab__list {
-  margin-bottom: 14px;
+  /* Ionic le pone 66px de margin-bottom al ion-fab-list (separación de la
+     primera opción respecto del botón +). NO bajarlo: lo subimos para que la
+     primera opción no quede encima del botón. */
+  margin-bottom: 80px;
 }

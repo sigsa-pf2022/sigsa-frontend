@@ -8,3 +8,10 @@
   flex-direction: column;
   gap: 6px;
 }
+
+/* En Android (emulador) env(safe-area-inset-bottom) suele dar 0 y el WebView
+   se dibuja bajo la barra del sistema, dejando el FAB cortado. Garantizamos un
+   piso mínimo de separación con max(), sin romper dispositivos con safe-area. */
+.gm__fab {
+  margin-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 16px), 72px);
+}
