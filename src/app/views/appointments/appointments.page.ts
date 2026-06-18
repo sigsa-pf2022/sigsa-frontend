@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ModalController, NavController } from '@ionic/angular';
+import { Subscription } from 'rxjs';
 import { isAfter, isBefore, parseISO } from 'date-fns';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { AppointmentsService } from './shared/services/appointments/appointments.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 
 @Component({
   selector: 'app-appointments',
@@ -68,12 +70,13 @@ import { AppointmentsService } from './shared/services/appointments/appointments
   `,
   styleUrls: ['./appointments.page.scss'],
 })
-export class AppointmentsPage implements OnInit {
+export class AppointmentsPage implements OnInit, OnDestroy {
   appointments: any[] = [];
   filteredAppointments: any[] = [];
   searchForm = this.fb.group({
     search: '',
   });
+  private appointmentsChangedSub?: Subscription;
   constructor(
     private fb: FormBuilder,
     private navController: NavController,
@@ -83,7 +86,18 @@ export class AppointmentsPage implements OnInit {
     private toastService: ToastService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    // El flujo de creación vive en una ruta fuera de los tabs, por lo que al
+    // volver a /tabs/appointments la página cacheada no siempre dispara
+    // ionViewWillEnter. Nos suscribimos a los cambios para refrescar el listado.
+    this.appointmentsChangedSub = this.appointmentsService.appointmentsChanged$.subscribe(() =>
+      this.setAppointments()
+    );
+  }
+
+  ngOnDestroy() {
+    this.appointmentsChangedSub?.unsubscribe();
+  }
 
   async ionViewWillEnter() {
     this.setAppointments();
@@ -153,7 +167,7 @@ export class AppointmentsPage implements OnInit {
   }
 
   newAppointment() {
-    return this.navController.navigateRoot(['/appointments/create/pick-doctor']);
+    return this.navController.navigateForward(['/appointments/create/pick-doctor'], { animation: slideUpAnimation });
   }
 
   editAppointment(id) {

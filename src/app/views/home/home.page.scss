@@ -11,13 +11,23 @@
     flex-direction: column;
     gap: 20px;
     padding: 20px 0 0;
+    /* Ocupa todo el alto del ion-content (que no scrollea) para que el
+       header y el carrusel queden fijos y sólo scrollee el listado. */
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
   }
 
   &__title-block {
+    flex: 0 0 auto;
     padding: 0 20px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+  }
+
+  app-next-events {
+    flex: 0 0 auto;
   }
 
   &__greeting {

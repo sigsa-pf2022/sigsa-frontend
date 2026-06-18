@@ -288,6 +288,8 @@ export class CreateAppointmentPage implements OnInit {
     this.toastService.showSuccess('Turno creado correctamente.');
     // Limpiar datos temporales para evitar contaminación en futuras creaciones
     this.appointmentDataService.clear();
+    // Notificar para que el listado de turnos se refresque al volver
+    this.appointmentsService.notifyAppointmentsChanged();
 
     // Si venimos de un grupo específico, regresar a ese grupo
     if (this.dependentId && this.groupId) {
@@ -304,6 +306,7 @@ export class CreateAppointmentPage implements OnInit {
   successEdition() {
     this.toastService.showSuccess('Turno editado correctamente.');
     this.appointmentDataService.clear();
+    this.appointmentsService.notifyAppointmentsChanged();
     return this.navController.navigateForward(['/tabs/appointments']);
   }
 

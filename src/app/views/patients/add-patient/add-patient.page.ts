@@ -44,6 +44,10 @@ import { PatientsService } from '../shared/services/patients.service';
                 (keyup.enter)="searchPatient()"
               ></ion-input>
             </div>
+            <p class="auth-field__error" *ngIf="searchForm.get('dni')?.touched && searchForm.get('dni')?.invalid">
+              <ng-container *ngIf="searchForm.get('dni')?.hasError('pattern')">El DNI solo puede contener números.</ng-container>
+              <ng-container *ngIf="!searchForm.get('dni')?.hasError('pattern')">El DNI debe tener al menos 7 dígitos.</ng-container>
+            </p>
             <p class="auth-field__hint">
               Buscamos primero entre titulares; si no, en dependientes de grupos familiares.
             </p>
@@ -130,7 +134,7 @@ import { PatientsService } from '../shared/services/patients.service';
 })
 export class AddPatientPage implements OnInit {
   searchForm = this.fb.group({
-    dni: ['', [Validators.required]],
+    dni: ['', [Validators.compose([Validators.required, Validators.pattern('[0-9]*'), Validators.minLength(7)])]],
   });
 
   foundPatient: any = null;

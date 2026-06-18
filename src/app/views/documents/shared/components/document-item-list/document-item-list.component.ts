@@ -11,7 +11,15 @@ import { MedicalDocument } from '../../interfaces/Document.interface';
       detail="false"
     >
       <div class="list-item__icon list-item__icon--document" aria-hidden="true">
-        <ion-icon [name]="getIconByMimeType(document.mimeType)"></ion-icon>
+        <img
+          *ngIf="hasImageThumbnail(); else iconTpl"
+          [src]="'data:' + document.mimeType + ';base64,' + document.fileContent"
+          [alt]="document.title"
+          class="list-item__thumb"
+        />
+        <ng-template #iconTpl>
+          <ion-icon [name]="getIconByMimeType(document.mimeType)"></ion-icon>
+        </ng-template>
       </div>
       <div class="list-item__body">
         <span class="list-item__title">{{ document.title }}</span>
@@ -32,6 +40,10 @@ export class DocumentItemListComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
+
+  hasImageThumbnail(): boolean {
+    return !!this.document?.fileContent && !!this.document?.mimeType?.includes('image');
+  }
 
   getIconByMimeType(mimeType: string): string {
     if (mimeType.includes('pdf')) {

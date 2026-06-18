@@ -5,6 +5,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 import { format, parseISO } from 'date-fns';
 import { SuccessCreationAcountComponent } from 'src/app/components/success-creation-acount/success-creation-acount.component';
 import { NewGroupDataService } from '../shared/services/new-group-data/new-group-data.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
 
 @Component({
@@ -90,10 +91,14 @@ import { BLOODTYPES } from 'src/app/constants/Bloodtypes.constant';
                 id="ng-dni"
                 formControlName="dni"
                 placeholder="Sin puntos ni espacios"
-                type="number"
+                type="text"
                 inputmode="numeric"
               ></ion-input>
             </div>
+            <p class="auth-field__error" *ngIf="form.get('dni')?.touched && form.get('dni')?.invalid">
+              <ng-container *ngIf="form.get('dni')?.hasError('pattern')">El DNI solo puede contener números.</ng-container>
+              <ng-container *ngIf="!form.get('dni')?.hasError('pattern')">El DNI debe tener al menos 7 dígitos.</ng-container>
+            </p>
           </div>
 
           <div class="auth-field">
@@ -175,7 +180,7 @@ export class NewGroupPage implements OnInit {
     name: ['', Validators.required],
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
-    dni: ['', Validators.required],
+    dni: ['', [Validators.compose([Validators.required, Validators.pattern('[0-9]*'), Validators.minLength(7)])]],
     bloodType: ['', Validators.required],
     birthday: ['', Validators.required],
   });
@@ -192,7 +197,7 @@ export class NewGroupPage implements OnInit {
   ionViewWillEnter() {}
 
   goBack() {
-    this.navController.navigateBack(['/tabs/home']);
+    this.navController.navigateBack(['/tabs/groups'], { animation: slideUpAnimation });
   }
 
   isFormValid() {

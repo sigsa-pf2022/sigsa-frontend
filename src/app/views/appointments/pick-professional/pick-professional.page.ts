@@ -6,6 +6,7 @@ import { Professional } from '../../doctors/shared/interfaces/Professional.inter
 import { ProfessionalsService } from '../../doctors/shared/services/professionals.service';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 
 @Component({
   selector: 'app-pick-professional',
@@ -179,7 +180,7 @@ export class PickProfessionalPage implements OnInit {
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/appointments']);
+    this.navController.navigateBack(['/tabs/appointments'], { animation: slideUpAnimation });
   }
 
   nextStep() {

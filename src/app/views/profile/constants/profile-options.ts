@@ -20,6 +20,22 @@ export const PROFILE_OPTIONS = [
     },
   },
   {
+    icon: 'document-text-outline',
+    title: 'Mis Documentos',
+    action: {
+      type: 'navigate',
+      payload: '/tabs/clipboard',
+    },
+  },
+  {
+    icon: 'medkit-outline',
+    title: 'Mis Medicamentos',
+    action: {
+      type: 'navigate',
+      payload: '/tabs/meds',
+    },
+  },
+  {
     icon: 'help-circle-outline',
     title: 'Ayuda',
     content: [
@@ -37,15 +53,6 @@ export const PROFILE_OPTIONS = [
     content: [
       {
         title: 'Cambiar contraseña',
-      },
-    ],
-  },
-  {
-    icon: 'settings-outline',
-    title: 'Preferencias',
-    content: [
-      {
-        title: 'Notificaciones push',
       },
     ],
   },

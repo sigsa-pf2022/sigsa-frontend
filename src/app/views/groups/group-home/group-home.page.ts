@@ -185,7 +185,6 @@ export class GroupHomePage implements OnInit {
     const currentUser = this.authService.user();
 
     this.options = [
-      { title: 'Documentos', icon: 'document-outline', action: 'documents' },
       { title: 'Ver miembros', icon: 'people-outline', action: 'see-members', groupId: this.group?.id, memberId: currentUser?.id },
       { title: 'Abandonar grupo', icon: 'exit-outline', color: 'danger', action: 'exit-group', groupId: this.group?.id, memberId: currentUser?.id },
       { title: 'Salir', icon: 'log-out-outline', color: 'danger', action: 'logout' },

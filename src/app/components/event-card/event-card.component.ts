@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NextEvent } from 'src/app/views/home/shared/interfaces/next-event';
 
 @Component({
@@ -27,7 +27,8 @@ import { NextEvent } from 'src/app/views/home/shared/interfaces/next-event';
       <button
         type="button"
         class="ec__chevron"
-        aria-label="Ver detalle"
+        aria-label="Ver siguiente"
+        (click)="onNext($event)"
       >
         <ion-icon name="chevron-forward"></ion-icon>
       </button>
@@ -37,8 +38,16 @@ import { NextEvent } from 'src/app/views/home/shared/interfaces/next-event';
 })
 export class EventCardComponent implements OnInit {
   @Input() event: NextEvent;
+  @Output() next = new EventEmitter<void>();
   dayShortEs = '';
   constructor() {}
+
+  onNext(ev: Event) {
+    // No dejar que el tap se propague al arrastre/click de la card.
+    ev.stopPropagation();
+    ev.preventDefault();
+    this.next.emit();
+  }
 
   ngOnInit() {
     if (this.event?.date) {

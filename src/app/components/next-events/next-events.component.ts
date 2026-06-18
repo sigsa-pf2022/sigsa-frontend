@@ -7,9 +7,9 @@ SwiperCore.use([Autoplay, Navigation]);
   template: `
     <div class="ne">
       <div class="ne__swiper__wrapper">
-        <swiper class="ne__swiper" [config]="swiperConfig">
+        <swiper class="ne__swiper" [config]="swiperConfig" (swiper)="onSwiper($event)">
           <ng-template *ngFor="let event of this.events" swiperSlide class="ne__swiper__slide">
-            <app-event-card [event]="event"></app-event-card>
+            <app-event-card [event]="event" (next)="goNext()"></app-event-card>
           </ng-template>
           <ng-template *ngIf="this.events.length === 0" swiperSlide class="ne__swiper__slide">
             <app-empty-event-card></app-empty-event-card>
@@ -26,9 +26,10 @@ SwiperCore.use([Autoplay, Navigation]);
 })
 export class NextEventsComponent implements OnInit {
   @Input() events: NextEvent[];
+  private swiperRef: any;
   swiperConfig: SwiperOptions = {
     slidesPerView: 1,
-    spaceBetween: 0,
+    spaceBetween: 12,
     centeredSlides: false,
     autoplay: { delay: 5000, disableOnInteraction: false },
     speed: 500,
@@ -37,4 +38,13 @@ export class NextEventsComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
+
+  onSwiper(swiper: any) {
+    this.swiperRef = swiper;
+  }
+
+  /** Avanza a la siguiente card (alternativa al arrastre). */
+  goNext() {
+    this.swiperRef?.slideNext();
+  }
 }

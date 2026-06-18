@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { GroupsService } from './shared/services/groups/groups.service';
+import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 import { FamilyGroup } from './shared/interfaces/family-group.interface';
 import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
@@ -95,6 +96,6 @@ export class GroupsPage implements OnInit, OnDestroy {
   }
 
   navigateTo() {
-    this.navController.navigateRoot(['/groups/create']);
+    this.navController.navigateForward(['/groups/create'], { animation: slideUpAnimation });
   }
 }

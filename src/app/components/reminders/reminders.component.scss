@@ -4,6 +4,7 @@
 }
 
 .rem {
+  flex: 0 0 auto;
   padding: 0 20px;
   display: flex;
   flex-direction: column;
@@ -67,13 +68,16 @@
 }
 
 cdk-virtual-scroll-viewport.rem__scroll {
-  height: calc(100vh - 420px);
+  /* El alto lo da el contenedor flex de la página (home / grupo-home),
+     que fija el header arriba y deja este listado ocupando el resto. */
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   /* No horizontal padding: cdk-virtual-scroll's inner content
      wrapper is position: absolute and ignores padding. The items
      receive their 20px lateral inset via the global
      `cdk-virtual-scroll-viewport .list-item` rule. */
-  padding: 8px 0 0;
+  padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 16px);
   box-sizing: border-box;
 }
 
