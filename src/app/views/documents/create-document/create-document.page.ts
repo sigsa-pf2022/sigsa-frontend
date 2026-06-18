@@ -7,7 +7,7 @@ import { formatISO } from 'date-fns';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { DocumentsService } from '../shared/services/documents.service';
-import { CreateDocumentDTO } from '../shared/interfaces/Document.interface';
+import { CreateDocumentDTO, EditDocumentDTO } from '../shared/interfaces/Document.interface';
 import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 
 @Component({
@@ -41,7 +41,7 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
       </header>
 
       <div class="cd__container">
-        <div class="cd__upload" *ngIf="!isEditMode">
+        <div class="cd__upload">
           <div class="upload-preview" *ngIf="documentPreview">
             <img [src]="documentPreview" class="upload-preview__image" />
             <button type="button" class="upload-preview__remove" (click)="removeDocument()">
@@ -202,6 +202,15 @@ export class CreateDocumentPage implements OnInit {
 
   async loadDocument() {
     const document = await this.documentsService.getDocument(this.documentId);
+
+    // Mostrar la imagen actual como preview (se puede reemplazar). NO seteamos
+    // this.fileContent: queda en null hasta que el usuario elija una imagen
+    // nueva, así sabemos si cambió y solo entonces la mandamos al backend.
+    if (document.fileContent && document.mimeType) {
+      this.mimeType = document.mimeType;
+      this.fileName = document.fileName;
+      this.documentPreview = `data:${document.mimeType};base64,${document.fileContent}`;
+    }
 
     // documentDate llega como "YYYY-MM-DD" (columna date). Trabajamos sobre el
     // string para no arrastrar zona horaria (ver toDisplayDate).
@@ -407,13 +416,21 @@ export class CreateDocumentPage implements OnInit {
   }
 
   async editDocument() {
-    const payload = {
+    const payload: EditDocumentDTO = {
       title: this.form.value.title,
       description: this.form.value.description,
       documentDate: this.selectedDocumentDate
         ? `${this.selectedDocumentDate}T00:00:00`
         : this.form.value.documentDate,
     };
+
+    // Si el usuario eligió una imagen nueva, la enviamos para reemplazar la actual.
+    if (this.fileContent) {
+      payload.fileContent = this.fileContent;
+      payload.fileName = this.fileName;
+      payload.mimeType = this.mimeType;
+      payload.fileSize = this.fileSize;
+    }
 
     try {
       await this.documentsService.editDocument(this.documentId, payload);
