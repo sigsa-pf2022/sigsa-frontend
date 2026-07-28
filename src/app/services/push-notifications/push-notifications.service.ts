@@ -4,12 +4,17 @@ import { Platform } from '@ionic/angular';
 import { PushNotifications } from '@capacitor/push-notifications';
 import type { Token } from '@capacitor/push-notifications';
 import { environment } from 'src/environments/environment';
+import { LocalNotificationsService } from '../local-notifications/local-notifications.service';
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationsService {
   private currentToken: string | null = null;
 
-  constructor(private http: HttpClient, private platform: Platform) {}
+  constructor(
+    private http: HttpClient,
+    private platform: Platform,
+    private localNotifications: LocalNotificationsService,
+  ) {}
 
   async initialize(): Promise<void> {
     console.log('[Push] initialize() llamado');
@@ -47,6 +52,13 @@ export class PushNotificationsService {
 
     await PushNotifications.addListener('pushNotificationReceived', (notification) => {
       console.log('[Push] Notification received in foreground:', notification);
+      // Con la app en primer plano Android no muestra el push en la bandeja,
+      // así que lo dibujamos manualmente como notificación local.
+      this.localNotifications.showNow(
+        notification.title ?? 'Notificación',
+        notification.body ?? '',
+        notification.data,
+      );
     });
 
     await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {

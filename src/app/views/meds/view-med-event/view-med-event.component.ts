@@ -75,6 +75,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 export class ViewMedEventComponent implements OnInit {
   medEventId: number;
   medEvent: any;
+  groupId: string | null = null;
   loading = false;
   notFound = false;
   constructor(
@@ -89,11 +90,14 @@ export class ViewMedEventComponent implements OnInit {
     this.medEventId = Number(this.route.snapshot.paramMap.get('id'));
     const dependentIdParam = this.route.snapshot.queryParamMap.get('dependentId');
     const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
+    this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     this.load(dependentId);
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/meds']);
+    // Si venimos del home de un grupo, volvemos ahí y no a la pestaña personal.
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/meds';
+    this.navController.navigateBack([fallback]);
   }
 
   get statusLabel(): string {

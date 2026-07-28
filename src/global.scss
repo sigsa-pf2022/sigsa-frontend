@@ -95,6 +95,26 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   box-sizing: border-box;
 }
 
+/* Header/toolbar transparente usado por casi todas las páginas junto a
+   `.auth-topbar`. Vivían sólo en login.page.scss y, al estar encapsulados,
+   no aplicaban en el resto de las vistas. */
+.auth-page-header {
+  &::after {
+    background-image: none !important;
+    display: none;
+  }
+}
+
+.auth-page-toolbar {
+  --background: var(--color-surface-app);
+  --border-style: none;
+  --min-height: 56px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
 .auth-topbar {
   display: flex;
   align-items: center;

@@ -156,6 +156,7 @@ export class GroupHomePage implements OnInit {
   currentReminderType: string = REMINDERS_TYPE.appointments;
   options: any;
   pendingRequestsCount = 0;
+  private remindersRequestId = 0;
 
   constructor(
     private animationCtrl: AnimationController,
@@ -270,28 +271,37 @@ export class GroupHomePage implements OnInit {
 
   async changeReminders(value) {
     this.currentReminderType = value;
-    if (!this.group?.dependent?.id) {
-      this.reminders = [];
-      return;
-    }
+
+    // El viewport de app-reminders cambia de tipo de forma síncrona, pero la
+    // carga es asíncrona: hay que vaciar la lista ANTES del await para que la
+    // plantilla nueva no llegue a renderizar items del tipo anterior
+    // (p.ej. turnos dentro de app-document-item-list).
+    this.reminders = [];
+
+    if (!this.group?.dependent?.id) return;
+
+    // Si el usuario cambia de tab mientras una carga está en vuelo, la respuesta
+    // vieja no debe pisar a la nueva.
+    const requestId = ++this.remindersRequestId;
 
     try {
+      let result = [];
       switch (value) {
         case REMINDERS_TYPE.appointments:
-          this.reminders = await this.appointmentsService.getAppointmentsByDependent(this.group.dependent.id);
+          result = await this.appointmentsService.getAppointmentsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.medications:
-          this.reminders = await this.medsEventsService.getMedsEventsByDependent(this.group.dependent.id);
+          result = await this.medsEventsService.getMedsEventsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.documents:
-          this.reminders = await this.documentsService.getDocumentsByDependent(this.group.dependent.id);
+          result = await this.documentsService.getDocumentsByDependent(this.group.dependent.id);
           break;
-        default:
-          this.reminders = [];
       }
+      if (requestId !== this.remindersRequestId) return;
+      this.reminders = result || [];
     } catch (error) {
       console.error('Error cargando reminders:', error);
-      this.reminders = [];
+      if (requestId === this.remindersRequestId) this.reminders = [];
     }
   }
 
@@ -356,11 +366,27 @@ export class GroupHomePage implements OnInit {
   }
 
   private editAppointment(id: number) {
-    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`]);
+    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`], {
+      queryParams: this.groupContextParams(),
+    });
   }
 
   private viewAppointment(id: number) {
-    return this.navController.navigateForward([`/appointments/view/${id}`]);
+    return this.navController.navigateForward([`/appointments/view/${id}`], {
+      queryParams: this.groupContextParams(),
+    });
+  }
+
+  /**
+   * Contexto del grupo que se propaga a las vistas de ver/editar para que su
+   * flecha de "volver" regrese al grupo y no a la pestaña personal.
+   */
+  private groupContextParams() {
+    return {
+      dependentId: this.group?.dependent?.id,
+      dependentName: this.getDependentFullName(),
+      groupId: this.group?.id,
+    };
   }
 
   private async presentMedEventActionSheet(medEvent: any) {
@@ -415,17 +441,13 @@ export class GroupHomePage implements OnInit {
   private editMedEvent(id: number) {
     this.medsEventDataService.clean();
     return this.navController.navigateForward([`/meds/edit/${id}/pick-med`], {
-      queryParams: {
-        dependentId: this.group?.dependent?.id,
-        dependentName: `${this.group?.dependent?.firstName} ${this.group?.dependent?.lastName}`,
-        groupId: this.group?.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
   private viewMedEvent(id: number) {
     return this.navController.navigateForward([`/meds/view/${id}`], {
-      queryParams: { dependentId: this.group?.dependent?.id }
+      queryParams: this.groupContextParams(),
     });
   }
 
@@ -480,17 +502,13 @@ export class GroupHomePage implements OnInit {
 
   private editDocument(id: number) {
     return this.navController.navigateForward([`/documents/edit/${id}`], {
-      queryParams: {
-        dependentId: this.group?.dependent?.id,
-        dependentName: `${this.group?.dependent?.firstName} ${this.group?.dependent?.lastName}`,
-        groupId: this.group?.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
   private viewDocument(id: number) {
     return this.navController.navigateForward([`/documents/view/${id}`], {
-      queryParams: { dependentId: this.group?.dependent?.id }
+      queryParams: this.groupContextParams(),
     });
   }
 

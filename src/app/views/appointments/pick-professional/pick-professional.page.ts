@@ -180,7 +180,8 @@ export class PickProfessionalPage implements OnInit {
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/appointments'], { animation: slideUpAnimation });
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/appointments';
+    this.navController.navigateBack([fallback], { animation: slideUpAnimation });
   }
 
   nextStep() {

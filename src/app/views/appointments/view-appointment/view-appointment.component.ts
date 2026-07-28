@@ -95,6 +95,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
 export class ViewAppointmentComponent implements OnInit {
   appointmentId: number;
   appointment: any;
+  groupId: string | null = null;
   isConfirmed: boolean = false;
   constructor(
     private appointmentsService: AppointmentsService,
@@ -107,11 +108,14 @@ export class ViewAppointmentComponent implements OnInit {
   ngOnInit() {}
   ionViewWillEnter() {
     this.appointmentId = Number(this.route.snapshot.paramMap.get('id'));
+    this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     this.getAppointment();
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/appointments']);
+    // Si venimos del home de un grupo, volvemos ahí y no a la pestaña personal.
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/appointments';
+    this.navController.navigateBack([fallback]);
   }
 
   get statusLabel(): string {

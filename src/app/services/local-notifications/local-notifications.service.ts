@@ -15,6 +15,33 @@ export class LocalNotificationsService {
     return await this.localNotifications.requestPermissions();
   }
 
+  /**
+   * Muestra una notificación local de forma inmediata.
+   * Se usa cuando llega un push con la app en primer plano (foreground),
+   * caso en el que Android no dibuja el push en la bandeja automáticamente.
+   */
+  async showNow(title: string, body: string, extra?: any) {
+    try {
+      let perm = await this.localNotifications.checkPermissions();
+      if (perm.display !== 'granted') {
+        perm = await this.localNotifications.requestPermissions();
+        if (perm.display !== 'granted') return;
+      }
+      await this.localNotifications.schedule({
+        notifications: [
+          {
+            id: Math.floor(Math.random() * 2147483000) + 1, // id único dentro del rango int de Android
+            title: title || 'Notificación',
+            body: body || '',
+            extra: extra || null,
+          },
+        ],
+      });
+    } catch (err) {
+      console.error('[LocalNotif] Error mostrando notificación inmediata:', err);
+    }
+  }
+
   registerActionTypes() {
     this.localNotifications.registerActionTypes({
       types: [

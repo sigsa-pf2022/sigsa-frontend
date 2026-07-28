@@ -181,7 +181,8 @@ export class PickMedComponent implements OnInit, OnDestroy {
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/meds'], { animation: slideUpAnimation });
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/meds';
+    this.navController.navigateBack([fallback], { animation: slideUpAnimation });
   }
 
   nextStep() {

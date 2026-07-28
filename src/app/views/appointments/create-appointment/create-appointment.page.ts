@@ -121,7 +121,10 @@ export class CreateAppointmentPage implements OnInit {
     description: '',
   });
   showCalendar = false;
-  minDate = formatISO(new Date());
+  // Hora actual SIN offset (YYYY-MM-DDTHH:mm:ss). Con el offset (-03:00),
+  // ion-datetime lo convierte a UTC y el mínimo queda corrido +3h, impidiendo
+  // elegir la hora actual.
+  minDate = formatISO(new Date()).slice(0, 19);
   doctor: Professional;
   appointmentDate;
   appointmentId: number;
@@ -223,7 +226,12 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   goBack() {
-    this.navController.navigateBack([this.backUrl]);
+    // El paso 1 sólo lee el contexto del grupo de los query params, así que hay
+    // que devolvérselo o pierde el dependiente y su botón de volver al grupo.
+    const queryParams = this.dependentId
+      ? { dependentId: this.dependentId, dependentName: this.dependentName, groupId: this.groupId }
+      : {};
+    this.navController.navigateBack([this.backUrl], { queryParams });
   }
 
   async onSubmit() {

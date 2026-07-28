@@ -1,9 +1,11 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .p__sections {
-  padding: 16px 0 calc(env(safe-area-inset-bottom, 0) + 24px);
+  padding: 16px 0 calc(env(safe-area-inset-bottom, 0) + 40px);
   display: flex;
   flex-direction: column;
   gap: 10px;

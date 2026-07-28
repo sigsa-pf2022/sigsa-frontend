@@ -65,13 +65,13 @@ import { MedicalDocument } from '../shared/interfaces/Document.interface';
           </div>
           <div class="vd__card vd__card--preview">
             <img
-              *ngIf="document.mimeType.includes('image')"
+              *ngIf="document.mimeType?.includes('image')"
               [src]="'data:' + document.mimeType + ';base64,' + fileContent"
               class="vd__image"
               [alt]="document.title"
             />
             <iframe
-              *ngIf="document.mimeType.includes('pdf')"
+              *ngIf="document.mimeType?.includes('pdf')"
               [src]="pdfUrl"
               class="vd__pdf"
               [title]="document.title"
@@ -101,6 +101,7 @@ export class ViewDocumentComponent implements OnInit {
   fileContent: string;
   pdfUrl: any;
   documentId: number;
+  groupId: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -110,6 +111,7 @@ export class ViewDocumentComponent implements OnInit {
 
   async ngOnInit() {
     this.documentId = +this.route.snapshot.paramMap.get('id');
+    this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     await this.loadDocument();
   }
 
@@ -120,14 +122,16 @@ export class ViewDocumentComponent implements OnInit {
     );
     this.fileContent = downloadData.fileContent;
 
-    if (this.document.mimeType.includes('pdf')) {
+    if (this.document?.mimeType?.includes('pdf')) {
       const blob = this.base64toBlob(this.fileContent, 'application/pdf');
       this.pdfUrl = URL.createObjectURL(blob);
     }
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/clipboard']);
+    // Si venimos del home de un grupo, volvemos ahí y no a la pestaña personal.
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/clipboard';
+    this.navController.navigateBack([fallback]);
   }
 
   getIconByMimeType(mimeType: string): string {
@@ -175,7 +179,7 @@ export class ViewDocumentComponent implements OnInit {
 
   downloadDocument() {
     const link = document.createElement('a');
-    if (this.document.mimeType.includes('pdf')) {
+    if (this.document?.mimeType?.includes('pdf')) {
       link.href = this.pdfUrl;
     } else {
       link.href = `data:${this.document.mimeType};base64,${this.fileContent}`;
