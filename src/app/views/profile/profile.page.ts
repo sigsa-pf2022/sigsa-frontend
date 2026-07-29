@@ -88,7 +88,7 @@ export class ProfilePage implements OnInit {
   }
 
   goToMyData() {
-    return this.navController.navigateForward(['/profile/mis-datos']);
+    return this.navController.navigateForward(['/profile/my-data']);
   }
 
   logout() {

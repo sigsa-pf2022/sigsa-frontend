@@ -17,7 +17,7 @@ const routes: Routes = [
     component: ProfilePage
   },
   {
-    path: 'mis-datos',
+    path: 'my-data',
     component: MyDataPage
   }
 ];
