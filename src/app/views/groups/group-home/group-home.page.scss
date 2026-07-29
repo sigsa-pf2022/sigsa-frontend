@@ -22,3 +22,25 @@
      primera opción no quede encima del botón. */
   margin-bottom: 80px;
 }
+
+.group-card__avatar--tappable {
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 150ms var(--ease-out-soft), filter 150ms ease;
+
+  &:active {
+    transform: scale(0.95);
+    filter: brightness(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+  }
+
+  ion-spinner {
+    width: 20px;
+    height: 20px;
+  }
+}

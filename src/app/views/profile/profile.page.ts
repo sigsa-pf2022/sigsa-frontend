@@ -37,8 +37,8 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
         (click)="goToMyData()"
         (keyup.enter)="goToMyData()"
       >
-        <div class="profile-hero__avatar" aria-hidden="true">
-          {{ getInitials(user) }}
+        <div class="profile-hero__avatar">
+          <app-avatar [photo]="user.photo" [name]="fullName"></app-avatar>
         </div>
         <div class="profile-hero__body">
           <p class="profile-hero__name">
@@ -116,10 +116,9 @@ export class ProfilePage implements OnInit {
     }
   }
 
-  getInitials(user: any): string {
-    const first = (user?.firstName ?? '').trim();
-    const last = (user?.lastName ?? '').trim();
-    return ((first[0] || '') + (last[0] || '')).toUpperCase() || '?';
+  get fullName(): string {
+    if (!this.user) return '';
+    return `${this.user.firstName ?? ''} ${this.user.lastName ?? ''}`.trim();
   }
 
   doAction(event) {

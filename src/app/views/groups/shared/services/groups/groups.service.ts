@@ -26,16 +26,15 @@ export class GroupsService {
     return this.http.post(`${environment.apiUrl}/family-groups/create`, data).toPromise();
   }
 
-  getGroupImage(url: string) {
-    return this.http
-      .get(`${environment.apiUrl}download-image?url=${url}`, {
-        responseType: 'blob',
-      })
-      .toPromise();
-  }
-
   deleteMember(groupId: string, memberId: string) {
     return this.http.delete(`${environment.apiUrl}/family-groups/${groupId}/members/${memberId}`).toPromise();
+  }
+
+  /** `photo` es un data URI, o null para borrarla. */
+  updateGroupPhoto(groupId: string | number, photo: string | null) {
+    return this.http
+      .patch<any>(`${environment.apiUrl}/family-groups/${groupId}/photo`, { photo })
+      .toPromise();
   }
 
   addMember(groupId: string, member: any) {

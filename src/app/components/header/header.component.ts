@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { NavController } from '@ionic/angular';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
@@ -14,10 +15,11 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
             (click)="navigateToProfile()"
             aria-label="Perfil"
           >
-            <ion-icon
-              class="app-header__avatar-icon"
-              src="./assets/images/home/personal-profile.svg"
-            ></ion-icon>
+            <app-avatar
+              [photo]="user?.photo"
+              [name]="fullName"
+              icon="person"
+            ></app-avatar>
           </button>
         </ion-buttons>
 
@@ -38,10 +40,27 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
   `,
   styleUrls: ['./header.component.scss'],
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
+  user: any;
+  private sub?: Subscription;
+
   constructor(private navController: NavController, private auth: AuthenticationService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    // El header vive en el shell de tabs y no se recrea al navegar, así que
+    // se escucha al servicio para que la foto nueva aparezca al volver de
+    // "Mis datos".
+    this.sub = this.auth.user$.subscribe((user) => (this.user = user));
+  }
+
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
+  }
+
+  get fullName(): string {
+    if (!this.user) return '';
+    return `${this.user.firstName ?? ''} ${this.user.lastName ?? ''}`.trim();
+  }
 
   navigateToProfile() {
     return this.navController.navigateRoot(['profile']);

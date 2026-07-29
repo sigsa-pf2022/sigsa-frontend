@@ -53,7 +53,9 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
 
       <div class="gh-history__scroll" *ngIf="entries.length; else emptyState">
         <ion-item *ngFor="let entry of entries" class="member-row" lines="none">
-          <div class="member-row__avatar" aria-hidden="true">{{ getInitials(entry) }}</div>
+          <div class="member-row__avatar">
+            <app-avatar [name]="entry.actorName" icon="ellipse-outline"></app-avatar>
+          </div>
           <div class="member-row__body">
             <span class="member-row__name">{{ describe(entry) }}</span>
             <span class="member-row__sub">

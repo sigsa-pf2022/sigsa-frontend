@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { BehaviorSubject } from 'rxjs';
 import { User } from 'src/app/interfaces/user';
 import { environment } from 'src/environments/environment';
 import { PushNotificationsService } from '../push-notifications/push-notifications.service';
@@ -9,6 +10,14 @@ import { PushNotificationsService } from '../push-notifications/push-notificatio
   providedIn: 'root',
 })
 export class AuthenticationService {
+  /**
+   * Usuario actual, para las vistas que no pueden releer localStorage por su
+   * cuenta. El header, por ejemplo, vive en el shell de tabs y no se recrea al
+   * navegar, así que no le sirve `ionViewWillEnter`.
+   */
+  private readonly userSubject = new BehaviorSubject<any>(this.readUser());
+  readonly user$ = this.userSubject.asObservable();
+
   constructor(
     public navController: NavController,
     private http: HttpClient,
@@ -16,7 +25,15 @@ export class AuthenticationService {
   ) {}
 
   user() {
-    return JSON.parse(localStorage.getItem('user'));
+    return this.readUser();
+  }
+
+  private readUser() {
+    try {
+      return JSON.parse(localStorage.getItem('user'));
+    } catch {
+      return null;
+    }
   }
 
   userToken() {
@@ -26,11 +43,13 @@ export class AuthenticationService {
   saveUser(data) {
     localStorage.setItem('user', JSON.stringify(data.user));
     localStorage.setItem('jwt', JSON.stringify(data.access_token));
+    this.userSubject.next(data.user);
   }
 
   deleteUser() {
     localStorage.removeItem('user');
     localStorage.removeItem('jwt');
+    this.userSubject.next(null);
   }
 
   /**
@@ -40,6 +59,7 @@ export class AuthenticationService {
    */
   updateStoredUser(user) {
     localStorage.setItem('user', JSON.stringify(user));
+    this.userSubject.next(user);
   }
 
   updateMe(data): Promise<any> {

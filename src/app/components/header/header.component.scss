@@ -52,6 +52,11 @@
     cursor: pointer;
     padding: 0;
     overflow: hidden;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--sigsa-700, #7338ad);
     transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1),
                 background 150ms ease;
 

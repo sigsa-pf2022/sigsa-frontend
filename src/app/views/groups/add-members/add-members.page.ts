@@ -66,8 +66,8 @@ import { ActivatedRoute } from '@angular/router';
             detail="false"
             (click)="addMember()"
           >
-            <div class="member-row__avatar" aria-hidden="true">
-              {{ getInitials(memberToAdd) }}
+            <div class="member-row__avatar">
+              <app-avatar [photo]="memberToAdd.photo" [name]="memberToAdd.firstName + ' ' + memberToAdd.lastName"></app-avatar>
             </div>
             <div class="member-row__body">
               <span class="member-row__name">{{ memberToAdd.firstName | titlecase }} {{ memberToAdd.lastName | titlecase }}</span>
@@ -95,8 +95,8 @@ import { ActivatedRoute } from '@angular/router';
             class="member-row"
             lines="none"
           >
-            <div class="member-row__avatar" aria-hidden="true">
-              {{ getInitials(member) }}
+            <div class="member-row__avatar">
+              <app-avatar [photo]="member.photo" [name]="member.firstName + ' ' + member.lastName"></app-avatar>
             </div>
             <div class="member-row__body">
               <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>
@@ -127,8 +127,8 @@ import { ActivatedRoute } from '@angular/router';
               class="member-row"
               lines="none"
             >
-              <div class="member-row__avatar" aria-hidden="true">
-                {{ getInitials(member) }}
+              <div class="member-row__avatar">
+                <app-avatar [photo]="member.photo" [name]="member.firstName + ' ' + member.lastName"></app-avatar>
               </div>
               <div class="member-row__body">
                 <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>

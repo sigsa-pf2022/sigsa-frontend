@@ -8,6 +8,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { RecoveryPasswordFormDataService } from 'src/app/services/recovery-password-form-data/recovery-password-form-data.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { PhotoPickerService } from 'src/app/services/photo-picker/photo-picker.service';
 
 @Component({
   selector: 'app-my-data',
@@ -30,6 +31,21 @@ import { ToastService } from 'src/app/services/toast/toast.service';
       </header>
 
       <div class="md__container">
+        <div class="md__photo">
+          <div class="md__photo-avatar">
+            <app-avatar [photo]="photo" [name]="fullName"></app-avatar>
+          </div>
+          <div class="md__photo-actions">
+            <button type="button" class="auth-btn auth-btn--secondary" (click)="changePhoto()" [disabled]="savingPhoto">
+              <ion-spinner *ngIf="savingPhoto" name="crescent"></ion-spinner>
+              <ng-container *ngIf="!savingPhoto">{{ photo ? 'Cambiar foto' : 'Agregar foto' }}</ng-container>
+            </button>
+            <button type="button" class="md__photo-remove" *ngIf="photo && !savingPhoto" (click)="removePhoto()">
+              Quitar
+            </button>
+          </div>
+        </div>
+
         <form class="auth-form" [formGroup]="this.form">
           <div class="auth-field">
             <label class="auth-field__label" for="md-firstname">Nombre</label>
@@ -179,7 +195,9 @@ export class MyDataPage {
 
   genders = GENDERS;
   user: any;
+  photo: string | null = null;
   saving = false;
+  savingPhoto = false;
   sendingReset = false;
   // Mismo criterio que el registro: mayores de 18.
   maxDate = format(new Date(new Date().getFullYear() - 18, new Date().getMonth(), new Date().getDate()), 'yyyy-MM-dd');
@@ -192,12 +210,14 @@ export class MyDataPage {
     private router: Router,
     private toastService: ToastService,
     private dateFormatterService: DateFormatterService,
-    private recoveryPasswordFormDataService: RecoveryPasswordFormDataService
+    private recoveryPasswordFormDataService: RecoveryPasswordFormDataService,
+    private photoPicker: PhotoPickerService
   ) {}
 
   ionViewWillEnter() {
     this.user = this.auth.user();
     if (!this.user) return;
+    this.photo = this.user.photo ?? null;
 
     const birthday = this.toDisplayDate(this.user.birthday);
     this.form.patchValue({
@@ -211,6 +231,42 @@ export class MyDataPage {
 
   goBack() {
     this.navController.navigateBack(['/profile']);
+  }
+
+  get fullName(): string {
+    const { firstName, lastName } = this.form.value;
+    const fromForm = `${firstName ?? ''} ${lastName ?? ''}`.trim();
+    return fromForm || `${this.user?.firstName ?? ''} ${this.user?.lastName ?? ''}`.trim();
+  }
+
+  async changePhoto() {
+    if (this.savingPhoto) return;
+    const picked = await this.photoPicker.pick();
+    if (!picked) return;
+    await this.savePhoto(picked);
+  }
+
+  async removePhoto() {
+    await this.savePhoto(null);
+  }
+
+  /**
+   * La foto se guarda sola, sin esperar el botón "Guardar cambios": es la
+   * expectativa habitual al elegir una foto de perfil.
+   */
+  private async savePhoto(photo: string | null) {
+    this.savingPhoto = true;
+    try {
+      const updated = await this.auth.updateMe({ photo });
+      this.auth.updateStoredUser(updated);
+      this.user = updated;
+      this.photo = updated.photo ?? null;
+      this.toastService.showSuccess(photo ? 'Foto actualizada' : 'Foto eliminada');
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos guardar la foto');
+    } finally {
+      this.savingPhoto = false;
+    }
   }
 
   /**

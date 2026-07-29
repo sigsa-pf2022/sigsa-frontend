@@ -35,8 +35,11 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           class="member-row"
           lines="none"
         >
-          <div class="member-row__avatar" aria-hidden="true">
-            {{ getInitials(member) }}
+          <div class="member-row__avatar">
+            <app-avatar
+              [photo]="member.photo"
+              [name]="member.firstName + ' ' + member.lastName"
+            ></app-avatar>
           </div>
           <div class="member-row__body">
             <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>

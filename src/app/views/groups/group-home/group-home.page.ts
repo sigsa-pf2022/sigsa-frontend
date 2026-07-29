@@ -17,6 +17,8 @@ import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-e
 import { MedsEventDataService } from '../../meds/shared/services/meds-events-data/meds-events-data.service';
 import { DocumentsService } from '../../documents/shared/services/documents.service';
 import { titleCase } from 'src/app/utils/title-case';
+import { PhotoPickerService } from 'src/app/services/photo-picker/photo-picker.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 
 @Component({
@@ -50,9 +52,21 @@ import { titleCase } from 'src/app/utils/title-case';
 
         <article class="group-card" *ngIf="this.group.dependent">
           <div class="group-card__head">
-            <div class="group-card__avatar" aria-hidden="true">
-              <ion-icon name="person"></ion-icon>
-            </div>
+            <button
+              type="button"
+              class="group-card__avatar group-card__avatar--tappable"
+              (click)="changeGroupPhoto()"
+              [disabled]="savingPhoto"
+              aria-label="Cambiar la foto del grupo"
+            >
+              <ion-spinner *ngIf="savingPhoto" name="crescent"></ion-spinner>
+              <app-avatar
+                *ngIf="!savingPhoto"
+                [photo]="this.group.photo"
+                [name]="this.group.name"
+                icon="people"
+              ></app-avatar>
+            </button>
             <div class="group-card__heading">
               <p class="group-card__role">Dependiente</p>
               <p class="group-card__name">
@@ -157,6 +171,7 @@ export class GroupHomePage implements OnInit {
   currentReminderType: string = REMINDERS_TYPE.appointments;
   options: any;
   pendingRequestsCount = 0;
+  savingPhoto = false;
   private remindersRequestId = 0;
 
   constructor(
@@ -171,7 +186,9 @@ export class GroupHomePage implements OnInit {
     private medsEventDataService: MedsEventDataService,
     private documentsService: DocumentsService,
     private actionSheetService: ActionSheetService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private photoPicker: PhotoPickerService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {}
@@ -553,6 +570,24 @@ export class GroupHomePage implements OnInit {
     const last = this.group?.dependent?.lastName?.trim();
     if (!first && !last) return null;
     return [first, last].filter(Boolean).join(' ');
+  }
+
+  /** Cualquier integrante puede cambiar la foto del grupo. */
+  async changeGroupPhoto() {
+    if (this.savingPhoto || !this.group?.id) return;
+    const picked = await this.photoPicker.pick();
+    if (!picked) return;
+
+    this.savingPhoto = true;
+    try {
+      await this.groupsService.updateGroupPhoto(this.group.id, picked);
+      this.group = { ...this.group, photo: picked };
+      this.toastService.showSuccess('Foto del grupo actualizada');
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos guardar la foto');
+    } finally {
+      this.savingPhoto = false;
+    }
   }
 
   exitGroup() {
