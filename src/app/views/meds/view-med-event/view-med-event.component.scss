@@ -103,3 +103,17 @@
   text-align: right;
   word-break: break-word;
 }
+
+.vm__dose {
+  align-items: center;
+
+  &--current {
+    background: var(--sigsa-50);
+  }
+
+  .vm__row-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}

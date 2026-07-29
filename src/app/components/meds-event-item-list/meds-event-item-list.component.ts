@@ -41,6 +41,7 @@ const STATUS_BADGE_CLASS = {
           </span>
         </div>
         <span class="list-item__subtitle">{{ this.subtitle }}</span>
+        <span class="list-item__meta" *ngIf="this.treatmentMeta">{{ this.treatmentMeta }}</span>
       </div>
     </ion-item>
   `,
@@ -51,6 +52,7 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
   @Input() flush: boolean = false;
   title: string;
   subtitle: string;
+  treatmentMeta: string;
   dueDate: boolean;
   status: EventStatus;
   statusBadgeClass = '';
@@ -69,10 +71,29 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
     if (!this.medEvent) {
       this.title = 'Medicamento';
       this.subtitle = '';
+      this.treatmentMeta = '';
       this.status = null;
       this.dueDate = false;
       this.statusBadgeClass = '';
       return;
+    }
+
+    // El input puede ser una toma suelta o un tratamiento agrupado
+    // (varias tomas del mismo medicamento). En el segundo caso mostramos la
+    // próxima toma pendiente, o la última si ya terminó.
+    const isTreatment = this.medEvent.totalDoses > 1;
+    const reference = isTreatment
+      ? this.medEvent.nextDose ?? this.medEvent.doses?.[this.medEvent.doses.length - 1] ?? {}
+      : this.medEvent;
+
+    if (isTreatment) {
+      const doseNumber = this.medEvent.nextDose
+        ? this.medEvent.nextDose.doseIndex
+        : this.medEvent.totalDoses;
+      this.treatmentMeta =
+        `Cada ${this.medEvent.intervalHours} hs · toma ${doseNumber} de ${this.medEvent.totalDoses}`;
+    } else {
+      this.treatmentMeta = '';
     }
 
     const med = this.medEvent.med || {};
@@ -84,18 +105,18 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
 
     let formattedDate = '';
     try {
-      if (this.medEvent.date) {
-        formattedDate = this.dateFormatterService.getSpanishFormattedDate(this.medEvent.date);
+      if (reference.date) {
+        formattedDate = this.dateFormatterService.getSpanishFormattedDate(reference.date);
       }
     } catch {
       formattedDate = '';
     }
     this.subtitle = formattedDate;
 
-    this.status = EVENT_STATUS.find((es) => es.value === this.medEvent.status);
+    this.status = EVENT_STATUS.find((es) => es.value === reference.status);
     this.statusBadgeClass = this.status ? (STATUS_BADGE_CLASS[this.status.color] || '') : '';
-    if (this.status && this.status.value === EventStatusEnum.CONFIRMADO && this.medEvent.date) {
-      const date = new Date(this.medEvent.date);
+    if (this.status && this.status.value === EventStatusEnum.CONFIRMADO && reference.date) {
+      const date = new Date(reference.date);
       this.dueDate = !isNaN(date.getTime()) && isBefore(date, new Date());
     } else {
       this.dueDate = false;

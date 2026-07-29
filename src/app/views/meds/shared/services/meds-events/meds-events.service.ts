@@ -20,6 +20,35 @@ export class MedsEventsService {
     return this.http.get<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
   }
 
+  /**
+   * Tomas agrupadas por tratamiento: una entrada por serie con su próxima
+   * toma. Las tomas únicas vienen con la misma forma (totalDoses: 1).
+   */
+  getTreatmentsByUser() {
+    return this.http.get<any[]>(`${environment.apiUrl}/meds-event/treatments`).toPromise();
+  }
+
+  getTreatmentsByDependent(dependentId: number) {
+    return this.http
+      .get<any[]>(`${environment.apiUrl}/meds-event/treatments/dependent/${dependentId}`)
+      .toPromise();
+  }
+
+  cancelTreatment(seriesId: string) {
+    return this.http
+      .patch<any>(`${environment.apiUrl}/meds-event/treatments/${seriesId}/cancel`, {})
+      .toPromise();
+  }
+
+  cancelTreatmentForDependent(seriesId: string, dependentId: number) {
+    return this.http
+      .patch<any>(
+        `${environment.apiUrl}/meds-event/treatments/${seriesId}/dependent/${dependentId}/cancel`,
+        {}
+      )
+      .toPromise();
+  }
+
   createMedEvent(data) {
     let payload = data;
     if (data && !data.medId && data.med && typeof data.med === 'object' && 'id' in data.med) {
