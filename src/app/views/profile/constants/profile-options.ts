@@ -47,13 +47,6 @@ export const PROFILE_OPTIONS = [
       },
     ],
   },
-  {
-    icon: 'lock-closed-outline',
-    title: 'Seguridad',
-    content: [
-      {
-        title: 'Cambiar contraseña',
-      },
-    ],
-  },
+  // "Seguridad → Cambiar contraseña" se movió a "Mis datos", donde el ítem
+  // efectivamente dispara el flujo de recuperación por email.
 ];

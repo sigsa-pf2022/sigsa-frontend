@@ -28,7 +28,15 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
         <h1 class="listing-header__title">Mi perfil</h1>
       </header>
 
-      <article class="profile-hero" *ngIf="user">
+      <article
+        class="profile-hero profile-hero--tappable"
+        *ngIf="user"
+        role="button"
+        tabindex="0"
+        aria-label="Editar mis datos"
+        (click)="goToMyData()"
+        (keyup.enter)="goToMyData()"
+      >
         <div class="profile-hero__avatar" aria-hidden="true">
           {{ getInitials(user) }}
         </div>
@@ -39,6 +47,7 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
           <p class="profile-hero__email" *ngIf="user.email">{{ user.email }}</p>
           <span class="profile-hero__chip" *ngIf="user.role === 'professional'">Profesional</span>
         </div>
+        <ion-icon class="profile-hero__chevron" name="chevron-forward" aria-hidden="true"></ion-icon>
       </article>
 
       <div class="p__sections">
@@ -76,6 +85,10 @@ export class ProfilePage implements OnInit {
 
   goBack() {
     this.navController.navigateBack(['/tabs/home']);
+  }
+
+  goToMyData() {
+    return this.navController.navigateForward(['/profile/mis-datos']);
   }
 
   logout() {

@@ -33,6 +33,19 @@ export class AuthenticationService {
     localStorage.removeItem('jwt');
   }
 
+  /**
+   * Refresca sólo el usuario guardado, conservando el token.
+   * Se usa después de editar "Mis datos": las vistas leen `user()` de
+   * localStorage, así que si no se reescribe siguen mostrando lo viejo.
+   */
+  updateStoredUser(user) {
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  updateMe(data): Promise<any> {
+    return this.http.patch<any>(`${environment.apiUrl}/users/me`, data).toPromise();
+  }
+
   emailVerified(): boolean {
     const user = JSON.parse(localStorage.getItem('user'));
     return user.emailVerified;

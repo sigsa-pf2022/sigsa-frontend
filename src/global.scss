@@ -1589,6 +1589,22 @@ cdk-virtual-scroll-viewport.rem__scroll .cdk-virtual-scroll-content-wrapper {
   display: flex;
   align-items: center;
   gap: 14px;
+
+  &--tappable {
+    cursor: pointer;
+    transition: background 150ms ease, transform 150ms var(--ease-out-soft);
+
+    &:active {
+      background: var(--color-surface-subtle);
+      transform: scale(0.99);
+    }
+  }
+}
+
+.profile-hero__chevron {
+  flex: 0 0 auto;
+  font-size: 20px;
+  color: var(--color-text-muted);
 }
 
 .profile-hero__avatar {
