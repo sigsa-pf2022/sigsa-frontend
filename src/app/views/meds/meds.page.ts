@@ -111,18 +111,39 @@ export class MedsPage implements OnInit, OnDestroy {
   }
 
   async setMedsEvents() {
-    this.medsEvents = [...(await this.medsEventsService.getMedsEventsByUser())];
+    // La lista muestra tratamientos: una fila por serie con su próxima toma,
+    // en vez de N filas del mismo medicamento.
+    this.medsEvents = [...(await this.medsEventsService.getTreatmentsByUser())];
     this.filteredMedsEvents = this.medsEvents;
   }
 
-  async presentActionSheet(medEvent) {
+  async presentActionSheet(item) {
+    const isTreatment = item?.totalDoses > 1;
+
+    if (isTreatment) {
+      const actionSheet = await this.actionSheetService.createForTreatment(
+        'Mi Tratamiento',
+        !!item.nextDose
+      );
+      await actionSheet.present();
+      const { role } = await actionSheet.onDidDismiss();
+      if (role === 'view') {
+        this.viewMedEvent((item.nextDose ?? item.doses[item.doses.length - 1]).id);
+      } else if (role === 'destructive') {
+        this.cancelTreatment(item.seriesId);
+      }
+      return;
+    }
+
+    // Toma única: el objeto agrupado trae la toma en `doses[0]`.
+    const dose = item?.doses?.[0] ?? item;
     const headerText = 'Mi Medicamento';
-    const actionSheet = isBefore(parseISO(medEvent.date), new Date())
+    const actionSheet = isBefore(parseISO(dose.date), new Date())
       ? await this.actionSheetService.createOnlyView(headerText)
       : await this.actionSheetService.createDefault(headerText);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
-    this.doActionByRole(role, medEvent.id);
+    this.doActionByRole(role, dose.id);
   }
 
   doActionByRole(value: string, id: number) {
@@ -138,6 +159,25 @@ export class MedsPage implements OnInit, OnDestroy {
         break;
       default:
         break;
+    }
+  }
+
+  async cancelTreatment(seriesId: string) {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        text: '¿Desea cancelar las tomas pendientes del tratamiento?',
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.medsEventsService
+        .cancelTreatment(seriesId)
+        .then(() => this.toastService.showSuccess('Tratamiento cancelado correctamente.'))
+        .then(() => this.setMedsEvents())
+        .catch(() => this.toastService.showError('No se pudo cancelar el tratamiento.'));
     }
   }
 

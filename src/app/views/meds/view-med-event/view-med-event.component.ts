@@ -61,9 +61,36 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
               <span class="vm__row-label">Fecha y hora</span>
               <span class="vm__row-value">{{ medEvent?.date | date: 'dd/MM/yyyy HH:mm' }}</span>
             </div>
+            <div class="vm__row" *ngIf="medEvent?.totalDoses > 1">
+              <span class="vm__row-label">Frecuencia</span>
+              <span class="vm__row-value">Cada {{ medEvent?.intervalHours }} hs</span>
+            </div>
+            <div class="vm__row" *ngIf="medEvent?.totalDoses > 1">
+              <span class="vm__row-label">Toma</span>
+              <span class="vm__row-value">{{ medEvent?.doseIndex }} de {{ medEvent?.totalDoses }}</span>
+            </div>
             <div class="vm__row" *ngIf="medEvent?.description">
               <span class="vm__row-label">Descripción</span>
               <span class="vm__row-value">{{ medEvent?.description }}</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="vm__section" *ngIf="seriesDoses.length > 1">
+          <div class="section-title vm__section-title">
+            <h2>Tomas del tratamiento</h2>
+          </div>
+          <div class="vm__card">
+            <div
+              class="vm__row vm__dose"
+              *ngFor="let dose of seriesDoses"
+              [class.vm__dose--current]="dose.id === medEvent?.id"
+            >
+              <span class="vm__row-label">Toma {{ dose.doseIndex }}</span>
+              <span class="vm__row-value">
+                {{ dose.date | date: 'dd/MM HH:mm' }}
+                <span class="status-badge" [ngClass]="doseBadgeClass(dose)">{{ doseLabel(dose) }}</span>
+              </span>
             </div>
           </div>
         </section>
@@ -76,6 +103,8 @@ export class ViewMedEventComponent implements OnInit {
   medEventId: number;
   medEvent: any;
   groupId: string | null = null;
+  /** Todas las tomas del tratamiento, cuando el evento pertenece a una serie. */
+  seriesDoses: any[] = [];
   loading = false;
   notFound = false;
   constructor(
@@ -110,12 +139,29 @@ export class ViewMedEventComponent implements OnInit {
   }
 
   get statusBadgeClass(): string {
+    return this.badgeClassFor(this.medEvent?.status);
+  }
+
+  doseLabel(dose: any): string {
+    const map: Record<string, string> = {
+      confirmed: 'TOMADA',
+      created: 'PENDIENTE',
+      canceled: 'CANCELADA',
+    };
+    return map[dose?.status] || (dose?.status || '').toUpperCase();
+  }
+
+  doseBadgeClass(dose: any): string {
+    return this.badgeClassFor(dose?.status);
+  }
+
+  private badgeClassFor(status: string): string {
     const map: Record<string, string> = {
       confirmed: 'status-badge--success',
       created: 'status-badge--violet',
       canceled: 'status-badge--danger',
     };
-    return map[this.medEvent?.status] || '';
+    return map[status] || '';
   }
 
   async load(dependentId?: number) {
@@ -139,8 +185,16 @@ export class ViewMedEventComponent implements OnInit {
         list = await this.medsEventsService.getMedsEventsByUser();
       }
       this.medEvent = list?.find((m) => m.id === this.medEventId);
+      // Si la toma pertenece a un tratamiento, las hermanas ya vienen en la
+      // misma lista: no hace falta otra request.
+      this.seriesDoses = this.medEvent?.seriesId
+        ? (list || [])
+            .filter((m) => m.seriesId === this.medEvent.seriesId)
+            .sort((a, b) => a.doseIndex - b.doseIndex)
+        : [];
     } catch {
       this.medEvent = null;
+      this.seriesDoses = [];
     }
   }
 }

@@ -291,7 +291,8 @@ export class GroupHomePage implements OnInit {
           result = await this.appointmentsService.getAppointmentsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.medications:
-          result = await this.medsEventsService.getMedsEventsByDependent(this.group.dependent.id);
+          // Agrupado por tratamiento, igual que en la pestaña personal.
+          result = await this.medsEventsService.getTreatmentsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.documents:
           result = await this.documentsService.getDocumentsByDependent(this.group.dependent.id);
@@ -389,21 +390,54 @@ export class GroupHomePage implements OnInit {
     };
   }
 
-  private async presentMedEventActionSheet(medEvent: any) {
-    const actionSheet = await this.createMedEventActionSheet(medEvent);
+  private async presentMedEventActionSheet(item: any) {
+    const depName = this.getDependentFullName();
+    const formatted = depName ? this.toTitleCase(depName) : null;
+
+    // Tratamiento periódico: se ve o se cancela entero, no se edita toma a toma.
+    if (item?.totalDoses > 1) {
+      const title = formatted ? `Tratamiento de ${formatted}` : 'Tratamiento';
+      const actionSheet = await this.actionSheetService.createForTreatment(title, !!item.nextDose);
+      await actionSheet.present();
+      const { role } = await actionSheet.onDidDismiss();
+      if (role === 'view') {
+        this.viewMedEvent((item.nextDose ?? item.doses[item.doses.length - 1]).id);
+      } else if (role === 'destructive') {
+        this.cancelTreatment(item.seriesId);
+      }
+      return;
+    }
+
+    // Toma única: el objeto agrupado trae la toma en `doses[0]`.
+    const medEvent = item?.doses?.[0] ?? item;
+    const actionSheet = await this.createMedEventActionSheet(medEvent, formatted);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
     this.doMedEventActionByRole(role, medEvent.id);
   }
 
-  private async createMedEventActionSheet(medEvent: any) {
-    const depName = this.getDependentFullName();
-    const formatted = depName ? this.toTitleCase(depName) : null;
-    const baseTitle = formatted ? `Medicamento de ${formatted}` : 'Mi Medicamento';
+  private async createMedEventActionSheet(medEvent: any, formattedDepName: string | null) {
+    const baseTitle = formattedDepName ? `Medicamento de ${formattedDepName}` : 'Mi Medicamento';
     if (medEvent.status === 'confirmed' && isBefore(parseISO(medEvent.date), new Date())) {
       return await this.actionSheetService.createOnlyView(baseTitle);
     }
     return await this.actionSheetService.createDefault(baseTitle);
+  }
+
+  private async cancelTreatment(seriesId: string) {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: { text: '¿Desea cancelar las tomas pendientes del tratamiento?' },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.medsEventsService
+        .cancelTreatmentForDependent(seriesId, this.group.dependent.id)
+        .then(() => this.changeReminders(this.currentReminderType))
+        .catch(err => console.error('Error cancelando tratamiento:', err));
+    }
   }
 
   private doMedEventActionByRole(value: string, id: number) {
