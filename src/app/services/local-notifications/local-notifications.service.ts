@@ -20,7 +20,7 @@ export class LocalNotificationsService {
    * Se usa cuando llega un push con la app en primer plano (foreground),
    * caso en el que Android no dibuja el push en la bandeja automáticamente.
    */
-  async showNow(title: string, body: string, extra?: any) {
+  async showNow(title: string, body: string, extra?: any, actionTypeId?: string) {
     try {
       let perm = await this.localNotifications.checkPermissions();
       if (perm.display !== 'granted') {
@@ -34,6 +34,7 @@ export class LocalNotificationsService {
             title: title || 'Notificación',
             body: body || '',
             extra: extra || null,
+            ...(actionTypeId ? { actionTypeId } : {}),
           },
         ],
       });
@@ -42,25 +43,34 @@ export class LocalNotificationsService {
     }
   }
 
-  registerActionTypes() {
-    this.localNotifications.registerActionTypes({
-      types: [
-        {
-          id: 'EVENT',
-          actions: [
-            {
-              id: 'confirm',
-              title: 'Confirmar',
-            },
-            {
-              id: 'dismiss',
-              title: 'Descartar',
-              destructive: true,
-            },
-          ],
-        },
-      ],
-    });
+  /**
+   * Botones de acción. Sólo existen en notificaciones locales: el plugin de
+   * push remoto no los soporta, por eso en primer plano redibujamos el push
+   * como notificación local.
+   */
+  async registerActionTypes() {
+    try {
+      await this.localNotifications.registerActionTypes({
+        types: [
+          {
+            id: 'GROUP_EVENT',
+            actions: [
+              {
+                id: 'take_charge',
+                title: 'Me hago cargo',
+              },
+              {
+                id: 'dismiss',
+                title: 'Descartar',
+                destructive: true,
+              },
+            ],
+          },
+        ],
+      });
+    } catch (err) {
+      console.error('[LocalNotif] Error registrando action types:', err);
+    }
   }
 
   addEventListener(callback: CallableFunction) {

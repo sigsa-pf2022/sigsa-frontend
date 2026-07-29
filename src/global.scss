@@ -2042,3 +2042,18 @@ ion-fab-list[side="top"] {
   align-items: center;
   gap: 8px;
 }
+/* Aviso de que un integrante del grupo se hizo cargo del evento del
+   dependiente. Va debajo del subtítulo en las listas. */
+.list-item__taken {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success, #16a34a);
+
+  ion-icon {
+    font-size: 14px;
+  }
+}

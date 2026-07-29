@@ -41,6 +41,10 @@ const STATUS_BADGE_CLASS = {
           </span>
         </div>
         <span class="list-item__subtitle">{{ this.subtitle }}</span>
+        <span class="list-item__taken" *ngIf="this.takenChargeBy">
+          <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+          {{ this.takenChargeBy }} se hizo cargo
+        </span>
       </div>
     </ion-item>
   `,
@@ -51,6 +55,7 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
   @Input() flush: boolean = false; // Quita margen horizontal cuando true
   title: string;
   subtitle: string;
+  takenChargeBy: string;
   dueDate: boolean;
   status: EventStatus;
   statusBadgeClass = '';
@@ -65,15 +70,24 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
     }
   }
 
+  /** Nombre de quien se hizo cargo, si alguien lo hizo. */
+  private resolveTakenCharge(event: any): string {
+    const by = event?.takenChargeBy;
+    return by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
+  }
+
   setProfessionalData() {
     if (!this.appointment) {
       this.title = 'Turno';
       this.subtitle = '';
+      this.takenChargeBy = '';
       this.status = null;
       this.dueDate = false;
       this.statusBadgeClass = '';
       return;
     }
+
+    this.takenChargeBy = this.resolveTakenCharge(this.appointment);
 
     const professional = this.appointment.professional;
     const firstName = professional?.firstName?.trim();

@@ -70,6 +70,11 @@ export class MenuComponent implements OnInit {
           await this.navController.navigateForward([`/groups/${option.groupId}/members`]);
         }
         break;
+      case 'see-history':
+        if (option.groupId) {
+          await this.navController.navigateForward([`/groups/${option.groupId}/history`]);
+        }
+        break;
       case 'exit-group':
         await this.confirmExitGroup(option.groupId, option.memberId);
         break;
