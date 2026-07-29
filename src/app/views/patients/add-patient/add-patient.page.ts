@@ -71,7 +71,7 @@ import { PatientsService } from '../shared/services/patients.service';
             </div>
             <div class="ap__result-info">
               <span class="status-badge status-badge--violet">Titular</span>
-              <p class="ap__result-name">{{ foundPatient.firstName }} {{ foundPatient.lastName }}</p>
+              <p class="ap__result-name">{{ foundPatient.firstName | titlecase }} {{ foundPatient.lastName | titlecase }}</p>
               <p class="ap__result-meta">DNI: {{ foundPatient.dni }}</p>
             </div>
           </div>

@@ -16,6 +16,7 @@ import { AppointmentsService } from '../../appointments/shared/services/appointm
 import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-events.service';
 import { MedsEventDataService } from '../../meds/shared/services/meds-events-data/meds-events-data.service';
 import { DocumentsService } from '../../documents/shared/services/documents.service';
+import { titleCase } from 'src/app/utils/title-case';
 
 
 @Component({
@@ -327,7 +328,7 @@ export class GroupHomePage implements OnInit {
 
   private async createAppointmentActionSheet(appointment: any) {
     const depName = this.getDependentFullName();
-    const formatted = depName ? this.toTitleCase(depName) : null;
+    const formatted = depName ? titleCase(depName) : null;
     const baseTitle = formatted ? `Turno de ${formatted}` : 'Mi Turno';
     if (appointment.status === 'confirmed' && isAfter(parseISO(appointment.date), new Date())) {
       return await this.actionSheetService.createOnlyView(baseTitle);
@@ -393,7 +394,7 @@ export class GroupHomePage implements OnInit {
 
   private async presentMedEventActionSheet(item: any) {
     const depName = this.getDependentFullName();
-    const formatted = depName ? this.toTitleCase(depName) : null;
+    const formatted = depName ? titleCase(depName) : null;
 
     // Tratamiento periódico: se ve o se cancela entero, no se edita toma a toma.
     if (item?.totalDoses > 1) {
@@ -495,7 +496,7 @@ export class GroupHomePage implements OnInit {
 
   private async createDocumentActionSheet(document: any) {
     const depName = this.getDependentFullName();
-    const formatted = depName ? this.toTitleCase(depName) : null;
+    const formatted = depName ? titleCase(depName) : null;
     const baseTitle = formatted ? `Documento de ${formatted}` : 'Mi Documento';
     return await this.actionSheetService.createDefault(baseTitle);
   }
@@ -552,15 +553,6 @@ export class GroupHomePage implements OnInit {
     const last = this.group?.dependent?.lastName?.trim();
     if (!first && !last) return null;
     return [first, last].filter(Boolean).join(' ');
-  }
-
-  private toTitleCase(value: string): string {
-    return value
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean)
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
   }
 
   exitGroup() {

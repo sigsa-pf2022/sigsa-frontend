@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingController, NavController } from '@ionic/angular';
 import { GroupEventsService } from '../shared/services/group-events/group-events.service';
+import { titleCase } from 'src/app/utils/title-case';
 
 /** Texto e ícono de cada acción del historial. */
 const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> = {
@@ -17,16 +18,16 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
   event_canceled: { icon: 'close-circle-outline', text: () => 'Canceló un evento' },
   member_added: {
     icon: 'person-add-outline',
-    text: (p) => `Agregó a ${p?.memberName ?? 'un integrante'}`,
+    text: (p) => `Agregó a ${titleCase(p?.memberName) || 'un integrante'}`,
   },
   member_removed: {
     icon: 'person-remove-outline',
     text: (p) =>
-      p?.selfRemoved ? 'Salió del grupo' : `Sacó a ${p?.memberName ?? 'un integrante'}`,
+      p?.selfRemoved ? 'Salió del grupo' : `Sacó a ${titleCase(p?.memberName) || 'un integrante'}`,
   },
   professional_linked: {
     icon: 'medkit-outline',
-    text: (p) => `Vinculó a ${p?.professionalName ?? 'un profesional'}`,
+    text: (p) => `Vinculó a ${titleCase(p?.professionalName) || 'un profesional'}`,
   },
 };
 
@@ -56,7 +57,7 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
           <div class="member-row__body">
             <span class="member-row__name">{{ describe(entry) }}</span>
             <span class="member-row__sub">
-              {{ entry.actorName || 'Alguien' }} · {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+              {{ (entry.actorName | titlecase) || 'Alguien' }} · {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
             </span>
           </div>
           <span class="gh-history__icon" aria-hidden="true">

@@ -39,7 +39,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
             {{ getInitials(member) }}
           </div>
           <div class="member-row__body">
-            <span class="member-row__name">{{ member.firstName }} {{ member.lastName }}</span>
+            <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>
             <span class="member-row__sub" *ngIf="isAdmin(member.id)">Administrador</span>
           </div>
           <button

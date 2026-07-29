@@ -66,7 +66,7 @@ import { PatientsService } from './shared/services/patients.service';
               <ion-icon name="person"></ion-icon>
             </div>
             <div class="list-item__body">
-              <span class="list-item__title">{{ patient.firstName }} {{ patient.lastName }}</span>
+              <span class="list-item__title">{{ patient.firstName | titlecase }} {{ patient.lastName | titlecase }}</span>
               <span class="list-item__subtitle">
                 {{ patient.patientType === 'dependent' ? 'Dependiente' : 'Usuario titular' }}
               </span>
@@ -100,7 +100,7 @@ import { PatientsService } from './shared/services/patients.service';
               <ion-icon name="time"></ion-icon>
             </div>
             <div class="alert-card__body">
-              <span class="alert-card__title">{{ patient.firstName }} {{ patient.lastName }}</span>
+              <span class="alert-card__title">{{ patient.firstName | titlecase }} {{ patient.lastName | titlecase }}</span>
               <span class="alert-card__subtitle">Esperando autorización del responsable</span>
             </div>
           </ion-item>

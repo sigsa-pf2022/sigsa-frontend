@@ -6,6 +6,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { titleCase } from 'src/app/utils/title-case';
 
 @Component({
   selector: 'app-view-appointment',
@@ -39,7 +40,7 @@ import { GroupEventsService } from 'src/app/views/groups/shared/services/group-e
           </div>
           <div class="va__summary-body">
             <p class="va__summary-name">
-              Dr/a. {{ appointment?.professional?.firstName }} {{ appointment?.professional?.lastName }}
+              Dr/a. {{ appointment?.professional?.firstName | titlecase }} {{ appointment?.professional?.lastName | titlecase }}
             </p>
             <p class="va__summary-meta" *ngIf="appointment?.professional?.specialization?.[0]?.name">
               {{ appointment.professional.specialization[0].name }}
@@ -139,7 +140,7 @@ export class ViewAppointmentComponent implements OnInit {
     // el nombre lo devuelve el propio endpoint.
     const by = this.appointment?.takenChargeBy;
     const fromRelation = by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
-    return fromRelation || this.appointment?.takenChargeByName || 'Alguien del grupo';
+    return titleCase(fromRelation || this.appointment?.takenChargeByName) || 'Alguien del grupo';
   }
 
   /** Un integrante avisa que él lleva al dependiente a este turno. */

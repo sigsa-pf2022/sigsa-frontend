@@ -47,7 +47,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         </div>
         <div class="wizard-summary__body">
           <p class="wizard-summary__eyebrow">Profesional</p>
-          <p class="wizard-summary__title">Dr/a. {{ this.doctor?.firstName }} {{ this.doctor?.lastName }}</p>
+          <p class="wizard-summary__title">Dr/a. {{ this.doctor?.firstName | titlecase }} {{ this.doctor?.lastName | titlecase }}</p>
         </div>
       </div>
 

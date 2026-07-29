@@ -2,6 +2,7 @@ import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/cor
 import { isBefore } from 'date-fns';
 import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
+import { titleCase } from 'src/app/utils/title-case';
 
 const STATUS_BADGE_CLASS = {
   danger: 'status-badge--danger',
@@ -75,7 +76,7 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
   /** Nombre de quien se hizo cargo, si alguien lo hizo. */
   private resolveTakenCharge(event: any): string {
     const by = event?.takenChargeBy;
-    return by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
+    return by ? titleCase(`${by.firstName ?? ''} ${by.lastName ?? ''}`) : '';
   }
 
   setMedEventData() {

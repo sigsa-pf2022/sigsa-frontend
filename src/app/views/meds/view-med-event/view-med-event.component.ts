@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { titleCase } from 'src/app/utils/title-case';
 import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
@@ -149,7 +150,7 @@ export class ViewMedEventComponent implements OnInit {
     // el nombre lo devuelve el propio endpoint.
     const by = this.medEvent?.takenChargeBy;
     const fromRelation = by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
-    return fromRelation || this.medEvent?.takenChargeByName || 'Alguien del grupo';
+    return titleCase(fromRelation || this.medEvent?.takenChargeByName) || 'Alguien del grupo';
   }
 
   /** Un integrante avisa que él se ocupa de esta toma del dependiente. */

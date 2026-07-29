@@ -70,7 +70,7 @@ import { ActivatedRoute } from '@angular/router';
               {{ getInitials(memberToAdd) }}
             </div>
             <div class="member-row__body">
-              <span class="member-row__name">{{ memberToAdd.firstName }} {{ memberToAdd.lastName }}</span>
+              <span class="member-row__name">{{ memberToAdd.firstName | titlecase }} {{ memberToAdd.lastName | titlecase }}</span>
               <span class="member-row__sub">Tocá para agregar</span>
             </div>
             <button
@@ -99,7 +99,7 @@ import { ActivatedRoute } from '@angular/router';
               {{ getInitials(member) }}
             </div>
             <div class="member-row__body">
-              <span class="member-row__name">{{ member.firstName }} {{ member.lastName }}</span>
+              <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>
             </div>
           </ion-item>
         </section>
@@ -131,7 +131,7 @@ import { ActivatedRoute } from '@angular/router';
                 {{ getInitials(member) }}
               </div>
               <div class="member-row__body">
-                <span class="member-row__name">{{ member.firstName }} {{ member.lastName }}</span>
+                <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>
               </div>
               <button
                 type="button"

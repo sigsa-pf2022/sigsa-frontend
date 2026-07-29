@@ -42,7 +42,7 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
         </div>
         <div class="profile-hero__body">
           <p class="profile-hero__name">
-            {{ user.firstName }} {{ user.lastName }}
+            {{ user.firstName | titlecase }} {{ user.lastName | titlecase }}
           </p>
           <p class="profile-hero__email" *ngIf="user.email">{{ user.email }}</p>
           <span class="profile-hero__chip" *ngIf="user.role === 'professional'">Profesional</span>
