@@ -23,7 +23,11 @@
   line-height: 1;
 }
 
+/* El tamaño y el color del ícono los define el contenedor: `.list-item__icon`
+   fija 20px, y los contenedores de iniciales ya traen un font-size (14px en
+   .member-row__avatar, 22px en .profile-hero__avatar) que ion-icon hereda como
+   1em. Si acá se fijara un tamaño, le ganaría por especificidad a esas reglas
+   y el ícono quedaría fuera de escala. */
 .avatar__icon {
-  font-size: 55%;
   color: inherit;
 }

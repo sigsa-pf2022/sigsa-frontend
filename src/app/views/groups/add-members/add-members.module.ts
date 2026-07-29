@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 import { AddMembersPage } from './add-members.page';
+import { AvatarModule } from 'src/app/components/avatar/avatar.module';
 import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
@@ -12,7 +13,7 @@ const routes: Routes = [
   },
 ];
 @NgModule({
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, RouterModule.forChild(routes)],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, RouterModule.forChild(routes), AvatarModule],
   declarations: [AddMembersPage],
 })
 export class AddMembersModule {}

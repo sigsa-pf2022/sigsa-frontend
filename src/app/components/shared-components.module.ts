@@ -19,7 +19,7 @@ import { AppointmentsItemListComponent } from './appointments-item-list/appointm
 import { YesNoModalComponent } from './yes-no-modal/yes-no-modal.component';
 import { MedsEventsItemListComponent } from './meds-event-item-list/meds-event-item-list.component';
 import { SharedDocumentsModule } from '../views/documents/shared/shared-documents.module';
-import { AvatarComponent } from './avatar/avatar.component';
+import { AvatarModule } from './avatar/avatar.module';
 
 @NgModule({
   declarations: [
@@ -36,10 +36,9 @@ import { AvatarComponent } from './avatar/avatar.component';
     EmptyEventCardComponent,
     AppointmentsItemListComponent,
     YesNoModalComponent,
-    MedsEventsItemListComponent,
-    AvatarComponent
+    MedsEventsItemListComponent
   ],
-  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule, SharedDocumentsModule],
+  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule, SharedDocumentsModule, AvatarModule],
   exports: [
     HeaderComponent,
     SendVerificationEmailModalComponent,
@@ -55,7 +54,7 @@ import { AvatarComponent } from './avatar/avatar.component';
     AppointmentsItemListComponent,
     YesNoModalComponent,
     MedsEventsItemListComponent,
-    AvatarComponent
+    AvatarModule
   ],
 })
 export class SharedComponentsModule {}

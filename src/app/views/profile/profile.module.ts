@@ -10,6 +10,7 @@ import { MyDataPage } from './my-data/my-data.page';
 import { SharedProfileComponentsModule } from './components/shared-profile.module';
 import { RouterModule, Routes } from '@angular/router';
 import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
+import { AvatarModule } from 'src/app/components/avatar/avatar.module';
 
 const routes: Routes = [
   {
@@ -29,7 +30,8 @@ const routes: Routes = [
     FormsModule,
     ReactiveFormsModule,
     IonicModule,
-    SharedProfileComponentsModule
+    SharedProfileComponentsModule,
+    AvatarModule
   ],
   declarations: [ProfilePage, MyDataPage],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }]
