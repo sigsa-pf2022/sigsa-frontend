@@ -5,6 +5,7 @@ import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-moda
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
+import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 
 @Component({
   selector: 'app-view-appointment',
@@ -68,6 +69,32 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
             </div>
           </div>
         </section>
+
+        <section class="va__section" *ngIf="this.groupId">
+          <div class="va__takecharge" *ngIf="appointment?.takenChargeByUserId; else takeChargeCta">
+            <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ takenChargeLabel }} se hizo cargo
+              <small *ngIf="appointment?.takenChargeAt">
+                · {{ appointment.takenChargeAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+          <ng-template #takeChargeCta>
+            <button
+              type="button"
+              class="auth-btn auth-btn--primary va__takecharge-btn"
+              (click)="takeCharge()"
+              [disabled]="responding"
+            >
+              <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
+              <ng-container *ngIf="!responding">Me hago cargo</ng-container>
+            </button>
+            <p class="auth-field__hint va__takecharge-hint">
+              Avisale al grupo que vos lo llevás a este turno.
+            </p>
+          </ng-template>
+        </section>
       </ng-container>
     </ion-content>
 
@@ -97,13 +124,48 @@ export class ViewAppointmentComponent implements OnInit {
   appointment: any;
   groupId: string | null = null;
   isConfirmed: boolean = false;
+  responding = false;
   constructor(
     private appointmentsService: AppointmentsService,
     private route: ActivatedRoute,
     private modalController: ModalController,
     private navController: NavController,
+    private groupEventsService: GroupEventsService,
     private toastService: ToastService
   ) {}
+
+  get takenChargeLabel(): string {
+    // Al cargar viene la relación `takenChargeBy`; al responder en el momento,
+    // el nombre lo devuelve el propio endpoint.
+    const by = this.appointment?.takenChargeBy;
+    const fromRelation = by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
+    return fromRelation || this.appointment?.takenChargeByName || 'Alguien del grupo';
+  }
+
+  /** Un integrante avisa que él lleva al dependiente a este turno. */
+  async takeCharge() {
+    if (this.responding || !this.appointment) return;
+    this.responding = true;
+    try {
+      const res = await this.groupEventsService.respondToEvent(
+        'appointment',
+        this.appointment.id,
+        'take_charge'
+      );
+      this.appointment = {
+        ...this.appointment,
+        takenChargeByUserId: res.takenChargeByUserId,
+        takenChargeByName: res.takenChargeByName,
+        takenChargeAt: res.takenChargeAt,
+      };
+      this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
+    } catch ({ error }) {
+      // 409: otro integrante ganó la carrera. El mensaje dice quién fue.
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
+  }
 
   ngOnInit() {}
   ionViewWillEnter() {

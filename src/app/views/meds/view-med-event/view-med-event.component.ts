@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
+import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-view-med-event',
@@ -94,6 +96,32 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
             </div>
           </div>
         </section>
+
+        <section class="vm__section" *ngIf="this.groupId">
+          <div class="vm__takecharge" *ngIf="medEvent?.takenChargeByUserId; else takeChargeCta">
+            <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ takenChargeLabel }} se hizo cargo
+              <small *ngIf="medEvent?.takenChargeAt">
+                · {{ medEvent.takenChargeAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+          <ng-template #takeChargeCta>
+            <button
+              type="button"
+              class="auth-btn auth-btn--primary vm__takecharge-btn"
+              (click)="takeCharge()"
+              [disabled]="responding"
+            >
+              <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
+              <ng-container *ngIf="!responding">Me hago cargo</ng-container>
+            </button>
+            <p class="auth-field__hint vm__takecharge-hint">
+              Avisale al grupo que vos te ocupás de esta toma.
+            </p>
+          </ng-template>
+        </section>
       </ng-container>
     </ion-content>
   `,
@@ -107,11 +135,43 @@ export class ViewMedEventComponent implements OnInit {
   seriesDoses: any[] = [];
   loading = false;
   notFound = false;
+  responding = false;
   constructor(
     private route: ActivatedRoute,
     private medsEventsService: MedsEventsService,
+    private groupEventsService: GroupEventsService,
+    private toastService: ToastService,
     private navController: NavController
   ) {}
+
+  get takenChargeLabel(): string {
+    // Al cargar viene la relación `takenChargeBy`; al responder en el momento,
+    // el nombre lo devuelve el propio endpoint.
+    const by = this.medEvent?.takenChargeBy;
+    const fromRelation = by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
+    return fromRelation || this.medEvent?.takenChargeByName || 'Alguien del grupo';
+  }
+
+  /** Un integrante avisa que él se ocupa de esta toma del dependiente. */
+  async takeCharge() {
+    if (this.responding || !this.medEvent) return;
+    this.responding = true;
+    try {
+      const res = await this.groupEventsService.respondToEvent('med_event', this.medEvent.id, 'take_charge');
+      this.medEvent = {
+        ...this.medEvent,
+        takenChargeByUserId: res.takenChargeByUserId,
+        takenChargeByName: res.takenChargeByName,
+        takenChargeAt: res.takenChargeAt,
+      };
+      this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
+    } catch ({ error }) {
+      // 409: otro integrante ganó la carrera. El mensaje dice quién fue.
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
+  }
 
   ngOnInit() {}
 

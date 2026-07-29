@@ -187,6 +187,7 @@ export class GroupHomePage implements OnInit {
 
     this.options = [
       { title: 'Ver miembros', icon: 'people-outline', action: 'see-members', groupId: this.group?.id, memberId: currentUser?.id },
+      { title: 'Historial del grupo', icon: 'time-outline', action: 'see-history', groupId: this.group?.id },
       { title: 'Abandonar grupo', icon: 'exit-outline', color: 'danger', action: 'exit-group', groupId: this.group?.id, memberId: currentUser?.id },
       { title: 'Salir', icon: 'log-out-outline', color: 'danger', action: 'logout' },
     ];

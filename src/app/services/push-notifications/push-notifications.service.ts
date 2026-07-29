@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Platform } from '@ionic/angular';
+import { NavController, Platform } from '@ionic/angular';
 import { PushNotifications } from '@capacitor/push-notifications';
 import type { Token } from '@capacitor/push-notifications';
 import { environment } from 'src/environments/environment';
 import { LocalNotificationsService } from '../local-notifications/local-notifications.service';
+import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { ToastService } from '../toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationsService {
@@ -14,6 +16,9 @@ export class PushNotificationsService {
     private http: HttpClient,
     private platform: Platform,
     private localNotifications: LocalNotificationsService,
+    private groupEventsService: GroupEventsService,
+    private toastService: ToastService,
+    private navController: NavController,
   ) {}
 
   async initialize(): Promise<void> {
@@ -50,20 +55,81 @@ export class PushNotificationsService {
       console.error('[Push] Registration error:', JSON.stringify(error));
     });
 
+    // Botones nativos ("Me hago cargo" / "Descartar") en la notificación local
+    // con la que redibujamos el push en primer plano.
+    await this.localNotifications.registerActionTypes();
+    this.localNotifications.addEventListener((action: any) =>
+      this.handleLocalAction(action),
+    );
+
     await PushNotifications.addListener('pushNotificationReceived', (notification) => {
       console.log('[Push] Notification received in foreground:', notification);
       // Con la app en primer plano Android no muestra el push en la bandeja,
-      // así que lo dibujamos manualmente como notificación local.
+      // así que lo dibujamos manualmente como notificación local. De paso, la
+      // notificación local sí soporta botones de acción; el push remoto no.
       this.localNotifications.showNow(
         notification.title ?? 'Notificación',
         notification.body ?? '',
         notification.data,
+        this.isActionable(notification.data) ? 'GROUP_EVENT' : undefined,
       );
     });
 
     await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
       console.log('[Push] Notification action performed:', action);
+      // En segundo plano la bandeja no ofrece botones (límite del plugin de
+      // push remoto), así que al tocarla abrimos el evento, donde está el
+      // botón "Me hago cargo".
+      this.openEvent(action?.notification?.data);
     });
+  }
+
+  /** El backend marca así los eventos de un dependiente, que son accionables. */
+  private isActionable(data: any): boolean {
+    return String(data?.actionable) === 'true';
+  }
+
+  /** Respuesta desde los botones nativos de la notificación local. */
+  private async handleLocalAction(action: any) {
+    const data = action?.notification?.extra;
+    if (!data?.notificationId) return;
+
+    if (action.actionId === 'take_charge' || action.actionId === 'dismiss') {
+      try {
+        await this.groupEventsService.respond(
+          Number(data.notificationId),
+          action.actionId === 'take_charge' ? 'take_charge' : 'discard',
+        );
+        if (action.actionId === 'take_charge') {
+          this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
+        }
+      } catch ({ error }) {
+        this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+      }
+      return;
+    }
+
+    // 'tap' o cualquier otra: abrir el evento.
+    this.openEvent(data);
+  }
+
+  /** Deep link al turno o medicamento que originó la notificación. */
+  private openEvent(data: any) {
+    if (!data?.type || !data?.referenceId) return;
+
+    const queryParams: any = {};
+    if (data.groupId) queryParams.groupId = data.groupId;
+    if (data.dependentId) queryParams.dependentId = data.dependentId;
+    if (data.dependentName) queryParams.dependentName = data.dependentName;
+
+    // event_taken_charge apunta al mismo evento; el tipo original viaja aparte.
+    const type = data.type === 'event_taken_charge' ? data.originalType : data.type;
+
+    if (type === 'medication') {
+      this.navController.navigateForward([`/meds/view/${data.referenceId}`], { queryParams });
+    } else if (type === 'appointment') {
+      this.navController.navigateForward([`/appointments/view/${data.referenceId}`], { queryParams });
+    }
   }
 
   async deregister(): Promise<void> {

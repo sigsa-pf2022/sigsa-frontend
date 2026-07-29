@@ -1,0 +1,28 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.gh-history__scroll {
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 40px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gh-history__icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: var(--sigsa-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ion-icon {
+    font-size: 16px;
+    color: var(--sigsa-700);
+  }
+}

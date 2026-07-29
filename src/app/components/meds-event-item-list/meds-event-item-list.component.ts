@@ -42,6 +42,10 @@ const STATUS_BADGE_CLASS = {
         </div>
         <span class="list-item__subtitle">{{ this.subtitle }}</span>
         <span class="list-item__meta" *ngIf="this.treatmentMeta">{{ this.treatmentMeta }}</span>
+        <span class="list-item__taken" *ngIf="this.takenChargeBy">
+          <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+          {{ this.takenChargeBy }} se hizo cargo
+        </span>
       </div>
     </ion-item>
   `,
@@ -53,6 +57,7 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
   title: string;
   subtitle: string;
   treatmentMeta: string;
+  takenChargeBy: string;
   dueDate: boolean;
   status: EventStatus;
   statusBadgeClass = '';
@@ -67,11 +72,18 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
     }
   }
 
+  /** Nombre de quien se hizo cargo, si alguien lo hizo. */
+  private resolveTakenCharge(event: any): string {
+    const by = event?.takenChargeBy;
+    return by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
+  }
+
   setMedEventData() {
     if (!this.medEvent) {
       this.title = 'Medicamento';
       this.subtitle = '';
       this.treatmentMeta = '';
+      this.takenChargeBy = '';
       this.status = null;
       this.dueDate = false;
       this.statusBadgeClass = '';
@@ -95,6 +107,9 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
     } else {
       this.treatmentMeta = '';
     }
+
+    // En un tratamiento, el aviso corresponde a la toma que se está mostrando.
+    this.takenChargeBy = this.resolveTakenCharge(reference);
 
     const med = this.medEvent.med || {};
     const rawName = med.name;
