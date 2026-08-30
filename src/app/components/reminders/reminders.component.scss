@@ -67,6 +67,58 @@
   }
 }
 
+/* Modo compacto: pocas filas en flujo normal, sin scroll propio. El inset
+   lateral acá es nuestro, porque la regla global que lo da vive dentro del
+   cdk-virtual-scroll-viewport. */
+.rem__list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 20px 0;
+}
+
+.rem__empty {
+  display: block;
+  padding: 8px 20px 0;
+}
+
+.rem__view-all {
+  margin: 6px 0 0;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 20px;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+
+  &:active {
+    background: var(--color-primary-softer);
+  }
+
+  &__label {
+    flex: 0 0 auto;
+  }
+
+  &__count {
+    flex: 1 1 auto;
+    text-align: left;
+    color: #6B7280;
+    font-weight: 500;
+  }
+
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 16px;
+  }
+}
+
 cdk-virtual-scroll-viewport.rem__scroll {
   /* El alto lo da el contenedor flex de la página (home / grupo-home),
      que fija el header arriba y deja este listado ocupando el resto. */

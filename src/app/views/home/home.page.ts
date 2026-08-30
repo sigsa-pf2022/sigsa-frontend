@@ -3,6 +3,7 @@ import { EventsService } from 'src/app/views/home/shared/services/events/events.
 import { AppointmentsService } from '../appointments/shared/services/appointments/appointments.service';
 import { REMINDERS_TYPE } from './shared/constants/remindersType';
 import { MedsEventsService } from '../meds/shared/services/meds-events/meds-events.service';
+import { DocumentsService } from '../documents/shared/services/documents.service';
 
 @Component({
   selector: 'app-home',
@@ -32,45 +33,30 @@ import { MedsEventsService } from '../meds/shared/services/meds-events/meds-even
 })
 export class HomePage {
   remindersTypes = REMINDERS_TYPE;
-  activeTab = null;
+  activeTab = REMINDERS_TYPE.appointments;
   events = [];
   reminders = [];
-  medEvents = [];
-  appointments = [];
   /** Skeleton del carrusel de próximos eventos. */
   isLoadingEvents = true;
-  /** Skeleton de la lista de recordatorios (turnos + medicamentos). */
+  /** Skeleton de la lista de recordatorios. */
   isLoadingReminders = true;
+  private remindersRequestId = 0;
+
   constructor(
     private appointmentsService: AppointmentsService,
     private eventsService: EventsService,
-    private medsEventsService: MedsEventsService
+    private medsEventsService: MedsEventsService,
+    private documentsService: DocumentsService
   ) {}
 
   async ionViewWillEnter() {
-    this.setAppointments();
+    // Respetamos la pestaña que el usuario venía mirando: antes se forzaba
+    // "Turnos" después de cada carga y si tocabas otra mientras la request
+    // estaba en vuelo, la respuesta te devolvía a Turnos.
+    this.changeReminders(this.activeTab);
     this.setNextEvents();
   }
 
-  async setAppointments() {
-    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
-    // tab refrescamos en silencio sobre los datos que ya se ven.
-    this.isLoadingReminders = this.reminders.length === 0;
-    try {
-      // Las dos listas son independientes: en paralelo el skeleton dura la mitad.
-      const [appointments, medEvents] = await Promise.all([
-        this.appointmentsService.getAppointmentsByUser(),
-        this.medsEventsService.getMedsEventsByUser(),
-      ]);
-      this.appointments = appointments;
-      this.medEvents = medEvents;
-      this.changeReminders(this.remindersTypes.appointments);
-    } catch (error) {
-      console.error('HomePage: error cargando recordatorios', error);
-    } finally {
-      this.isLoadingReminders = false;
-    }
-  }
   async setNextEvents() {
     this.isLoadingEvents = this.events.length === 0;
     try {
@@ -82,18 +68,40 @@ export class HomePage {
     }
   }
 
-  changeReminders(value) {
+  /**
+   * Una request por pestaña, igual que en el home del grupo. Vaciamos la lista
+   * antes del await para que la plantilla nueva no llegue a renderizar items
+   * del tipo anterior, y descartamos las respuestas viejas si el usuario
+   * cambió de pestaña mientras tanto.
+   */
+  async changeReminders(value) {
     this.activeTab = value;
-    switch (value) {
-      case this.remindersTypes.appointments:
-        this.reminders = this.appointments;
-        break;
-      case this.remindersTypes.medications:
-        this.reminders = this.medEvents;
-        break;
-      case this.remindersTypes.documents:
-        this.reminders = [];
-        break;
+    this.reminders = [];
+
+    const requestId = ++this.remindersRequestId;
+    this.isLoadingReminders = true;
+
+    try {
+      let result = [];
+      switch (value) {
+        case this.remindersTypes.appointments:
+          result = await this.appointmentsService.getAppointmentsByUser();
+          break;
+        case this.remindersTypes.medications:
+          // Agrupado por tratamiento, igual que la pestaña Medicación.
+          result = await this.medsEventsService.getTreatmentsByUser();
+          break;
+        case this.remindersTypes.documents:
+          result = await this.documentsService.getDocumentsByUser();
+          break;
+      }
+      if (requestId !== this.remindersRequestId) return;
+      this.reminders = result || [];
+    } catch (error) {
+      console.error('HomePage: error cargando recordatorios', error);
+      if (requestId === this.remindersRequestId) this.reminders = [];
+    } finally {
+      if (requestId === this.remindersRequestId) this.isLoadingReminders = false;
     }
   }
 }

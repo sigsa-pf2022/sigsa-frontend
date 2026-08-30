@@ -8,6 +8,7 @@ import { REMINDERS_TYPE } from '../../home/shared/constants/remindersType';
 import { FAKE_APPOINTMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeAppointmentsReminderData';
 import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeDocumentsReminderData';
 import { FAKE_MEDICATIONS_REMINDERS_DATA } from '../../home/shared/fakes/fakeMedicationsReminderData';
+import { GroupRemindersModalComponent } from './group-reminders-modal/group-reminders-modal.component';
 import { FamilyGroup } from '../shared/interfaces/family-group.interface';
 import { GroupsService } from '../shared/services/groups/groups.service';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -125,12 +126,13 @@ import { ToastService } from 'src/app/services/toast/toast.service';
         ></app-next-events>
 
         <app-reminders
-          height="37vh"
           [loading]="this.isLoadingReminders"
           [reminders]="this.reminders"
           [activeTab]="this.currentReminderType"
+          [maxItems]="REMINDERS_PREVIEW_SIZE"
           (tabChanged)="changeReminders($event)"
           (itemClicked)="onReminderItemClicked($event)"
+          (viewAllClicked)="openAllReminders()"
         ></app-reminders>
 
         <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="center" slot="fixed">
@@ -180,6 +182,12 @@ export class GroupHomePage implements OnInit {
   options: any;
   pendingRequestsCount = 0;
   savingPhoto = false;
+  /**
+   * Cuántos recordatorios se ven en el home. El resto sale por "Ver todos": la
+   * idea de esta pantalla es la ficha del dependiente y lo que se viene, no el
+   * historial completo.
+   */
+  readonly REMINDERS_PREVIEW_SIZE = 5;
   /** Spinner de pantalla completa: no hay nada que mostrar hasta tener el grupo. */
   isLoading = true;
   /** Los eventos del dependiente llegan después: la ficha ya se ve y sus listas usan skeleton. */
@@ -352,13 +360,59 @@ export class GroupHomePage implements OnInit {
           break;
       }
       if (requestId !== this.remindersRequestId) return;
-      this.reminders = result || [];
+      this.reminders = this.sortByRelevance(result || [], value);
     } catch (error) {
       console.error('Error cargando reminders:', error);
       if (requestId === this.remindersRequestId) this.reminders = [];
     } finally {
       // Solo la respuesta más reciente apaga el skeleton.
       if (requestId === this.remindersRequestId) this.isLoadingReminders = false;
+    }
+  }
+
+  /**
+   * Los turnos llegan de más nuevo a más viejo, que sirve para un historial
+   * pero no para un home: acá lo primero que hay que ver es lo que todavía no
+   * pasó. Ordenamos pendientes de más cerca a más lejos y después lo vencido,
+   * de más reciente a más viejo.
+   *
+   * Sólo turnos: los tratamientos ya vienen ordenados así desde el backend
+   * (getMedTreatmentsByCreator) y ni siquiera tienen `date` —usan `nextDose`—,
+   * y los documentos no tienen noción de "próximo".
+   */
+  private sortByRelevance(items: any[], type: string): any[] {
+    if (type !== REMINDERS_TYPE.appointments) return items;
+
+    const now = Date.now();
+    const time = (item: any) => new Date(item?.date).getTime();
+    const isUpcoming = (item: any) => {
+      const t = time(item);
+      return !isNaN(t) && t >= now;
+    };
+
+    return [...items].sort((a, b) => {
+      if (isUpcoming(a) !== isUpcoming(b)) return isUpcoming(a) ? -1 : 1;
+      return isUpcoming(a) ? time(a) - time(b) : time(b) - time(a);
+    });
+  }
+
+  /** "Ver todos": la lista completa del tipo activo, en un modal. */
+  async openAllReminders() {
+    const modal = await this.modalController.create({
+      component: GroupRemindersModalComponent,
+      componentProps: {
+        items: this.reminders,
+        type: this.currentReminderType,
+        dependentName: this.getDependentFullName(),
+      },
+    });
+    await modal.present();
+
+    // Las acciones sobre un item las resuelve el action sheet de esta página,
+    // así que el modal sólo devuelve qué tocó el usuario.
+    const { data } = await modal.onWillDismiss();
+    if (data?.item) {
+      await this.onReminderItemClicked(data);
     }
   }
 

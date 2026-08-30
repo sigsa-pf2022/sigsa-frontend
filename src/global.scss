@@ -676,7 +676,7 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   /* No horizontal padding here because cdk-virtual-scroll's inner
      .cdk-virtual-scroll-content-wrapper is position: absolute and
      ignores it. We inset items with their own margin below. */
-  padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 120px);
+  padding: 8px 0;
   box-sizing: border-box;
 }
 
@@ -692,7 +692,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing.apts,
 .listing.meds,
 .listing.groups,
-.listing.gh,
 .home {
   --overflow: hidden;
 }
@@ -701,7 +700,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing.apts::part(scroll),
 .listing.meds::part(scroll),
 .listing.groups::part(scroll),
-.listing.gh::part(scroll),
 .home::part(scroll) {
   display: flex;
   flex-direction: column;
@@ -715,6 +713,12 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   flex: 1 1 auto;
   min-height: 0;
   height: auto;
+  /* Cortar el listado ANTES del FAB. Va margin-bottom (fuera del viewport) y no
+     padding interno: el content wrapper y el spacer del cdk-virtual-scroll son
+     position: absolute, así que el padding no extiende el área scrolleable y el
+     último item terminaba justo debajo del "+". Mismo truco que en el home del
+     grupo, más abajo. */
+  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 88px);
 }
 
 .listing.groups .groups__scroll {
@@ -727,8 +731,7 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing.docs .listing-header, .listing.docs .listing-search,
 .listing.apts .listing-header, .listing.apts .listing-search,
 .listing.meds .listing-header, .listing.meds .listing-search,
-.listing.groups .listing-header,
-.listing.gh .listing-header {
+.listing.groups .listing-header {
   flex: 0 0 auto;
 }
 
@@ -740,15 +743,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   flex: 1 1 auto;
 }
 
-/* grupo/home: la info de arriba queda fija y el listado de
-   recordatorios ocupa el alto restante. */
-.listing.gh > .group-card,
-.listing.gh > .alert-card,
-.listing.gh > .section-title,
-.listing.gh > app-next-events {
-  flex: 0 0 auto;
-}
-.listing.gh > app-reminders,
 .home app-reminders {
   flex: 1 1 auto;
   min-height: 0;
@@ -756,17 +750,52 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   flex-direction: column;
 }
 
-/* En grupo/home, separar "Tus recordatorios" del carrusel de arriba. */
-.listing.gh > app-reminders {
+/* grupo/home: la página scrollea entera como cualquier listado. Antes el
+   ion-content quedaba fijo y el único scroll era el viewport virtual de
+   "Tus recordatorios", que con toda la ficha del dependiente arriba terminaba
+   con alto para una fila y media. Ahora el listado va corto (los primeros
+   items + "Ver todos") y el scroll es el natural de la página. */
+.listing.gh {
+  --padding-bottom: calc(env(safe-area-inset-bottom, 0) + 96px);
+}
+
+/* Separar "Tus recordatorios" del carrusel de arriba. */
+.listing.gh app-reminders {
+  display: block;
   margin-top: 14px;
 }
 
-/* Cortar el listado de recordatorios ANTES del FAB. Usamos margin-bottom
-   (fuera del viewport) en vez de padding interno: el cdk-virtual-scroll no
-   respeta bien el padding para extender el área scrolleable, así que el
-   margin reduce el alto del viewport y deja libre la zona donde flota el FAB. */
-.listing.gh .rem__scroll {
-  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 88px);
+/* En el grupo, la card de "sin eventos" va en versión chica: es un aviso, no
+   tiene que pesar como una tarjeta con contenido. */
+.listing.gh app-next-events .eec,
+.listing.gh app-reminders .eec {
+  min-height: 0;
+  padding: 12px 16px;
+  flex-direction: row;
+  text-align: left;
+  gap: 12px;
+}
+.listing.gh app-next-events .eec__icon,
+.listing.gh app-reminders .eec__icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+.listing.gh app-next-events .eec__description,
+.listing.gh app-reminders .eec__description {
+  align-items: flex-start;
+  max-width: none;
+
+  &__title {
+    font-size: 14px;
+  }
+  &__subtitle {
+    font-size: 12px;
+  }
 }
 
 /* Compactar la tarjeta del dependiente para ganar lugar al listado. */
