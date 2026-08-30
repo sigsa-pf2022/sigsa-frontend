@@ -30,9 +30,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
         <h1 class="listing-header__title">Solicitudes</h1>
       </header>
 
-      <div *ngIf="isLoading" class="pr__loading">
-        <ion-spinner color="primary"></ion-spinner>
-      </div>
+      <app-loading-state *ngIf="isLoading" [rows]="3"></app-loading-state>
 
       <div *ngIf="!isLoading && requests.length > 0" class="pr__list">
         <article *ngFor="let req of requests" class="pr__card">
@@ -101,7 +99,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
 export class ProfessionalRequestsPage implements OnInit {
   groupId: string;
   requests: any[] = [];
-  isLoading = false;
+  isLoading = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -128,7 +126,9 @@ export class ProfessionalRequestsPage implements OnInit {
   }
 
   private async loadRequests() {
-    this.isLoading = true;
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // vista refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.requests.length === 0;
     try {
       const all = await this.groupsService.getProfessionalRequests();
       // Filtra las solicitudes del grupo actual si se navegó desde un grupo específico

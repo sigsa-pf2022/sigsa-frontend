@@ -33,7 +33,9 @@ import { titleCase } from 'src/app/utils/title-case';
         <h1 class="listing-header__title">Turno</h1>
       </header>
 
-      <ng-container *ngIf="appointment">
+      <app-loading-state *ngIf="loading" variant="spinner"></app-loading-state>
+
+      <ng-container *ngIf="!loading && appointment">
         <article class="va__summary">
           <div class="va__summary-icon" aria-hidden="true">
             <ion-icon name="calendar"></ion-icon>
@@ -126,6 +128,7 @@ export class ViewAppointmentComponent implements OnInit {
   groupId: string | null = null;
   isConfirmed: boolean = false;
   responding = false;
+  loading = true;
   constructor(
     private appointmentsService: AppointmentsService,
     private route: ActivatedRoute,
@@ -181,6 +184,17 @@ export class ViewAppointmentComponent implements OnInit {
     this.navController.navigateBack([fallback]);
   }
 
+  /**
+   * Después de confirmar o cancelar volvemos al origen: si el turno es de un
+   * dependiente, al home del grupo y no a la pestaña de turnos personales.
+   */
+  private leaveAfterAction() {
+    if (this.groupId) {
+      return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
+    }
+    return this.navController.navigateForward('/tabs/appointments');
+  }
+
   get statusLabel(): string {
     const map: Record<string, string> = {
       confirmed: 'CONFIRMADO',
@@ -200,10 +214,14 @@ export class ViewAppointmentComponent implements OnInit {
   }
 
   async getAppointment() {
+    // Sin esto la pantalla quedaba en blanco hasta que llegaba la respuesta.
+    this.loading = !this.appointment;
     try {
       this.appointment = await this.appointmentsService.getAppointment(this.appointmentId);
     } catch (error) {
       console.log(error);
+    } finally {
+      this.loading = false;
     }
     this.isConfirmed = this.appointment && this.appointment.status === 'confirmed';
   }
@@ -223,7 +241,7 @@ export class ViewAppointmentComponent implements OnInit {
       await this.appointmentsService
         .confirmAppointment(this.appointmentId)
         .then(() => this.toastService.showSuccess('Turno confirmado correctamente.'))
-        .then(() => this.navController.navigateForward('/tabs/appointments'))
+        .then(() => this.leaveAfterAction())
         .catch(() => {});
     }
   }
@@ -242,7 +260,7 @@ export class ViewAppointmentComponent implements OnInit {
       await this.appointmentsService
         .cancelAppointment(this.appointmentId)
         .then(() => this.toastService.showSuccess('Turno cancelado correctamente.'))
-        .then(() => this.navController.navigateForward('/tabs/appointments'))
+        .then(() => this.leaveAfterAction())
         .catch(() => {});
     }
   }

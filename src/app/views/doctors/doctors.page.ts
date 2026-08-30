@@ -48,7 +48,7 @@ import { ProfessionalsService } from './shared/services/professionals.service';
       <form
         class="listing-search"
         [formGroup]="this.searchForm"
-        *ngIf="doctors.length > 0"
+        *ngIf="!this.isLoading && doctors.length > 0"
       >
         <ion-searchbar
           class="listing-searchbar"
@@ -61,7 +61,9 @@ import { ProfessionalsService } from './shared/services/professionals.service';
         ></ion-searchbar>
       </form>
 
-      <div class="drs__scroll">
+      <app-loading-state *ngIf="this.isLoading" [rows]="5"></app-loading-state>
+
+      <div class="drs__scroll" *ngIf="!this.isLoading">
         <ng-container *ngIf="this.filteredDoctors.length > 0; else emptyState">
           <app-items-list
             *ngFor="let doctorOption of this.filteredDoctors"
@@ -132,6 +134,7 @@ export class DoctorsPage implements OnInit {
     search: '',
   });
   doctors: Professional[] = [];
+  isLoading = true;
   isAppointmentCreation = false;
   isAppointmentEdition = false;
   doctor: Professional;
@@ -152,7 +155,17 @@ export class DoctorsPage implements OnInit {
   ngOnInit() {}
 
   async ionViewWillEnter() {
-    this.doctors = this.filteredDoctors = await this.professionalsService.getMyProfessionals();
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // vista refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.doctors.length === 0;
+    try {
+      this.doctors = this.filteredDoctors = await this.professionalsService.getMyProfessionals();
+    } catch (error) {
+      console.error('DoctorsPage: error cargando profesionales', error);
+    } finally {
+      this.isLoading = false;
+    }
+
     if (this.route.snapshot.url[0]?.path === 'create') {
       this.isAppointmentCreation = true;
     } else if (this.route.snapshot.url[0]?.path === 'edit') {

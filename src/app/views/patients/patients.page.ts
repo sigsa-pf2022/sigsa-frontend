@@ -34,7 +34,7 @@ import { PatientsService } from './shared/services/patients.service';
       <form
         class="listing-search"
         [formGroup]="searchForm"
-        *ngIf="patients.length + pendingRequests.length > 0"
+        *ngIf="!isLoading && patients.length + pendingRequests.length > 0"
       >
         <ion-searchbar
           class="listing-searchbar"
@@ -47,7 +47,9 @@ import { PatientsService } from './shared/services/patients.service';
         ></ion-searchbar>
       </form>
 
-      <div class="pts__scroll">
+      <app-loading-state *ngIf="isLoading" [rows]="5"></app-loading-state>
+
+      <div class="pts__scroll" *ngIf="!isLoading">
         <section *ngIf="filteredPatients.length > 0" class="pts__section">
           <div class="section-title">
             <h2>Mis pacientes</h2>
@@ -107,7 +109,7 @@ import { PatientsService } from './shared/services/patients.service';
         </section>
 
         <div
-          *ngIf="filteredPatients.length === 0 && filteredPending.length === 0 && !isLoading"
+          *ngIf="filteredPatients.length === 0 && filteredPending.length === 0"
           class="empty-state"
           role="status"
         >
@@ -144,7 +146,7 @@ export class PatientsPage implements OnInit {
   pendingRequests: PatientLink[] = [];
   filteredPatients: PatientLink[] = [];
   filteredPending: PatientLink[] = [];
-  isLoading = false;
+  isLoading = true;
 
   constructor(
     private fb: FormBuilder,
@@ -165,7 +167,9 @@ export class PatientsPage implements OnInit {
   }
 
   private async loadPatients() {
-    this.isLoading = true;
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // vista refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.patients.length + this.pendingRequests.length === 0;
     try {
       const res = await this.patientsService.getPatients();
       this.patients = res?.patients || [];

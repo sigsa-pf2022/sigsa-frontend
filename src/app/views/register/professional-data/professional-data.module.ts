@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { ProfessionalDataPage } from './professional-data.page';
 import { RouterModule, Routes } from '@angular/router';
+import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 
 const routes: Routes = [
   {
@@ -22,6 +23,7 @@ const routes: Routes = [
     FormsModule,
     IonicModule,
     ReactiveFormsModule,
+    SharedComponentsModule,
   ],
   declarations: [ProfessionalDataPage]
 })

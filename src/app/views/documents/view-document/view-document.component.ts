@@ -24,9 +24,7 @@ import { MedicalDocument } from '../shared/interfaces/Document.interface';
     </ion-header>
 
     <ion-content class="listing">
-      <div *ngIf="!document" class="vd__loading">
-        <ion-spinner color="primary"></ion-spinner>
-      </div>
+      <app-loading-state *ngIf="!document" variant="spinner"></app-loading-state>
 
       <ng-container *ngIf="document">
         <header class="listing-header">

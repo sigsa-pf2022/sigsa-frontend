@@ -30,9 +30,7 @@ import { PatientsService } from '../shared/services/patients.service';
         <h1 class="listing-header__title">{{ patientName }}</h1>
       </header>
 
-      <div *ngIf="isLoading" class="pd__loading">
-        <ion-spinner color="primary"></ion-spinner>
-      </div>
+      <app-loading-state *ngIf="isLoading" [rows]="4"></app-loading-state>
 
       <div *ngIf="!isLoading && documents.length > 0" class="pd__scroll">
         <div class="section-title">
@@ -66,7 +64,7 @@ export class PatientDocumentsPage implements OnInit {
   patientType: string;
   patientName = 'Documentos';
   documents: MedicalDocument[] = [];
-  isLoading = false;
+  isLoading = true;
 
   constructor(
     private route: ActivatedRoute,

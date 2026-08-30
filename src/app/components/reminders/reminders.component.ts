@@ -27,21 +27,23 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
       </ion-segment>
     </div>
 
-    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.medications" itemSize="3" class="rem__scroll">
+    <app-loading-state *ngIf="loading" [rows]="4"></app-loading-state>
+
+    <cdk-virtual-scroll-viewport *ngIf="!loading && activeTab === remindersTypes.medications" itemSize="3" class="rem__scroll">
       <app-meds-event-item-list
         *cdkVirtualFor="let medEvent of this.reminders"
         [medEvent]="medEvent"
         (click)="onItemClick(medEvent)"
       ></app-meds-event-item-list>
     </cdk-virtual-scroll-viewport>
-    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.appointments" itemSize="3" class="rem__scroll">
+    <cdk-virtual-scroll-viewport *ngIf="!loading && activeTab === remindersTypes.appointments" itemSize="3" class="rem__scroll">
       <app-appointments-item-list
         *cdkVirtualFor="let appointment of this.reminders"
         [appointment]="appointment"
         (click)="onItemClick(appointment)"
       ></app-appointments-item-list>
     </cdk-virtual-scroll-viewport>
-    <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.documents" itemSize="3" class="rem__scroll">
+    <cdk-virtual-scroll-viewport *ngIf="!loading && activeTab === remindersTypes.documents" itemSize="3" class="rem__scroll">
       <app-document-item-list
         *cdkVirtualFor="let document of this.reminders"
         [document]="document"
@@ -54,6 +56,8 @@ import { REMINDERS_TYPE } from 'src/app/views/home/shared/constants/remindersTyp
 export class RemindersComponent implements OnChanges {
   @Input() reminders: any[] = [];
   @Input() activeTab = REMINDERS_TYPE.medications;
+  /** Mientras la página trae los datos mostramos el skeleton en vez de la lista vacía. */
+  @Input() loading = false;
   @Output() tabChanged = new EventEmitter<string>();
   @Output() itemClicked = new EventEmitter<{ item: any; type: string }>();
   remindersTypes = REMINDERS_TYPE;

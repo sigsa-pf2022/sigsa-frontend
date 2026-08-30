@@ -20,6 +20,7 @@ import { YesNoModalComponent } from './yes-no-modal/yes-no-modal.component';
 import { MedsEventsItemListComponent } from './meds-event-item-list/meds-event-item-list.component';
 import { SharedDocumentsModule } from '../views/documents/shared/shared-documents.module';
 import { AvatarModule } from './avatar/avatar.module';
+import { LoadingStateComponent } from './loading-state/loading-state.component';
 
 @NgModule({
   declarations: [
@@ -36,7 +37,8 @@ import { AvatarModule } from './avatar/avatar.module';
     EmptyEventCardComponent,
     AppointmentsItemListComponent,
     YesNoModalComponent,
-    MedsEventsItemListComponent
+    MedsEventsItemListComponent,
+    LoadingStateComponent
   ],
   imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule, SharedDocumentsModule, AvatarModule],
   exports: [
@@ -54,6 +56,7 @@ import { AvatarModule } from './avatar/avatar.module';
     AppointmentsItemListComponent,
     YesNoModalComponent,
     MedsEventsItemListComponent,
+    LoadingStateComponent,
     AvatarModule
   ],
 })

@@ -52,7 +52,9 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
         ></ion-searchbar>
       </form>
 
-      <div class="pick-prof__scroll">
+      <app-loading-state *ngIf="this.isLoading" [rows]="6"></app-loading-state>
+
+      <div class="pick-prof__scroll" *ngIf="!this.isLoading">
         <ng-container *ngIf="this.filteredDoctors?.length > 0; else emptyState">
           <app-items-list
             *ngFor="let doctorOption of this.filteredDoctors"
@@ -105,6 +107,7 @@ export class PickProfessionalPage implements OnInit {
   doctor: Professional;
   doctors: Professional[];
   filteredDoctors: Professional[];
+  isLoading = true;
   isEditMode = false;
   appointmentId: number;
   dependentId: number;
@@ -175,8 +178,17 @@ export class PickProfessionalPage implements OnInit {
   }
 
   async getProfessionals() {
-    this.doctors = await this.professionalsService.getProfessionals();
-    this.filteredDoctors = this.doctors;
+    // Sin este flag el listado vacío hacía aparecer "No encontramos
+    // profesionales" mientras la request estaba en vuelo.
+    this.isLoading = !this.doctors?.length;
+    try {
+      this.doctors = await this.professionalsService.getProfessionals();
+      this.filteredDoctors = this.doctors;
+    } catch (error) {
+      console.error('PickProfessionalPage: error cargando profesionales', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   goBack() {

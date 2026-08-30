@@ -6,6 +6,7 @@ import { IonicModule } from '@ionic/angular';
 import { AddMembersPage } from './add-members.page';
 import { AvatarModule } from 'src/app/components/avatar/avatar.module';
 import { RouterModule, Routes } from '@angular/router';
+import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 const routes: Routes = [
   {
     path: '',
@@ -13,7 +14,7 @@ const routes: Routes = [
   },
 ];
 @NgModule({
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, RouterModule.forChild(routes), AvatarModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, IonicModule, RouterModule.forChild(routes), AvatarModule, SharedComponentsModule],
   declarations: [AddMembersPage],
 })
 export class AddMembersModule {}

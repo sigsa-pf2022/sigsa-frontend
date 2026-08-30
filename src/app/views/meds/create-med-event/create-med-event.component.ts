@@ -39,7 +39,9 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
         <h1 class="listing-header__title">¿Cuándo lo vas a tomar?</h1>
       </header>
 
-      <div class="wizard-summary" *ngIf="this.med">
+      <app-loading-state *ngIf="this.isLoading" variant="spinner"></app-loading-state>
+
+      <div class="wizard-summary" *ngIf="!this.isLoading && this.med">
         <div class="wizard-summary__icon" aria-hidden="true">
           <ion-img src="assets/images/reminders/pill-colored.svg"></ion-img>
         </div>
@@ -49,7 +51,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
         </div>
       </div>
 
-      <form [formGroup]="this.form" class="auth-form cme__form">
+      <form [formGroup]="this.form" class="auth-form cme__form" *ngIf="!this.isLoading">
         <div class="auth-field">
           <label class="auth-field__label" for="open-modal">Fecha y hora de ingesta</label>
           <button
@@ -152,6 +154,8 @@ export class CreateMedEventComponent implements OnInit {
   medEventDate;
   medEventId: number;
   isEditMode = false;
+  /** Solo en edición: el form se ve vacío hasta que llega el recordatorio. */
+  isLoading = false;
   backUrl: string;
   dependentId: number;
   dependentName: string;
@@ -418,6 +422,7 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   private async loadMedEvent() {
+    this.isLoading = true;
     try {
       const medEvent = await this.medsEventService.getMedEvent(this.medEventId);
       if (!medEvent) {
@@ -440,6 +445,8 @@ export class CreateMedEventComponent implements OnInit {
       this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(medEvent.date));
     } catch (err) {
       this.toastService.showError?.('No se pudo cargar el recordatorio');
+    } finally {
+      this.isLoading = false;
     }
   }
 

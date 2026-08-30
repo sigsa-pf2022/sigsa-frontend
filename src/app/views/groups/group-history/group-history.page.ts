@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { LoadingController, NavController } from '@ionic/angular';
+import { NavController } from '@ionic/angular';
 import { GroupEventsService } from '../shared/services/group-events/group-events.service';
 import { titleCase } from 'src/app/utils/title-case';
 
@@ -51,7 +51,12 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
         <h1 class="listing-header__title">Historial</h1>
       </header>
 
-      <div class="gh-history__scroll" *ngIf="entries.length; else emptyState">
+      <app-loading-state *ngIf="loading" [rows]="5"></app-loading-state>
+
+      <div
+        class="gh-history__scroll"
+        *ngIf="!loading && entries.length; else emptyState"
+      >
         <ion-item *ngFor="let entry of entries" class="member-row" lines="none">
           <div class="member-row__avatar">
             <app-avatar
@@ -95,7 +100,6 @@ export class GroupHistoryPage implements OnInit {
   constructor(
     private groupEventsService: GroupEventsService,
     private navController: NavController,
-    private loadingController: LoadingController,
     private route: ActivatedRoute
   ) {}
 
@@ -112,8 +116,10 @@ export class GroupHistoryPage implements OnInit {
   }
 
   async getHistory() {
-    this.loading = true;
-    await this.showLoading();
+    // Antes usábamos un LoadingController con duration: 2000, que se
+    // auto-cerraba a los 2s aunque la request siguiera en vuelo. Ahora el
+    // skeleton vive y muere con la request.
+    this.loading = this.entries.length === 0;
     try {
       const res = await this.groupEventsService.getHistory(this.groupId);
       this.entries = res?.entries ?? [];
@@ -121,7 +127,6 @@ export class GroupHistoryPage implements OnInit {
       this.entries = [];
     } finally {
       this.loading = false;
-      this.closeLoading();
     }
   }
 
@@ -140,18 +145,4 @@ export class GroupHistoryPage implements OnInit {
     return ((first[0] || '') + (last[0] || '')).toUpperCase() || '?';
   }
 
-  async showLoading() {
-    const loading = await this.loadingController.create({
-      message: 'Cargando...',
-      duration: 2000,
-    });
-    await loading.present();
-  }
-
-  async closeLoading() {
-    const loading = await this.loadingController.getTop();
-    if (loading) {
-      await loading.dismiss();
-    }
-  }
 }

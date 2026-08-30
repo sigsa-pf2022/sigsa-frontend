@@ -31,9 +31,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
         <h1 class="listing-header__title">Medicamento</h1>
       </header>
 
-      <div *ngIf="loading" class="vm__loading">
-        <ion-spinner color="primary"></ion-spinner>
-      </div>
+      <app-loading-state *ngIf="loading" variant="spinner"></app-loading-state>
 
       <ng-container *ngIf="medEvent && !loading">
         <article class="vm__summary">

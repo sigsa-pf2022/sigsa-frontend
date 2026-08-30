@@ -44,7 +44,11 @@ import { ToastService } from 'src/app/services/toast/toast.service';
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="listing gh" *ngIf="this.group">
+      <ion-content class="listing gh" *ngIf="this.isLoading">
+        <app-loading-state variant="spinner"></app-loading-state>
+      </ion-content>
+
+      <ion-content class="listing gh" *ngIf="!this.isLoading && this.group">
         <header class="listing-header gh__header">
           <p class="listing-header__eyebrow">Grupo familiar</p>
           <h1 class="listing-header__title">{{ this.group.name | titlecase }}</h1>
@@ -115,10 +119,14 @@ import { ToastService } from 'src/app/services/toast/toast.service';
           <span *ngIf="events?.length">{{ events.length }}</span>
         </div>
 
-        <app-next-events [events]="this.events"></app-next-events>
+        <app-next-events
+          [events]="this.events"
+          [loading]="this.isLoadingEvents"
+        ></app-next-events>
 
         <app-reminders
           height="37vh"
+          [loading]="this.isLoadingReminders"
           [reminders]="this.reminders"
           [activeTab]="this.currentReminderType"
           (tabChanged)="changeReminders($event)"
@@ -172,6 +180,12 @@ export class GroupHomePage implements OnInit {
   options: any;
   pendingRequestsCount = 0;
   savingPhoto = false;
+  /** Spinner de pantalla completa: no hay nada que mostrar hasta tener el grupo. */
+  isLoading = true;
+  /** Los eventos del dependiente llegan después: la ficha ya se ve y sus listas usan skeleton. */
+  isLoadingEvents = true;
+  /** Los recordatorios se recargan también al cambiar de segmento. */
+  isLoadingReminders = true;
   private remindersRequestId = 0;
 
   constructor(
@@ -198,9 +212,21 @@ export class GroupHomePage implements OnInit {
     this.group = null;
     this.events = [];
     this.reminders = [];
+    this.isLoading = true;
+    this.isLoadingEvents = true;
+    this.isLoadingReminders = true;
 
     const groupId = this.route.snapshot.paramMap.get('id');
-    this.group = await this.groupsService.getFamilyGroupById(groupId);
+    try {
+      this.group = await this.groupsService.getFamilyGroupById(groupId);
+    } catch (error) {
+      console.error('GroupHomePage: error cargando el grupo', error);
+    } finally {
+      // Ya podemos pintar la ficha del grupo; los eventos siguen cargando
+      // y sus propias listas muestran skeleton.
+      this.isLoading = false;
+    }
+
     const currentUser = this.authService.user();
 
     this.options = [
@@ -210,7 +236,8 @@ export class GroupHomePage implements OnInit {
       { title: 'Salir', icon: 'log-out-outline', color: 'danger', action: 'logout' },
     ];
 
-    // Cargar datos secuencialmente para garantizar consistencia
+    // Cargar datos secuencialmente para garantizar consistencia. Cada carga
+    // apaga su propio flag, así la ficha del grupo no espera a las tres.
     await this.loadDependentEvents();
     await this.loadDependentReminders();
     await this.loadPendingRequestsCount();
@@ -230,11 +257,14 @@ export class GroupHomePage implements OnInit {
         this.events = [];
       }
     }
+    this.isLoadingEvents = false;
   }
 
   private async loadDependentReminders() {
     if (this.group?.dependent?.id) {
       await this.changeReminders(this.currentReminderType);
+    } else {
+      this.isLoadingReminders = false;
     }
   }
 
@@ -297,11 +327,15 @@ export class GroupHomePage implements OnInit {
     // (p.ej. turnos dentro de app-document-item-list).
     this.reminders = [];
 
-    if (!this.group?.dependent?.id) return;
+    if (!this.group?.dependent?.id) {
+      this.isLoadingReminders = false;
+      return;
+    }
 
     // Si el usuario cambia de tab mientras una carga está en vuelo, la respuesta
     // vieja no debe pisar a la nueva.
     const requestId = ++this.remindersRequestId;
+    this.isLoadingReminders = true;
 
     try {
       let result = [];
@@ -322,6 +356,9 @@ export class GroupHomePage implements OnInit {
     } catch (error) {
       console.error('Error cargando reminders:', error);
       if (requestId === this.remindersRequestId) this.reminders = [];
+    } finally {
+      // Solo la respuesta más reciente apaga el skeleton.
+      if (requestId === this.remindersRequestId) this.isLoadingReminders = false;
     }
   }
 

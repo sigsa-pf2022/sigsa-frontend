@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AlertController, LoadingController, NavController } from '@ionic/angular';
+import { AlertController, NavController } from '@ionic/angular';
 import { GroupsService } from '../shared/services/groups/groups.service';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
 
@@ -29,7 +29,9 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
         <h1 class="listing-header__title">Miembros</h1>
       </header>
 
-      <div class="gm__scroll">
+      <app-loading-state *ngIf="isLoading" [rows]="4"></app-loading-state>
+
+      <div class="gm__scroll" *ngIf="!isLoading">
         <ion-item
           *ngFor="let member of members"
           class="member-row"
@@ -75,11 +77,11 @@ export class GroupMembersPage implements OnInit {
   members: any;
   loggedUserId: any;
   adminId: string;
+  isLoading = true;
 
   constructor(
     private groupsService: GroupsService,
     private navController: NavController,
-    private loadingController: LoadingController,
     private alertController: AlertController,
     private route: ActivatedRoute,
     private auth: AuthenticationService
@@ -97,36 +99,30 @@ export class GroupMembersPage implements OnInit {
     return this.navController.navigateForward([`/groups/home/${this.groupId}`]);
   }
   async getMembers() {
-    await this.showLoading();
-    const group = await this.groupsService.getFamilyGroupById(this.groupId);
-    this.members = group.members;
-    this.adminId = group.createdBy;
+    // Antes usábamos un LoadingController con duration: 2000, que se
+    // auto-cerraba a los 2s aunque la request siguiera en vuelo. Ahora el
+    // skeleton vive y muere con la request.
+    this.isLoading = !this.members?.length;
+    try {
+      const group = await this.groupsService.getFamilyGroupById(this.groupId);
+      this.members = group.members;
+      this.adminId = group.createdBy;
 
-    // Ordenar: admin primero, luego alfabéticamente
-    this.members.sort((a, b) => {
-      const aIsAdmin = a.id === this.adminId;
-      const bIsAdmin = b.id === this.adminId;
+      // Ordenar: admin primero, luego alfabéticamente
+      this.members.sort((a, b) => {
+        const aIsAdmin = a.id === this.adminId;
+        const bIsAdmin = b.id === this.adminId;
 
-      if (aIsAdmin && !bIsAdmin) return -1;
-      if (!aIsAdmin && bIsAdmin) return 1;
+        if (aIsAdmin && !bIsAdmin) return -1;
+        if (!aIsAdmin && bIsAdmin) return 1;
 
-      // Ambos no-admin: ordenar alfabéticamente
-      return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
-    });
-
-    this.closeLoading();
-  }
-  async showLoading() {
-    const loading = await this.loadingController.create({
-      message: 'Cargando...',
-      duration: 2000,
-    });
-    await loading.present();
-  }
-  async closeLoading() {
-    const loading = await this.loadingController.getTop();
-    if (loading) {
-      await loading.dismiss();
+        // Ambos no-admin: ordenar alfabéticamente
+        return `${a.firstName} ${a.lastName}`.localeCompare(`${b.firstName} ${b.lastName}`);
+      });
+    } catch (error) {
+      console.error('GroupMembersPage: error cargando miembros', error);
+    } finally {
+      this.isLoading = false;
     }
   }
   async deleteMember(memberId: string) {

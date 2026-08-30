@@ -45,7 +45,9 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
           </p>
         </div>
 
-        <form class="auth-form" [formGroup]="form">
+        <app-loading-state *ngIf="isLoading" variant="spinner"></app-loading-state>
+
+        <form class="auth-form" [formGroup]="form" *ngIf="!isLoading">
           <div class="auth-field">
             <label class="auth-field__label" for="prof-license">Número de licencia</label>
             <div class="auth-input">
@@ -114,6 +116,8 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
 export class ProfessionalDataPage {
   states = [];
   specializations = [];
+  /** Los dos ion-select se veían vacíos hasta que resolvían ambas requests. */
+  isLoading = true;
   form = this.fb.group({
     specialization: [null],
     licenseNumber: [null, Validators.compose([Validators.required, Validators.pattern('[0-9]*')])],
@@ -128,8 +132,20 @@ export class ProfessionalDataPage {
   ) {}
 
   async ionViewWillEnter() {
-    this.states = await this.geographyService.getStates();
-    this.specializations = await this.professionalsService.getProfessionalsSpecializations();
+    this.isLoading = this.states.length === 0;
+    try {
+      // Son independientes: en paralelo el spinner dura la mitad.
+      const [states, specializations] = await Promise.all([
+        this.geographyService.getStates(),
+        this.professionalsService.getProfessionalsSpecializations(),
+      ]);
+      this.states = states;
+      this.specializations = specializations;
+    } catch (error) {
+      console.error('ProfessionalDataPage: error cargando provincias y especialidades', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   goBack() {

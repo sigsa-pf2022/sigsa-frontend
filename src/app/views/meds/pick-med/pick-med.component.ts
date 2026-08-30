@@ -49,7 +49,13 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
         ></ion-searchbar>
       </form>
 
-      <div class="pick-med__scroll">
+      <app-loading-state
+        *ngIf="this.isLoading"
+        [rows]="6"
+        [avatar]="false"
+      ></app-loading-state>
+
+      <div class="pick-med__scroll" *ngIf="!this.isLoading">
         <ng-container *ngIf="this.filteredMeds?.length > 0; else emptyState">
           <app-items-list
             *ngFor="let medOption of this.filteredMeds"
@@ -99,6 +105,7 @@ export class PickMedComponent implements OnInit, OnDestroy {
   med: any = null;
   meds: any[];
   filteredMeds: any[];
+  isLoading = true;
   isEditMode = false;
   medEventId: number;
   dependentId: number;
@@ -176,8 +183,17 @@ export class PickMedComponent implements OnInit, OnDestroy {
   }
 
   async getMeds() {
-    this.meds = await this.medsEventsService.getMeds();
-    this.filteredMeds = this.meds;
+    // Sin este flag el catálogo vacío hacía aparecer "Sin resultados" mientras
+    // la request estaba en vuelo.
+    this.isLoading = !this.meds?.length;
+    try {
+      this.meds = await this.medsEventsService.getMeds();
+      this.filteredMeds = this.meds;
+    } catch (error) {
+      console.error('PickMedComponent: error cargando el catálogo de medicamentos', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   goBack() {

@@ -84,7 +84,17 @@ import { ActivatedRoute } from '@angular/router';
           </ion-item>
         </form>
 
-        <section *ngIf="currentGroupMembers.length > 0" class="am__section">
+        <section *ngIf="isLoadingCurrentMembers" class="am__section">
+          <div class="section-title am__section-title">
+            <h2>Miembros actuales</h2>
+          </div>
+          <app-loading-state [rows]="3"></app-loading-state>
+        </section>
+
+        <section
+          *ngIf="!isLoadingCurrentMembers && currentGroupMembers.length > 0"
+          class="am__section"
+        >
           <div class="section-title am__section-title">
             <h2>Miembros actuales</h2>
             <span>{{ currentGroupMembers.length }}</span>
@@ -168,6 +178,8 @@ import { ActivatedRoute } from '@angular/router';
 export class AddMembersPage implements OnInit {
   groupId: string;
   currentGroupMembers: any[] = [];
+  /** Solo sobre un grupo existente: los miembros actuales llegan por API. */
+  isLoadingCurrentMembers = false;
   memberToAdd: { firstName: string; lastName: string; dni: number };
   members: { firstName: string; lastName: string; dni: number }[] = [];
   form = this.fb.group({
@@ -205,8 +217,15 @@ export class AddMembersPage implements OnInit {
   }
 
   async loadCurrentGroupMembers() {
-    const group = await this.groupsService.getFamilyGroupById(this.groupId);
-    this.currentGroupMembers = group.members || [];
+    this.isLoadingCurrentMembers = this.currentGroupMembers.length === 0;
+    try {
+      const group = await this.groupsService.getFamilyGroupById(this.groupId);
+      this.currentGroupMembers = group.members || [];
+    } catch (error) {
+      console.error('AddMembersPage: error cargando los miembros actuales', error);
+    } finally {
+      this.isLoadingCurrentMembers = false;
+    }
   }
 
   async handleChange(event) {

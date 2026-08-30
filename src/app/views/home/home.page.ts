@@ -14,9 +14,13 @@ import { MedsEventsService } from '../meds/shared/services/meds-events/meds-even
           <h1 class="home__title">Próximos eventos</h1>
         </div>
 
-        <app-next-events [events]="this.events"></app-next-events>
+        <app-next-events
+          [events]="this.events"
+          [loading]="this.isLoadingEvents"
+        ></app-next-events>
 
         <app-reminders
+          [loading]="this.isLoadingReminders"
           [activeTab]="this.activeTab"
           [reminders]="this.reminders"
           (tabChanged)="this.changeReminders($event)"
@@ -33,6 +37,10 @@ export class HomePage {
   reminders = [];
   medEvents = [];
   appointments = [];
+  /** Skeleton del carrusel de próximos eventos. */
+  isLoadingEvents = true;
+  /** Skeleton de la lista de recordatorios (turnos + medicamentos). */
+  isLoadingReminders = true;
   constructor(
     private appointmentsService: AppointmentsService,
     private eventsService: EventsService,
@@ -45,12 +53,33 @@ export class HomePage {
   }
 
   async setAppointments() {
-    this.appointments = await this.appointmentsService.getAppointmentsByUser();
-    this.medEvents = await this.medsEventsService.getMedsEventsByUser();
-    this.changeReminders(this.remindersTypes.appointments);
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // tab refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoadingReminders = this.reminders.length === 0;
+    try {
+      // Las dos listas son independientes: en paralelo el skeleton dura la mitad.
+      const [appointments, medEvents] = await Promise.all([
+        this.appointmentsService.getAppointmentsByUser(),
+        this.medsEventsService.getMedsEventsByUser(),
+      ]);
+      this.appointments = appointments;
+      this.medEvents = medEvents;
+      this.changeReminders(this.remindersTypes.appointments);
+    } catch (error) {
+      console.error('HomePage: error cargando recordatorios', error);
+    } finally {
+      this.isLoadingReminders = false;
+    }
   }
   async setNextEvents() {
-    this.events = await this.eventsService.getNextEvents();
+    this.isLoadingEvents = this.events.length === 0;
+    try {
+      this.events = await this.eventsService.getNextEvents();
+    } catch (error) {
+      console.error('HomePage: error cargando próximos eventos', error);
+    } finally {
+      this.isLoadingEvents = false;
+    }
   }
 
   changeReminders(value) {

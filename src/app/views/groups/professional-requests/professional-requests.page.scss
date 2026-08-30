@@ -4,12 +4,6 @@
   height: 100%;
 }
 
-.pr__loading {
-  display: flex;
-  justify-content: center;
-  padding: 48px 24px;
-}
-
 .pr__list {
   padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 32px);
   display: flex;

@@ -15,31 +15,35 @@ import { Subscription } from 'rxjs';
         <h1 class="listing-header__title">Mis grupos</h1>
       </header>
 
-      <ng-container *ngIf="this.groups.length > 0; else emptyState">
-        <div class="groups__scroll">
-          <app-group-item
-            *ngFor="let group of this.groups"
-            [group]="group"
-            (click)="goToGroupHome(group.id)"
-          ></app-group-item>
-        </div>
-      </ng-container>
+      <app-loading-state *ngIf="this.isLoading" [rows]="4"></app-loading-state>
 
-      <ng-template #emptyState>
-        <div class="empty-state" role="status" *ngIf="!isInitialLoad">
-          <div class="empty-state__icon" aria-hidden="true">
-            <ion-icon name="people"></ion-icon>
+      <ng-container *ngIf="!this.isLoading">
+        <ng-container *ngIf="this.groups.length > 0; else emptyState">
+          <div class="groups__scroll">
+            <app-group-item
+              *ngFor="let group of this.groups"
+              [group]="group"
+              (click)="goToGroupHome(group.id)"
+            ></app-group-item>
           </div>
-          <h2 class="empty-state__title">Sin grupos todavía</h2>
-          <p class="empty-state__subtitle">
-            Creá un grupo familiar para gestionar la salud de quienes dependen de vos.
-          </p>
-          <button type="button" class="empty-state__cta" (click)="navigateTo()">
-            <ion-icon name="add"></ion-icon>
-            Crear grupo
-          </button>
-        </div>
-      </ng-template>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state" role="status">
+            <div class="empty-state__icon" aria-hidden="true">
+              <ion-icon name="people"></ion-icon>
+            </div>
+            <h2 class="empty-state__title">Sin grupos todavía</h2>
+            <p class="empty-state__subtitle">
+              Creá un grupo familiar para gestionar la salud de quienes dependen de vos.
+            </p>
+            <button type="button" class="empty-state__cta" (click)="navigateTo()">
+              <ion-icon name="add"></ion-icon>
+              Crear grupo
+            </button>
+          </div>
+        </ng-template>
+      </ng-container>
 
       <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
@@ -56,7 +60,7 @@ import { Subscription } from 'rxjs';
 })
 export class GroupsPage implements OnInit, OnDestroy {
   groups: FamilyGroup[] = [];
-  isInitialLoad = true;
+  isLoading = true;
   private paramsSubscription: Subscription;
 
   constructor(
@@ -86,12 +90,15 @@ export class GroupsPage implements OnInit, OnDestroy {
   }
 
   async getGroups() {
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // tab refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.groups.length === 0;
     try {
       this.groups = await this.groupsService.getFamilyGroupsByUser();
     } catch (error) {
       console.error('GroupsPage: error loading groups', error);
     } finally {
-      this.isInitialLoad = false;
+      this.isLoading = false;
     }
   }
 

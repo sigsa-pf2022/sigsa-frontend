@@ -21,44 +21,48 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
         <h1 class="listing-header__title">Recordatorios</h1>
       </header>
 
-      <ng-container *ngIf="this.medsEvents.length > 0; else emptyState">
-        <form [formGroup]="this.searchForm" class="listing-search">
-          <ion-searchbar
-            class="listing-searchbar"
-            formControlName="search"
-            placeholder="Buscar medicamento..."
-            debounce="400"
-            type="string"
-            mode="md"
-            (ionChange)="handleChange($event)"
-          ></ion-searchbar>
-        </form>
+      <app-loading-state *ngIf="this.isLoading" [rows]="5"></app-loading-state>
 
-        <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
-          <app-meds-event-item-list
-            *cdkVirtualFor="let medEvent of this.filteredMedsEvents"
-            [medEvent]="medEvent"
-            [flush]="true"
-            (click)="presentActionSheet(medEvent)"
-          ></app-meds-event-item-list>
-        </cdk-virtual-scroll-viewport>
-      </ng-container>
+      <ng-container *ngIf="!this.isLoading">
+        <ng-container *ngIf="this.medsEvents.length > 0; else emptyState">
+          <form [formGroup]="this.searchForm" class="listing-search">
+            <ion-searchbar
+              class="listing-searchbar"
+              formControlName="search"
+              placeholder="Buscar medicamento..."
+              debounce="400"
+              type="string"
+              mode="md"
+              (ionChange)="handleChange($event)"
+            ></ion-searchbar>
+          </form>
 
-      <ng-template #emptyState>
-        <div class="empty-state" role="status">
-          <div class="empty-state__icon" aria-hidden="true">
-            <ion-icon name="medkit"></ion-icon>
+          <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
+            <app-meds-event-item-list
+              *cdkVirtualFor="let medEvent of this.filteredMedsEvents"
+              [medEvent]="medEvent"
+              [flush]="true"
+              (click)="presentActionSheet(medEvent)"
+            ></app-meds-event-item-list>
+          </cdk-virtual-scroll-viewport>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state" role="status">
+            <div class="empty-state__icon" aria-hidden="true">
+              <ion-icon name="medkit"></ion-icon>
+            </div>
+            <h2 class="empty-state__title">Sin recordatorios todavía</h2>
+            <p class="empty-state__subtitle">
+              Agregá tu primer medicamento y te avisamos cuándo tomarlo.
+            </p>
+            <button type="button" class="empty-state__cta" (click)="newMedEvent()">
+              <ion-icon name="add"></ion-icon>
+              Agregar medicamento
+            </button>
           </div>
-          <h2 class="empty-state__title">Sin recordatorios todavía</h2>
-          <p class="empty-state__subtitle">
-            Agregá tu primer medicamento y te avisamos cuándo tomarlo.
-          </p>
-          <button type="button" class="empty-state__cta" (click)="newMedEvent()">
-            <ion-icon name="add"></ion-icon>
-            Agregar medicamento
-          </button>
-        </div>
-      </ng-template>
+        </ng-template>
+      </ng-container>
 
       <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
@@ -76,6 +80,7 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
 export class MedsPage implements OnInit, OnDestroy {
   medsEvents: any[] = [];
   filteredMedsEvents: any[] = [];
+  isLoading = true;
   searchForm = this.fb.group({
     search: '',
   });
@@ -111,10 +116,19 @@ export class MedsPage implements OnInit, OnDestroy {
   }
 
   async setMedsEvents() {
-    // La lista muestra tratamientos: una fila por serie con su próxima toma,
-    // en vez de N filas del mismo medicamento.
-    this.medsEvents = [...(await this.medsEventsService.getTreatmentsByUser())];
-    this.filteredMedsEvents = this.medsEvents;
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // tab refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.medsEvents.length === 0;
+    try {
+      // La lista muestra tratamientos: una fila por serie con su próxima toma,
+      // en vez de N filas del mismo medicamento.
+      this.medsEvents = [...(await this.medsEventsService.getTreatmentsByUser())];
+      this.filteredMedsEvents = this.medsEvents;
+    } catch (error) {
+      console.error('MedsPage: error cargando recordatorios', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   async presentActionSheet(item) {

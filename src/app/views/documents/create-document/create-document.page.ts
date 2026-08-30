@@ -40,7 +40,9 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
         </h1>
       </header>
 
-      <div class="cd__container">
+      <app-loading-state *ngIf="isLoading" variant="spinner"></app-loading-state>
+
+      <div class="cd__container" *ngIf="!isLoading">
         <div class="cd__upload">
           <div class="upload-preview" *ngIf="documentPreview">
             <img [src]="documentPreview" class="upload-preview__image" />
@@ -162,6 +164,8 @@ export class CreateDocumentPage implements OnInit {
   // y habilitaba mañana). El max queda exactamente en el día de hoy.
   maxDate = formatISO(new Date(), { representation: 'date' });
   isEditMode = false;
+  /** Solo en edición: el form se ve vacío hasta que llega el documento. */
+  isLoading = false;
   documentId: number;
   dependentId: number;
   dependentName: string;
@@ -201,30 +205,38 @@ export class CreateDocumentPage implements OnInit {
   }
 
   async loadDocument() {
-    const document = await this.documentsService.getDocument(this.documentId);
+    this.isLoading = true;
+    try {
+      const document = await this.documentsService.getDocument(this.documentId);
 
-    // Mostrar la imagen actual como preview (se puede reemplazar). NO seteamos
-    // this.fileContent: queda en null hasta que el usuario elija una imagen
-    // nueva, así sabemos si cambió y solo entonces la mandamos al backend.
-    if (document.fileContent && document.mimeType) {
-      this.mimeType = document.mimeType;
-      this.fileName = document.fileName;
-      this.documentPreview = `data:${document.mimeType};base64,${document.fileContent}`;
+      // Mostrar la imagen actual como preview (se puede reemplazar). NO seteamos
+      // this.fileContent: queda en null hasta que el usuario elija una imagen
+      // nueva, así sabemos si cambió y solo entonces la mandamos al backend.
+      if (document.fileContent && document.mimeType) {
+        this.mimeType = document.mimeType;
+        this.fileName = document.fileName;
+        this.documentPreview = `data:${document.mimeType};base64,${document.fileContent}`;
+      }
+
+      // documentDate llega como "YYYY-MM-DD" (columna date). Trabajamos sobre el
+      // string para no arrastrar zona horaria (ver toDisplayDate).
+      let formattedDate = '';
+      if (document.documentDate) {
+        this.selectedDocumentDate = String(document.documentDate).slice(0, 10);
+        formattedDate = this.toDisplayDate(this.selectedDocumentDate);
+      }
+
+      this.form.patchValue({
+        title: document.title,
+        description: document.description,
+        documentDate: formattedDate,
+      });
+    } catch (error) {
+      console.error('CreateDocumentPage: error cargando el documento', error);
+      this.toastService.showError('No se pudo cargar el documento');
+    } finally {
+      this.isLoading = false;
     }
-
-    // documentDate llega como "YYYY-MM-DD" (columna date). Trabajamos sobre el
-    // string para no arrastrar zona horaria (ver toDisplayDate).
-    let formattedDate = '';
-    if (document.documentDate) {
-      this.selectedDocumentDate = String(document.documentDate).slice(0, 10);
-      formattedDate = this.toDisplayDate(this.selectedDocumentDate);
-    }
-
-    this.form.patchValue({
-      title: document.title,
-      description: document.description,
-      documentDate: formattedDate,
-    });
   }
 
   async presentActionSheet() {
