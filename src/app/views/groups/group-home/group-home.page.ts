@@ -135,6 +135,8 @@ import { ToastService } from 'src/app/services/toast/toast.service';
           (viewAllClicked)="openAllReminders()"
         ></app-reminders>
 
+        <div class="gh__fab-scrim" slot="fixed" aria-hidden="true"></div>
+
         <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="center" slot="fixed">
           <ion-fab-button
             class="app-fab-button"
@@ -188,6 +190,8 @@ export class GroupHomePage implements OnInit {
    * historial completo.
    */
   readonly REMINDERS_PREVIEW_SIZE = 5;
+  /** El usuario salió de la lista completa a ver/editar: al volver la reabrimos. */
+  private reopenAllReminders = false;
   /** Spinner de pantalla completa: no hay nada que mostrar hasta tener el grupo. */
   isLoading = true;
   /** Los eventos del dependiente llegan después: la ficha ya se ve y sus listas usan skeleton. */
@@ -249,6 +253,13 @@ export class GroupHomePage implements OnInit {
     await this.loadDependentEvents();
     await this.loadDependentReminders();
     await this.loadPendingRequestsCount();
+
+    // Volvimos de ver o editar un item que se eligió desde "Ver todos": lo
+    // devolvemos a esa lista, ya recargada, en vez de dejarlo en el home.
+    if (this.reopenAllReminders) {
+      this.reopenAllReminders = false;
+      await this.openAllReminders();
+    }
   }
 
   async ionViewDidEnter() {
@@ -411,27 +422,33 @@ export class GroupHomePage implements OnInit {
     // Las acciones sobre un item las resuelve el action sheet de esta página,
     // así que el modal sólo devuelve qué tocó el usuario.
     const { data } = await modal.onWillDismiss();
-    if (data?.item) {
-      await this.onReminderItemClicked(data);
-    }
+    if (!data?.item) return;
+
+    // Si la acción abre otra pantalla (ver / editar), al volver el usuario
+    // espera reaparecer en la lista completa y no en el home del grupo.
+    this.reopenAllReminders = await this.onReminderItemClicked(data);
   }
 
-  async onReminderItemClicked(event: { item: any; type: string }) {
-    if (!event?.item) return;
+  /** Devuelve true si la acción elegida navega a otra pantalla (ver / editar). */
+  async onReminderItemClicked(event: { item: any; type: string }): Promise<boolean> {
+    if (!event?.item) return false;
     if (event.type === REMINDERS_TYPE.appointments) {
-      await this.presentAppointmentActionSheet(event.item);
-    } else if (event.type === REMINDERS_TYPE.medications) {
-      await this.presentMedEventActionSheet(event.item);
-    } else if (event.type === REMINDERS_TYPE.documents) {
-      await this.presentDocumentActionSheet(event.item);
+      return await this.presentAppointmentActionSheet(event.item);
     }
+    if (event.type === REMINDERS_TYPE.medications) {
+      return await this.presentMedEventActionSheet(event.item);
+    }
+    if (event.type === REMINDERS_TYPE.documents) {
+      return await this.presentDocumentActionSheet(event.item);
+    }
+    return false;
   }
 
-  private async presentAppointmentActionSheet(appointment: any) {
+  private async presentAppointmentActionSheet(appointment: any): Promise<boolean> {
     const actionSheet = await this.createAppointmentActionSheet(appointment);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
-    this.doAppointmentActionByRole(role, appointment.id);
+    return this.doAppointmentActionByRole(role, appointment.id);
   }
 
   private async createAppointmentActionSheet(appointment: any) {
@@ -444,19 +461,19 @@ export class GroupHomePage implements OnInit {
     return await this.actionSheetService.createDefault(baseTitle);
   }
 
-  private doAppointmentActionByRole(value: string, id: number) {
+  private doAppointmentActionByRole(value: string, id: number): boolean {
     switch (value) {
       case 'destructive':
         this.cancelAppointment(id);
-        break;
+        return false;
       case 'edit':
         this.editAppointment(id);
-        break;
+        return true;
       case 'view':
         this.viewAppointment(id);
-        break;
+        return true;
       default:
-        break;
+        return false;
     }
   }
 
@@ -500,7 +517,7 @@ export class GroupHomePage implements OnInit {
     };
   }
 
-  private async presentMedEventActionSheet(item: any) {
+  private async presentMedEventActionSheet(item: any): Promise<boolean> {
     const depName = this.getDependentFullName();
     const formatted = depName ? titleCase(depName) : null;
 
@@ -512,10 +529,12 @@ export class GroupHomePage implements OnInit {
       const { role } = await actionSheet.onDidDismiss();
       if (role === 'view') {
         this.viewMedEvent((item.nextDose ?? item.doses[item.doses.length - 1]).id);
-      } else if (role === 'destructive') {
+        return true;
+      }
+      if (role === 'destructive') {
         this.cancelTreatment(item.seriesId);
       }
-      return;
+      return false;
     }
 
     // Toma única: el objeto agrupado trae la toma en `doses[0]`.
@@ -523,7 +542,7 @@ export class GroupHomePage implements OnInit {
     const actionSheet = await this.createMedEventActionSheet(medEvent, formatted);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
-    this.doMedEventActionByRole(role, medEvent.id);
+    return this.doMedEventActionByRole(role, medEvent.id);
   }
 
   private async createMedEventActionSheet(medEvent: any, formattedDepName: string | null) {
@@ -550,19 +569,19 @@ export class GroupHomePage implements OnInit {
     }
   }
 
-  private doMedEventActionByRole(value: string, id: number) {
+  private doMedEventActionByRole(value: string, id: number): boolean {
     switch (value) {
       case 'destructive':
         this.cancelMedEvent(id);
-        break;
+        return false;
       case 'edit':
         this.editMedEvent(id);
-        break;
+        return true;
       case 'view':
         this.viewMedEvent(id);
-        break;
+        return true;
       default:
-        break;
+        return false;
     }
   }
 
@@ -599,7 +618,7 @@ export class GroupHomePage implements OnInit {
     const actionSheet = await this.createDocumentActionSheet(document);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
-    this.doDocumentActionByRole(role, document.id);
+    return this.doDocumentActionByRole(role, document.id);
   }
 
   private async createDocumentActionSheet(document: any) {
@@ -609,19 +628,19 @@ export class GroupHomePage implements OnInit {
     return await this.actionSheetService.createDefault(baseTitle);
   }
 
-  private doDocumentActionByRole(value: string, id: number) {
+  private doDocumentActionByRole(value: string, id: number): boolean {
     switch (value) {
       case 'destructive':
         this.deleteDocument(id);
-        break;
+        return false;
       case 'edit':
         this.editDocument(id);
-        break;
+        return true;
       case 'view':
         this.viewDocument(id);
-        break;
+        return true;
       default:
-        break;
+        return false;
     }
   }
 

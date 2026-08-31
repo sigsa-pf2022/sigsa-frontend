@@ -16,6 +16,28 @@
   margin-bottom: calc(env(safe-area-inset-bottom, 0) + 16px);
 }
 
+/* Ahora que la página scrollea entera, las tarjetas le pasan por debajo al
+   botón "+". Este degradado del color de fondo las desvanece antes de llegar
+   al botón, en vez de que se choquen.
+   Va como elemento propio en el slot "fixed" y no como ::before del ion-fab:
+   Ionic le aplica `transform: translateZ(0)` a lo slotteado, lo que convierte
+   al fab en bloque contenedor y recortaba el degradado a su ancho. */
+.gh__fab-scrim {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 148px;
+  /* El extremo transparente va como rgba del mismo color y no como
+     `transparent`, que en WebKit se interpola pasando por negro. */
+  background: linear-gradient(
+    to top,
+    var(--color-surface-app) 45%,
+    rgba(250, 250, 251, 0.85) 70%,
+    rgba(250, 250, 251, 0) 100%
+  );
+  pointer-events: none;
+}
+
 .gh__fab__list {
   /* Ionic le pone 66px de margin-bottom al ion-fab-list (separación de la
      primera opción respecto del botón +). NO bajarlo: lo subimos para que la

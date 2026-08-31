@@ -756,7 +756,9 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
    con alto para una fila y media. Ahora el listado va corto (los primeros
    items + "Ver todos") y el scroll es el natural de la página. */
 .listing.gh {
-  --padding-bottom: calc(env(safe-area-inset-bottom, 0) + 96px);
+  /* Alto del degradado del FAB (148px) + aire, para que al llegar al final del
+     scroll la última fila —"Ver todos"— quede por encima y no desvanecida. */
+  --padding-bottom: calc(env(safe-area-inset-bottom, 0) + 164px);
 }
 
 /* Separar "Tus recordatorios" del carrusel de arriba. */
