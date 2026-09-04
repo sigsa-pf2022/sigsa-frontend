@@ -91,13 +91,18 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
       return;
     }
 
-    // El input puede ser una toma suelta o un tratamiento agrupado
-    // (varias tomas del mismo medicamento). En el segundo caso mostramos la
-    // próxima toma pendiente, o la última si ya terminó.
+    // El input puede ser una toma suelta o un tratamiento agrupado (varias
+    // tomas del mismo medicamento). En el tratamiento mostramos la próxima toma
+    // pendiente, o la última si ya terminó.
+    //
+    // Ojo con la toma única: el endpoint de tratamientos también la devuelve
+    // envuelta (totalDoses: 1 y la toma en `doses[0]`), y el envoltorio no
+    // tiene `date` ni `status`. Sin desenvolverlo, esas filas quedaban sin
+    // fecha y sin estado. Mismo criterio que usa el action sheet del grupo.
     const isTreatment = this.medEvent.totalDoses > 1;
     const reference = isTreatment
       ? this.medEvent.nextDose ?? this.medEvent.doses?.[this.medEvent.doses.length - 1] ?? {}
-      : this.medEvent;
+      : this.medEvent.doses?.[0] ?? this.medEvent;
 
     if (isTreatment) {
       const doseNumber = this.medEvent.nextDose

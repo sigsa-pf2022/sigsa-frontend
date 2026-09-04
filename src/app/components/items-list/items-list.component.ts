@@ -7,7 +7,7 @@ import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/cor
       class="picker-card"
       [class.picker-card--selected]="isItemSelected"
       lines="none"
-      [button]="true"
+      [button]="tappable"
       detail="false"
     >
       <div class="picker-card__icon" aria-hidden="true">
@@ -36,6 +36,11 @@ export class ItemsListComponent implements OnInit, OnChanges {
   @Input() subtitle: string;
   @Input() showIcon = true;
   @Input() isSelectable = false;
+  /**
+   * Si la fila responde al toque. En false saca el efecto de pulsado, para que
+   * un listado que sólo muestra información no aparente ser un botón.
+   */
+  @Input() tappable = true;
   @Input() value: any;
   @Input() selectedValue: any;
 

@@ -65,12 +65,19 @@ import { ProfessionalsService } from './shared/services/professionals.service';
 
       <div class="drs__scroll" *ngIf="!this.isLoading">
         <ng-container *ngIf="this.filteredDoctors.length > 0; else emptyState">
+          <!--
+            Fuera del alta/edición de turno esta pantalla es sólo un listado:
+            no hay vista de detalle del profesional a la que ir. Por eso no
+            lleva chevron ni efecto de pulsado, que hacían parecer que la fila
+            abría algo. Al elegir profesional para un turno sí es seleccionable.
+          -->
           <app-items-list
             *ngFor="let doctorOption of this.filteredDoctors"
             [title]="'Dr/a ' + doctorOption.firstName + ' ' + doctorOption.lastName"
             img="doctor"
             [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
-            [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
+            [tappable]="this.isAppointmentCreation || this.isAppointmentEdition"
+            [showIcon]="false"
             [value]="doctorOption.id"
             [selectedValue]="this.doctor?.id"
             (click)="doAction(doctorOption)"
