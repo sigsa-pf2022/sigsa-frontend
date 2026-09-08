@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { NavController, Platform } from '@ionic/angular';
 import { PushNotifications } from '@capacitor/push-notifications';
 import type { Token } from '@capacitor/push-notifications';
@@ -19,7 +19,21 @@ export class PushNotificationsService {
     private groupEventsService: GroupEventsService,
     private toastService: ToastService,
     private navController: NavController,
+    private zone: NgZone,
   ) {}
+
+  /**
+   * Los callbacks de los plugins de Capacitor llegan desde el bridge nativo,
+   * o sea fuera de la zona de Angular. Si desde ahí navegamos o tocamos
+   * estado, Angular no corre change detection y, peor, las vistas que se
+   * crean en esa navegación registran sus listeners fuera de zona: después
+   * los taps actualizan las propiedades del componente pero no la pantalla
+   * (el segment de "Tus recordatorios" cambiaba de pestaña y la lista seguía
+   * mostrando los turnos).
+   */
+  private inZone(fn: () => void) {
+    this.zone.run(fn);
+  }
 
   async initialize(): Promise<void> {
     console.log('[Push] initialize() llamado');
@@ -45,11 +59,13 @@ export class PushNotificationsService {
     console.log('[Push] Registrando en APNs/FCM...');
     await PushNotifications.register();
 
-    await PushNotifications.addListener('registration', (token: Token) => {
-      console.log('[Push] Token obtenido:', token.value);
-      this.currentToken = token.value;
-      this.registerWithBackend(token.value);
-    });
+    await PushNotifications.addListener('registration', (token: Token) =>
+      this.inZone(() => {
+        console.log('[Push] Token obtenido:', token.value);
+        this.currentToken = token.value;
+        this.registerWithBackend(token.value);
+      }),
+    );
 
     await PushNotifications.addListener('registrationError', (error) => {
       console.error('[Push] Registration error:', JSON.stringify(error));
@@ -59,29 +75,33 @@ export class PushNotificationsService {
     // con la que redibujamos el push en primer plano.
     await this.localNotifications.registerActionTypes();
     this.localNotifications.addEventListener((action: any) =>
-      this.handleLocalAction(action),
+      this.inZone(() => this.handleLocalAction(action)),
     );
 
-    await PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      console.log('[Push] Notification received in foreground:', notification);
-      // Con la app en primer plano Android no muestra el push en la bandeja,
-      // así que lo dibujamos manualmente como notificación local. De paso, la
-      // notificación local sí soporta botones de acción; el push remoto no.
-      this.localNotifications.showNow(
-        notification.title ?? 'Notificación',
-        notification.body ?? '',
-        notification.data,
-        this.isActionable(notification.data) ? 'GROUP_EVENT' : undefined,
-      );
-    });
+    await PushNotifications.addListener('pushNotificationReceived', (notification) =>
+      this.inZone(() => {
+        console.log('[Push] Notification received in foreground:', notification);
+        // Con la app en primer plano Android no muestra el push en la bandeja,
+        // así que lo dibujamos manualmente como notificación local. De paso, la
+        // notificación local sí soporta botones de acción; el push remoto no.
+        this.localNotifications.showNow(
+          notification.title ?? 'Notificación',
+          notification.body ?? '',
+          notification.data,
+          this.isActionable(notification.data) ? 'GROUP_EVENT' : undefined,
+        );
+      }),
+    );
 
-    await PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-      console.log('[Push] Notification action performed:', action);
-      // En segundo plano la bandeja no ofrece botones (límite del plugin de
-      // push remoto), así que al tocarla abrimos el evento, donde está el
-      // botón "Me hago cargo".
-      this.openEvent(action?.notification?.data);
-    });
+    await PushNotifications.addListener('pushNotificationActionPerformed', (action) =>
+      this.inZone(() => {
+        console.log('[Push] Notification action performed:', action);
+        // En segundo plano la bandeja no ofrece botones (límite del plugin de
+        // push remoto), así que al tocarla abrimos el evento, donde está el
+        // botón "Me hago cargo".
+        this.openEvent(action?.notification?.data);
+      }),
+    );
   }
 
   /** El backend marca así los eventos de un dependiente, que son accionables. */
