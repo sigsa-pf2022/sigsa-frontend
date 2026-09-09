@@ -9,6 +9,7 @@ import { DateFormatterService } from 'src/app/services/date-formatter/date-forma
 import { DocumentsService } from '../shared/services/documents.service';
 import { CreateDocumentDTO, EditDocumentDTO } from '../shared/interfaces/Document.interface';
 import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
+import { titleCase } from 'src/app/utils/title-case';
 
 @Component({
   selector: 'app-create-document',
@@ -412,7 +413,9 @@ export class CreateDocumentPage implements OnInit {
       if (this.dependentId) {
         // Crear documento para dependiente
         await this.documentsService.createDocumentForDependent(this.dependentId, payload);
-        this.toastService.showSuccess(`Documento creado correctamente para ${this.dependentName}`);
+        this.toastService.showSuccess(
+          `Documento creado correctamente para ${titleCase(this.dependentName)}`,
+        );
         this.navController.navigateRoot(['/groups/home/' + this.groupId]);
       } else {
         // Crear documento para usuario

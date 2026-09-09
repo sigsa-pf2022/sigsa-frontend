@@ -27,7 +27,7 @@ import { PatientsService } from '../shared/services/patients.service';
     <ion-content class="listing">
       <header class="listing-header">
         <p class="listing-header__eyebrow">Paciente</p>
-        <h1 class="listing-header__title">{{ patientName }}</h1>
+        <h1 class="listing-header__title">{{ patientName | titlecase }}</h1>
       </header>
 
       <app-loading-state *ngIf="isLoading" [rows]="4"></app-loading-state>

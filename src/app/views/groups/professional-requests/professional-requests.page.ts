@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ModalController, NavController } from '@ionic/angular';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { titleCase } from 'src/app/utils/title-case';
 import { GroupsService } from '../shared/services/groups/groups.service';
 
 @Component({
@@ -40,15 +41,15 @@ import { GroupsService } from '../shared/services/groups/groups.service';
             </div>
             <div class="pr__card-titles">
               <p class="pr__card-eyebrow">Solicitud para</p>
-              <p class="pr__card-title">{{ req.dependentFirstName }} {{ req.dependentLastName }}</p>
-              <p class="pr__card-sub">Grupo: {{ req.groupName }}</p>
+              <p class="pr__card-title">{{ req.dependentFirstName | titlecase }} {{ req.dependentLastName | titlecase }}</p>
+              <p class="pr__card-sub">Grupo: {{ req.groupName | titlecase }}</p>
             </div>
           </header>
 
           <div class="pr__card-body">
             <div class="pr__row">
               <span class="pr__row-label">Profesional</span>
-              <span class="pr__row-value">{{ req.professionalFirstName }} {{ req.professionalLastName }}</span>
+              <span class="pr__row-value">{{ req.professionalFirstName | titlecase }} {{ req.professionalLastName | titlecase }}</span>
             </div>
             <div class="pr__row" *ngIf="req.licenseNumber">
               <span class="pr__row-label">Matrícula</span>
@@ -148,7 +149,9 @@ export class ProfessionalRequestsPage implements OnInit {
       component: YesNoModalComponent,
       cssClass: 'modal',
       componentProps: {
-        text: `¿Aceptar la solicitud de ${req.professionalFirstName} ${req.professionalLastName} para ${req.dependentFirstName} ${req.dependentLastName}?`,
+        text: `¿Aceptar la solicitud de ${titleCase(
+          `${req.professionalFirstName} ${req.professionalLastName}`,
+        )} para ${titleCase(`${req.dependentFirstName} ${req.dependentLastName}`)}?`,
       },
     });
     await modal.present();
@@ -172,7 +175,9 @@ export class ProfessionalRequestsPage implements OnInit {
       component: YesNoModalComponent,
       cssClass: 'modal',
       componentProps: {
-        text: `¿Rechazar la solicitud de ${req.professionalFirstName} ${req.professionalLastName}?`,
+        text: `¿Rechazar la solicitud de ${titleCase(
+          `${req.professionalFirstName} ${req.professionalLastName}`,
+        )}?`,
       },
     });
     await modal.present();

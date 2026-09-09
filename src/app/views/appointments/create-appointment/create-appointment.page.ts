@@ -5,6 +5,7 @@ import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { toPickerValue } from 'src/app/utils/to-picker-value';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
@@ -198,7 +199,8 @@ export class CreateAppointmentPage implements OnInit {
 
   setAppointmentInfo() {
     this.form.patchValue({ description: this.appointmentDataService.data.description });
-    this.dateChanged(this.appointmentDataService.data.date);
+    // Idem meds: la fecha guardada viene en UTC y el picker la mostraría corrida.
+    this.dateChanged(toPickerValue(this.appointmentDataService.data.date));
     this.setProfessionalAndType(this.appointmentDataService.data);
   }
 

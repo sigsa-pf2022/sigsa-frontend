@@ -73,7 +73,7 @@ import { ProfessionalsService } from './shared/services/professionals.service';
           -->
           <app-items-list
             *ngFor="let doctorOption of this.filteredDoctors"
-            [title]="'Dr/a ' + doctorOption.firstName + ' ' + doctorOption.lastName"
+            [title]="'Dr/a ' + (doctorOption.firstName + ' ' + doctorOption.lastName | titlecase)"
             img="doctor"
             [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
             [tappable]="this.isAppointmentCreation || this.isAppointmentEdition"

@@ -3,6 +3,7 @@ import { ActionPerformed, LocalNotifications } from '@capacitor/local-notificati
 import { parseISO, subMinutes } from 'date-fns';
 import { DateFormatterService } from '../date-formatter/date-formatter.service';
 import { AppointmentsService } from 'src/app/views/appointments/shared/services/appointments/appointments.service';
+import { titleCase } from 'src/app/utils/title-case';
 
 @Injectable({
   providedIn: 'root',
@@ -80,6 +81,12 @@ export class LocalNotificationsService {
   }
 
   async schedule(date: string, professional, idAppointment: number) {
+    // El mismo texto se usa para escribir el cuerpo y para reconocer después la
+    // notificación que hay que cancelar, así que se arma una sola vez: si se
+    // capitaliza sólo de un lado, el matching deja de encontrarla.
+    const professionalName = titleCase(
+      `${professional.firstName} ${professional.lastName}`,
+    );
   
     //Podria ser un getAppointmentStatus que me devuelva directamente el estado y no el registro completo.
     const appointment = await this.appointmentsService.getAppointment(idAppointment);
@@ -90,8 +97,7 @@ export class LocalNotificationsService {
       const notificationToCancel = pendingNotifications.find(
         (notification) =>
           notification.schedule.at.getTime() === notificationDate &&
-          notification.body.includes(professional.firstName) &&
-          notification.body.includes(professional.lastName)
+          notification.body.includes(professionalName)
       );
 
       if (notificationToCancel) {
@@ -102,9 +108,9 @@ export class LocalNotificationsService {
       }
     } else {
       
-      const subtitle = `Turno: ${this.dateFormatterService.getSpanishFormattedDate(date)}. Doctor: ${
-        professional.firstName
-      } ${professional.lastName}`;
+      const subtitle = `Turno: ${this.dateFormatterService.getSpanishFormattedDate(
+        date,
+      )}. Doctor: ${professionalName}`;
   
       await this.localNotifications.schedule({
         notifications: [

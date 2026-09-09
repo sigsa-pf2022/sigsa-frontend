@@ -94,7 +94,10 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
     const firstName = professional?.firstName?.trim();
     const lastName = professional?.lastName?.trim();
     const hasProfessionalNames = Boolean(firstName || lastName);
-    this.title = hasProfessionalNames ? `Dr/a ${firstName || ''} ${lastName || ''}`.trim() : 'Turno sin profesional';
+    // El prefijo queda como está; sólo se capitaliza el nombre.
+    this.title = hasProfessionalNames
+      ? `Dr/a ${titleCase(`${firstName || ''} ${lastName || ''}`)}`.trim()
+      : 'Turno sin profesional';
 
     try {
       this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.appointment.date);

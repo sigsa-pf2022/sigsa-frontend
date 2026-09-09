@@ -5,6 +5,7 @@ import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { addHours, format, formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { toPickerValue } from 'src/app/utils/to-picker-value';
 import { MedsEventDataService } from '../shared/services/meds-events-data/meds-events-data.service';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 
@@ -441,7 +442,9 @@ export class CreateMedEventComponent implements OnInit {
       if (!savedMed) {
         this.medsEventDataService.update({ med: this.med, medId: this.med?.id });
       }
-      this.medEventDate = medEvent.date;
+      // La API devuelve UTC y el picker muestra los dígitos crudos: hay que
+      // pasarlo a hora local o la edición corre el horario.
+      this.medEventDate = toPickerValue(medEvent.date);
       this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(medEvent.date));
     } catch (err) {
       this.toastService.showError?.('No se pudo cargar el recordatorio');

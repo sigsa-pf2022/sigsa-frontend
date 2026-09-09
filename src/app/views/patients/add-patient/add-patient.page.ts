@@ -93,7 +93,7 @@ import { PatientsService } from '../shared/services/patients.service';
             <div class="ap__result-info">
               <span class="status-badge status-badge--warning">Dependiente</span>
               <p class="ap__result-name">
-                {{ foundPatient.dependentFirstName }} {{ foundPatient.dependentLastName }}
+                {{ foundPatient.dependentFirstName | titlecase }} {{ foundPatient.dependentLastName | titlecase }}
               </p>
               <p class="ap__result-meta">DNI: {{ foundPatient.dependentDni }}</p>
             </div>
@@ -102,8 +102,8 @@ import { PatientsService } from '../shared/services/patients.service';
           <div class="ap__notice">
             <ion-icon name="information-circle" aria-hidden="true"></ion-icon>
             <p>
-              Pertenece al grupo <strong>{{ foundPatient.groupName }}</strong>, administrado por
-              <strong>{{ foundPatient.responsibleFirstName }} {{ foundPatient.responsibleLastName }}</strong>.
+              Pertenece al grupo <strong>{{ foundPatient.groupName | titlecase }}</strong>, administrado por
+              <strong>{{ foundPatient.responsibleFirstName | titlecase }} {{ foundPatient.responsibleLastName | titlecase }}</strong>.
               El responsable va a recibir una notificación para autorizar la solicitud.
             </p>
           </div>

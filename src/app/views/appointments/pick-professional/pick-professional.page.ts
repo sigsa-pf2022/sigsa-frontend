@@ -63,7 +63,7 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
             [isSelectable]="true"
             [value]="doctorOption.id"
             [selectedValue]="this.doctor?.id"
-            [title]="'Dr/a ' + doctorOption.firstName + ' ' + doctorOption.lastName"
+            [title]="'Dr/a ' + (doctorOption.firstName + ' ' + doctorOption.lastName | titlecase)"
             img="doctor"
           ></app-items-list>
         </ng-container>
