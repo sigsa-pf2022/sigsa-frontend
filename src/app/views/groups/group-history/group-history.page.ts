@@ -15,7 +15,19 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
     text: (p) => `Se hizo cargo de ${p?.medName ? p.medName : 'un turno'}`,
   },
   event_confirmed: { icon: 'checkmark-circle-outline', text: () => 'Confirmó un evento' },
-  event_canceled: { icon: 'close-circle-outline', text: () => 'Canceló un evento' },
+  event_canceled: {
+    icon: 'close-circle-outline',
+    text: (p) => {
+      const que = p?.treatment
+        ? `el tratamiento de ${p?.medName}`
+        : p?.medName
+        ? `el medicamento ${p.medName}`
+        : 'un turno';
+      // El cron cancela los turnos que vencieron: no es la decisión de nadie,
+      // así que se lee como vencimiento y no como una cancelación del grupo.
+      return p?.automatic ? `Venció ${que}` : `Canceló ${que}`;
+    },
+  },
   member_added: {
     icon: 'person-add-outline',
     text: (p) => `Agregó a ${titleCase(p?.memberName) || 'un integrante'}`,
@@ -68,7 +80,7 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
           <div class="member-row__body">
             <span class="member-row__name">{{ describe(entry) }}</span>
             <span class="member-row__sub">
-              {{ (entry.actorName | titlecase) || 'Alguien' }} · {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+              {{ actorFor(entry) }} · {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
             </span>
           </div>
           <span class="gh-history__icon" aria-hidden="true">
@@ -136,6 +148,16 @@ export class GroupHistoryPage implements OnInit {
 
   iconFor(entry: any): string {
     return ACTION_LABELS[entry?.action]?.icon ?? 'ellipse-outline';
+  }
+
+  /**
+   * Quién figura como autor. Las entradas sin actor son del cron que vence los
+   * turnos: decir "Alguien" ahí hace pensar que fue un integrante del grupo.
+   */
+  actorFor(entry: any): string {
+    const name = titleCase(entry?.actorName);
+    if (name) return name;
+    return entry?.payload?.automatic ? 'El sistema' : 'Alguien';
   }
 
   getInitials(entry: any): string {

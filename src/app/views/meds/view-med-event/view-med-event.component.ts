@@ -5,6 +5,10 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 import { titleCase } from 'src/app/utils/title-case';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import {
+  resolveEventStatus,
+  STATUS_BADGE_CLASS,
+} from 'src/app/constants/EventStatus.constant';
 
 @Component({
   selector: 'app-view-med-event',
@@ -188,23 +192,22 @@ export class ViewMedEventComponent implements OnInit {
     this.navController.navigateBack([fallback]);
   }
 
+  /** Mismo criterio que las listas: se resuelve en un solo lugar. */
   get statusLabel(): string {
-    const map: Record<string, string> = {
-      confirmed: 'CONFIRMADO',
-      created: 'CREADO',
-      canceled: 'CANCELADO',
-    };
-    return map[this.medEvent?.status] || (this.medEvent?.status || '').toUpperCase();
+    return resolveEventStatus(this.medEvent)?.text ?? '';
   }
 
   get statusBadgeClass(): string {
-    return this.badgeClassFor(this.medEvent?.status);
+    const status = resolveEventStatus(this.medEvent);
+    return status ? STATUS_BADGE_CLASS[status.color] : '';
   }
 
   doseLabel(dose: any): string {
     const map: Record<string, string> = {
       confirmed: 'TOMADA',
       created: 'PENDIENTE',
+      sended: 'AVISADA',
+      discarded: 'DESCARTADA',
       canceled: 'CANCELADA',
     };
     return map[dose?.status] || (dose?.status || '').toUpperCase();
@@ -218,6 +221,8 @@ export class ViewMedEventComponent implements OnInit {
     const map: Record<string, string> = {
       confirmed: 'status-badge--success',
       created: 'status-badge--violet',
+      sended: '',
+      discarded: '',
       canceled: 'status-badge--danger',
     };
     return map[status] || '';

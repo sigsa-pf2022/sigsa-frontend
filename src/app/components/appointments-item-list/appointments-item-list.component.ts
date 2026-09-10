@@ -1,31 +1,21 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { isBefore } from 'date-fns';
-import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
+import {
+  EventStatus,
+  isPastEvent,
+  resolveEventStatus,
+  STATUS_BADGE_CLASS,
+} from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { titleCase } from 'src/app/utils/title-case';
-
-const STATUS_BADGE_CLASS = {
-  danger: 'status-badge--danger',
-  primary: 'status-badge--violet',
-  success: 'status-badge--success',
-  warning: 'status-badge--warning',
-  info: 'status-badge--info',
-};
 
 @Component({
   selector: 'app-appointments-item-list',
   template: `
-    <ion-item
-      class="list-item"
-      [class.list-item--due]="dueDate"
-      lines="none"
-      [button]="true"
-      detail="false"
-    >
+    <ion-item class="list-item" lines="none" [button]="true" detail="false">
       <div
         class="list-item__icon"
-        [class.list-item__icon--appointment]="!dueDate"
-        [class.list-item__icon--due]="dueDate"
+        [class.list-item__icon--appointment]="!isPast"
+        [class.list-item__icon--past]="isPast"
         aria-hidden="true"
       >
         <ion-icon name="calendar"></ion-icon>
@@ -57,7 +47,7 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
   title: string;
   subtitle: string;
   takenChargeBy: string;
-  dueDate: boolean;
+  isPast: boolean;
   status: EventStatus;
   statusBadgeClass = '';
   constructor(private dateFormatterService: DateFormatterService) {}
@@ -83,7 +73,7 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
       this.subtitle = '';
       this.takenChargeBy = '';
       this.status = null;
-      this.dueDate = false;
+      this.isPast = false;
       this.statusBadgeClass = '';
       return;
     }
@@ -105,13 +95,8 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
       this.subtitle = '';
     }
 
-    this.status = EVENT_STATUS.find((es) => es.value === this.appointment.status);
-    this.statusBadgeClass = this.status ? (STATUS_BADGE_CLASS[this.status.color] || '') : '';
-    if (this.status && this.status.value === EventStatusEnum.CONFIRMADO) {
-      const date = new Date(this.appointment.date);
-      this.dueDate = isBefore(date, new Date());
-    } else {
-      this.dueDate = false;
-    }
+    this.status = resolveEventStatus(this.appointment);
+    this.statusBadgeClass = this.status ? STATUS_BADGE_CLASS[this.status.color] : '';
+    this.isPast = isPastEvent(this.appointment);
   }
 }

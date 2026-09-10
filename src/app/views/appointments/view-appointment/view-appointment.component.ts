@@ -7,6 +7,10 @@ import { Professional } from '../../doctors/shared/interfaces/Professional.inter
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 import { titleCase } from 'src/app/utils/title-case';
+import {
+  resolveEventStatus,
+  STATUS_BADGE_CLASS,
+} from 'src/app/constants/EventStatus.constant';
 
 @Component({
   selector: 'app-view-appointment',
@@ -195,22 +199,14 @@ export class ViewAppointmentComponent implements OnInit {
     return this.navController.navigateForward('/tabs/appointments');
   }
 
+  /** Mismo criterio que las listas: se resuelve en un solo lugar. */
   get statusLabel(): string {
-    const map: Record<string, string> = {
-      confirmed: 'CONFIRMADO',
-      created: 'CREADO',
-      canceled: 'CANCELADO',
-    };
-    return map[this.appointment?.status] || (this.appointment?.status || '').toUpperCase();
+    return resolveEventStatus(this.appointment)?.text ?? '';
   }
 
   get statusBadgeClass(): string {
-    const map: Record<string, string> = {
-      confirmed: 'status-badge--success',
-      created: 'status-badge--violet',
-      canceled: 'status-badge--danger',
-    };
-    return map[this.appointment?.status] || '';
+    const status = resolveEventStatus(this.appointment);
+    return status ? STATUS_BADGE_CLASS[status.color] : '';
   }
 
   async getAppointment() {
