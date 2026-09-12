@@ -5,6 +5,7 @@ import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-moda
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { PatientLink } from './shared/interfaces/PatientLink.interface';
 import { PatientsService } from './shared/services/patients.service';
+import { titleCase } from 'src/app/utils/title-case';
 
 @Component({
   selector: 'app-patients',
@@ -73,13 +74,16 @@ import { PatientsService } from './shared/services/patients.service';
                 {{ patient.patientType === 'dependent' ? 'Dependiente' : 'Usuario titular' }}
               </span>
             </div>
+            <!-- Los tres puntos anunciaban un menú de opciones que no existe:
+                 el botón desvincula y nada más. El ícono lo dice. -->
             <button
               type="button"
-              class="member-row__action member-row__action--neutral"
+              class="member-row__action member-row__action--danger"
               (click)="confirmUnlink(patient); $event.stopPropagation()"
               aria-label="Desvincular paciente"
+              title="Desvincular paciente"
             >
-              <ion-icon name="ellipsis-vertical"></ion-icon>
+              <ion-icon name="unlink-outline"></ion-icon>
             </button>
           </ion-item>
         </section>
@@ -222,7 +226,9 @@ export class PatientsPage implements OnInit {
       component: YesNoModalComponent,
       cssClass: 'modal',
       componentProps: {
-        text: `¿Cancelar vinculación con ${patient.firstName} ${patient.lastName}?`,
+        text: `¿Cancelar vinculación con ${titleCase(
+          `${patient.firstName} ${patient.lastName}`,
+        )}?`,
       },
     });
     await modal.present();

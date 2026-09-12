@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { MedicalDocument } from 'src/app/views/documents/shared/interfaces/Document.interface';
@@ -68,6 +68,7 @@ export class PatientDocumentsPage implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private navController: NavController,
     private patientsService: PatientsService,
     private toastService: ToastService,
@@ -105,6 +106,11 @@ export class PatientDocumentsPage implements OnInit {
   }
 
   viewDocument(id: number) {
-    this.navController.navigateForward([`/documents/view/${id}`]);
+    // La vista de documento es compartida (pestaña personal, grupo, paciente) y
+    // por sí sola no sabe de dónde vino: sin esto, la flecha de volver caía en
+    // "Mis documentos" en vez de la ficha del paciente.
+    this.navController.navigateForward([`/documents/view/${id}`], {
+      queryParams: { returnUrl: this.router.url },
+    });
   }
 }

@@ -100,6 +100,7 @@ export class ViewDocumentComponent implements OnInit {
   pdfUrl: any;
   documentId: number;
   groupId: string | null = null;
+  returnUrl: string | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -110,6 +111,7 @@ export class ViewDocumentComponent implements OnInit {
   async ngOnInit() {
     this.documentId = +this.route.snapshot.paramMap.get('id');
     this.groupId = this.route.snapshot.queryParamMap.get('groupId');
+    this.returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
     await this.loadDocument();
   }
 
@@ -127,7 +129,13 @@ export class ViewDocumentComponent implements OnInit {
   }
 
   goBack() {
-    // Si venimos del home de un grupo, volvemos ahí y no a la pestaña personal.
+    // `returnUrl` lo manda quien abre el documento desde una pantalla que no es
+    // la propia (por ejemplo la ficha de documentos de un paciente). Si no
+    // viene, se cae al grupo y por último a la pestaña personal.
+    if (this.returnUrl) {
+      this.navController.navigateBack(this.returnUrl);
+      return;
+    }
     const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/clipboard';
     this.navController.navigateBack([fallback]);
   }

@@ -69,8 +69,10 @@ import { PatientsService } from '../shared/services/patients.service';
             <div class="ap__result-avatar" aria-hidden="true">
               {{ getInitials(foundPatient.firstName, foundPatient.lastName) }}
             </div>
+            <!-- Sin etiqueta: un paciente con cuenta propia es el caso normal y
+                 no necesita aclaración. La pastilla sólo aparece cuando es un
+                 dependiente, que sí cambia cómo sigue el trámite. -->
             <div class="ap__result-info">
-              <span class="status-badge status-badge--violet">Titular</span>
               <p class="ap__result-name">{{ foundPatient.firstName | titlecase }} {{ foundPatient.lastName | titlecase }}</p>
               <p class="ap__result-meta">DNI: {{ foundPatient.dni }}</p>
             </div>
