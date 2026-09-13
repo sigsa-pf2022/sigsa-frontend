@@ -286,10 +286,17 @@ export class AddMembersPage implements OnInit {
     } else {
       // Lógica para crear grupo nuevo (flujo original)
       const data = { ...this.newGroupDataService.data, members: this.members };
-      await this.groupsService
-        .createGroup(data)
-        .then(() => this.success())
-        .catch((err) => console.log(err));
+      try {
+        await this.groupsService.createGroup(data);
+        this.success();
+      } catch (err) {
+        // Antes esto era un console.log: si el alta fallaba, la pantalla se
+        // quedaba quieta sin ningún aviso y no había forma de saber por qué.
+        console.error('AddMembersPage: error creando el grupo', err);
+        this.toastService.showError(
+          err?.error?.message || 'No pudimos crear el grupo. Revisá los datos e intentá de nuevo.',
+        );
+      }
     }
   }
 

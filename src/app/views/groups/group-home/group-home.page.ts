@@ -244,8 +244,11 @@ export class GroupHomePage implements OnInit {
     this.options = [
       { title: 'Ver miembros', icon: 'people-outline', action: 'see-members', groupId: this.group?.id, memberId: currentUser?.id },
       { title: 'Historial del grupo', icon: 'time-outline', action: 'see-history', groupId: this.group?.id },
+      // "Salir" (cerrar sesión) no estaba implementado en el menú: su acción no
+      // existía en el switch, así que no hacía nada. Además se confundía con
+      // "Abandonar grupo", que es la acción que sí corresponde acá; cerrar
+      // sesión vive en el perfil.
       { title: 'Abandonar grupo', icon: 'exit-outline', color: 'danger', action: 'exit-group', groupId: this.group?.id, memberId: currentUser?.id },
-      { title: 'Salir', icon: 'log-out-outline', color: 'danger', action: 'logout' },
     ];
 
     // Cargar datos secuencialmente para garantizar consistencia. Cada carga

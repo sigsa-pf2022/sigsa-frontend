@@ -91,8 +91,10 @@ export class ProfilePage implements OnInit {
     return this.navController.navigateForward(['/profile/my-data']);
   }
 
-  logout() {
-    this.auth.signOut();
+  async logout() {
+    // Hay que esperar: si se navega antes de que la sesión se limpie,
+    // `AlreadyLoggedGuard` todavía ve al usuario logueado y devuelve al home.
+    await this.auth.signOut();
     return this.navController.navigateRoot(['welcome']);
   }
 

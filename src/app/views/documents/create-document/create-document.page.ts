@@ -291,6 +291,7 @@ export class CreateDocumentPage implements OnInit {
         this.removeDocument();
       }
     } catch (error) {
+      console.error('CreateDocument: error capturando la imagen', error);
       this.toastService.showError('Error al capturar la imagen');
     }
   }
@@ -317,6 +318,7 @@ export class CreateDocumentPage implements OnInit {
         this.removeDocument();
       }
     } catch (error) {
+      console.error('CreateDocument: error seleccionando de galería', error);
       this.toastService.showError('Error al seleccionar la imagen');
     }
   }

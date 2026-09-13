@@ -56,6 +56,7 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
                 formControlName="email"
                 placeholder="tu@email.com"
                 type="email"
+                autocapitalize="none"
                 inputmode="email"
                 autocomplete="email"
               ></ion-input>

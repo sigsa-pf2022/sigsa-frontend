@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { NavController } from '@ionic/angular';
 import { BehaviorSubject } from 'rxjs';
 import { User } from 'src/app/interfaces/user';
@@ -21,7 +21,8 @@ export class AuthenticationService {
   constructor(
     public navController: NavController,
     private http: HttpClient,
-    private pushNotifications: PushNotificationsService
+    private pushNotifications: PushNotificationsService,
+    private zone: NgZone
   ) {}
 
   user() {
@@ -110,8 +111,23 @@ export class AuthenticationService {
       .toPromise();
   }
 
+  /**
+   * Cierra la sesión. Quien llame tiene que **esperarla** antes de navegar: si
+   * no, el usuario sigue en `localStorage` y `AlreadyLoggedGuard` rebota la
+   * navegación de vuelta al home.
+   *
+   * La limpieza va dentro de `NgZone` porque `deregister()` termina con un
+   * `await` al bridge nativo de Capacitor: lo que sigue corre fuera de la zona
+   * de Angular y no dispara change detection, así que la pantalla quedaba
+   * congelada hasta que el usuario tocaba algo.
+   */
   async signOut() {
-    await this.pushNotifications.deregister();
-    return this.deleteUser();
+    try {
+      await this.pushNotifications.deregister();
+    } catch (error) {
+      // Dar de baja el dispositivo es secundario: no puede impedir salir.
+      console.error('AuthenticationService: error dando de baja el push', error);
+    }
+    return this.zone.run(() => this.deleteUser());
   }
 }

@@ -36,8 +36,11 @@ export class PhotoPickerService {
 
       const dataUri = `data:image/${image.format};base64,${image.base64String}`;
       return await this.toSquareJpeg(dataUri);
-    } catch {
-      // Capacitor tira cuando el usuario cancela el picker.
+    } catch (error) {
+      // Capacitor tira cuando el usuario cancela el picker, que es el caso
+      // normal. Se loguea igual: cuando falló de verdad (faltaban los permisos
+      // de galería en el manifest) este catch mudo no dejaba ningún rastro.
+      console.error('PhotoPicker: no se pudo obtener la imagen', error);
       return null;
     }
   }

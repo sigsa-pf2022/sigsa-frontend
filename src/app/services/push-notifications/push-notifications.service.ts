@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { LocalNotificationsService } from '../local-notifications/local-notifications.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 import { ToastService } from '../toast/toast.service';
+import { timeout } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationsService {
@@ -192,6 +193,9 @@ export class PushNotificationsService {
       .delete(`${environment.apiUrl}/notifications/devices/${encodeURIComponent(token)}`, {
         headers: this.getAuthHeaders(),
       })
+      // Sin tope, una petición que no responde nunca (backend caído a medias)
+      // dejaba el cierre de sesión colgado para siempre.
+      .pipe(timeout(4000))
       .toPromise()
       .catch((err) => console.error('[Push] Error unregistering device:', err));
   }

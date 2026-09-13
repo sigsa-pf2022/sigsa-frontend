@@ -51,6 +51,7 @@ import { UserValidationModalComponent } from './shared-login/components/user-val
                 formControlName="email"
                 placeholder="tu@email.com"
                 type="email"
+                autocapitalize="none"
                 autocomplete="email"
                 inputmode="email"
               ></ion-input>

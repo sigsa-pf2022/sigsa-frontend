@@ -22,8 +22,12 @@ export class ForbiddenInterceptor implements HttpInterceptor {
   }
 
   private _logOut(error: HttpErrorResponse) {
-    this.auth.signOut();
-    this.navController.navigateRoot(['welcome']);
+    // Igual que en el perfil: navegar antes de que la sesión se limpie hace que
+    // el guard devuelva al home. Se navega recién cuando signOut() terminó.
+    this.auth
+      .signOut()
+      .catch((err) => console.error('ForbiddenInterceptor: error al cerrar sesión', err))
+      .then(() => this.navController.navigateRoot(['welcome']));
     return throwError(error);
   }
 }
