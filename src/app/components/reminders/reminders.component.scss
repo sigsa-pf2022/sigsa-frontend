@@ -67,9 +67,8 @@
   }
 }
 
-/* Modo compacto: pocas filas en flujo normal, sin scroll propio. El inset
-   lateral acá es nuestro, porque la regla global que lo da vive dentro del
-   cdk-virtual-scroll-viewport. */
+/* Modo compacto: pocas filas en flujo normal, sin scroll propio. Mismo inset
+   lateral que `.rem__scroll`, el modo con scroll. */
 .rem__list {
   display: flex;
   flex-direction: column;
@@ -119,17 +118,17 @@
   }
 }
 
-cdk-virtual-scroll-viewport.rem__scroll {
+.rem__scroll {
   /* El alto lo da el contenedor flex de la página (home / grupo-home),
      que fija el header arriba y deja este listado ocupando el resto. */
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  /* No horizontal padding: cdk-virtual-scroll's inner content
-     wrapper is position: absolute and ignores padding. The items
-     receive their 20px lateral inset via the global
-     `cdk-virtual-scroll-viewport .list-item` rule. */
-  padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 16px);
+  /* Mismo inset lateral que `.rem__list` (modo compacto) y `.listing-scroll`.
+     El selector era `cdk-virtual-scroll-viewport.rem__scroll`: al pasar el
+     listado a un div común dejó de aplicar y se perdieron el tamaño y el
+     inset de una. */
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 16px);
   box-sizing: border-box;
 }
 

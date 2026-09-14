@@ -668,10 +668,12 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing-scroll {
   height: 100%;
   width: 100%;
-  /* No horizontal padding here because cdk-virtual-scroll's inner
-     .cdk-virtual-scroll-content-wrapper is position: absolute and
-     ignores it. We inset items with their own margin below. */
-  padding: 8px 0;
+  /* El inset lateral lo pone el contenedor, alineado con `.listing-header`.
+     Las cards no llevan margen horizontal propio. Antes esto era `8px 0` y el
+     inset venía de una regla colgada de `cdk-virtual-scroll-viewport`; al pasar
+     los listados a un div común esa regla dejó de aplicar y las cards
+     quedaban pegadas a los bordes. */
+  padding: 8px 20px;
   box-sizing: border-box;
 }
 
@@ -708,11 +710,8 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   flex: 1 1 auto;
   min-height: 0;
   height: auto;
-  /* Cortar el listado ANTES del FAB. Va margin-bottom (fuera del viewport) y no
-     padding interno: el content wrapper y el spacer del cdk-virtual-scroll son
-     position: absolute, así que el padding no extiende el área scrolleable y el
-     último item terminaba justo debajo del "+". Mismo truco que en el home del
-     grupo, más abajo. */
+  /* Cortar el listado ANTES del FAB, para que el último item no termine
+     justo debajo del "+". Mismo criterio que en el home del grupo, más abajo. */
   margin-bottom: calc(env(safe-area-inset-bottom, 0) + 88px);
 }
 
@@ -813,16 +812,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   gap: 8px 12px;
 }
 
-/* Restore the 20px horizontal inset on list-item cards that live
-   inside a virtualized scroll, so they line up with the rest of the
-   page (headers, segment switcher, etc). Outside of virtual scroll,
-   list-item keeps its base margin and the parent provides padding. */
-cdk-virtual-scroll-viewport .list-item,
-cdk-virtual-scroll-viewport .alert-card {
-  margin-left: 20px;
-  margin-right: 20px;
-}
-
 /* Las listas verticales nunca deben scrollear horizontalmente: todas las
    cards quedan al ancho del viewport (como en meds). Antes, contenido ancho
    en algún item habilitaba el scroll lateral en turnos/home. */
@@ -832,20 +821,6 @@ cdk-virtual-scroll-viewport .alert-card {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-}
-
-cdk-virtual-scroll-viewport.listing-scroll,
-cdk-virtual-scroll-viewport.rem__scroll {
-  overflow-x: hidden;
-}
-
-/* En scroll vertical, el content-wrapper del cdk es position:absolute SIN ancho
-   fijo, por lo que toma el ancho del item más ancho (un subtítulo largo
-   ensancha la card y la desborda). Lo fijamos al ancho del viewport para que
-   todas las cards midan igual y el contenido se trunque con ellipsis. */
-cdk-virtual-scroll-viewport.listing-scroll .cdk-virtual-scroll-content-wrapper,
-cdk-virtual-scroll-viewport.rem__scroll .cdk-virtual-scroll-content-wrapper {
-  width: 100%;
 }
 
 /* Empty state with icon-in-circle */
