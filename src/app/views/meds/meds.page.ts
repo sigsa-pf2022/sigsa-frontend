@@ -37,14 +37,16 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
             ></ion-searchbar>
           </form>
 
-          <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
+          <!-- Lista común: el scroll virtual dejaba de redibujar al
+               desplazarse y los últimos ítems no se veían nunca. -->
+          <div class="listing-scroll listing-scroll--plain">
             <app-meds-event-item-list
-              *cdkVirtualFor="let medEvent of this.filteredMedsEvents"
+              *ngFor="let medEvent of this.filteredMedsEvents; trackBy: trackById"
               [medEvent]="medEvent"
               [flush]="true"
               (click)="presentActionSheet(medEvent)"
             ></app-meds-event-item-list>
-          </cdk-virtual-scroll-viewport>
+          </div>
         </ng-container>
 
         <ng-template #emptyState>
@@ -85,6 +87,11 @@ export class MedsPage implements OnInit, OnDestroy {
     search: '',
   });
   private routerSub: Subscription | undefined;
+
+  /** Evita recrear el DOM de toda la lista en cada refresco. */
+  trackById(_index: number, item: any) {
+    return item?.id ?? _index;
+  }
 
   constructor(
     private fb: FormBuilder,

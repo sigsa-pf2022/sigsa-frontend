@@ -34,14 +34,22 @@ import { MedicalDocument } from './shared/interfaces/Document.interface';
             ></ion-searchbar>
           </form>
 
-          <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
+          <!--
+            Lista común y no cdk-virtual-scroll-viewport: el scroll virtual
+            dejaba de redibujar al desplazarse (el scrollTop llegaba al final
+            pero seguía mostrando siempre los mismos ítems), así que los
+            últimos documentos no se veían nunca. Para una historia clínica
+            personal —decenas de documentos como mucho— no aporta nada y sí
+            trae este problema.
+          -->
+          <div class="listing-scroll listing-scroll--plain">
             <app-document-item-list
-              *cdkVirtualFor="let document of this.filteredDocuments"
+              *ngFor="let document of this.filteredDocuments; trackBy: trackById"
               [document]="document"
               [flush]="true"
               (click)="presentActionSheet(document)"
             ></app-document-item-list>
-          </cdk-virtual-scroll-viewport>
+          </div>
         </ng-container>
 
         <ng-template #emptyState>
@@ -125,6 +133,10 @@ export class DocumentsPage implements OnInit, OnDestroy {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  trackById(_index: number, document: MedicalDocument) {
+    return document.id;
   }
 
   private applyFilter(search: string) {

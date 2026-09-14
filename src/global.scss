@@ -826,6 +826,14 @@ cdk-virtual-scroll-viewport .alert-card {
 /* Las listas verticales nunca deben scrollear horizontalmente: todas las
    cards quedan al ancho del viewport (como en meds). Antes, contenido ancho
    en algún item habilitaba el scroll lateral en turnos/home. */
+/* Listado sin scroll virtual: scrollea el contenedor directamente. */
+.listing-scroll--plain,
+.rem__scroll--plain {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
 cdk-virtual-scroll-viewport.listing-scroll,
 cdk-virtual-scroll-viewport.rem__scroll {
   overflow-x: hidden;

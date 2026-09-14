@@ -91,27 +91,27 @@ const EMPTY_COPY = {
 
     <!-- Modo completo (home personal): scroll virtual propio. -->
     <ng-container *ngIf="!loading && !maxItems && reminders.length">
-      <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.medications" itemSize="80" class="rem__scroll">
+      <div *ngIf="activeTab === remindersTypes.medications" class="rem__scroll rem__scroll--plain">
         <app-meds-event-item-list
-          *cdkVirtualFor="let medEvent of this.reminders"
+          *ngFor="let medEvent of this.reminders; trackBy: trackById"
           [medEvent]="medEvent"
           (click)="onItemClick(medEvent)"
         ></app-meds-event-item-list>
-      </cdk-virtual-scroll-viewport>
-      <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.appointments" itemSize="80" class="rem__scroll">
+      </div>
+      <div *ngIf="activeTab === remindersTypes.appointments" class="rem__scroll rem__scroll--plain">
         <app-appointments-item-list
-          *cdkVirtualFor="let appointment of this.reminders"
+          *ngFor="let appointment of this.reminders; trackBy: trackById"
           [appointment]="appointment"
           (click)="onItemClick(appointment)"
         ></app-appointments-item-list>
-      </cdk-virtual-scroll-viewport>
-      <cdk-virtual-scroll-viewport *ngIf="activeTab === remindersTypes.documents" itemSize="80" class="rem__scroll">
+      </div>
+      <div *ngIf="activeTab === remindersTypes.documents" class="rem__scroll rem__scroll--plain">
         <app-document-item-list
-          *cdkVirtualFor="let document of this.reminders"
+          *ngFor="let document of this.reminders; trackBy: trackById"
           [document]="document"
           (click)="onItemClick(document)"
         ></app-document-item-list>
-      </cdk-virtual-scroll-viewport>
+      </div>
     </ng-container>
   `,
   styleUrls: ['./reminders.component.scss'],
@@ -141,6 +141,11 @@ export class RemindersComponent {
 
   get emptyCopy() {
     return EMPTY_COPY[this.activeTab] || EMPTY_COPY[this.remindersTypes.appointments];
+  }
+
+  /** Evita recrear el DOM de toda la lista en cada refresco. */
+  trackById(_index: number, item: any) {
+    return item?.id ?? _index;
   }
 
   changeReminders(event) {
