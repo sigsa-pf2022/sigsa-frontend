@@ -5,6 +5,7 @@ import { NavController } from '@ionic/angular';
 import { MedsEventDataService } from '../shared/services/meds-events-data/meds-events-data.service';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
+import { formatDosage } from 'src/app/utils/med-dosage';
 
 @Component({
   selector: 'app-pick-med',
@@ -65,7 +66,7 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
             [value]="medOption.id"
             [selectedValue]="this.med?.id"
             [title]="medOption.name"
-            [subtitle]="medOption.dosage"
+            [subtitle]="dosageLabel(medOption)"
             img="pill"
           ></app-items-list>
         </ng-container>
@@ -120,6 +121,11 @@ export class PickMedComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {}
+
+  /** "400 mg": la dosis del catálogo nunca va sin su unidad. */
+  dosageLabel(med: any): string {
+    return formatDosage(med);
+  }
 
   ionViewWillEnter() {
     this.route.queryParams.subscribe(params => {

@@ -6,6 +6,7 @@ import {
   STATUS_BADGE_CLASS,
 } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
+import { formatMedTitle } from 'src/app/utils/med-dosage';
 import { titleCase } from 'src/app/utils/title-case';
 
 @Component({
@@ -107,12 +108,7 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
     // En un tratamiento, el aviso corresponde a la toma que se está mostrando.
     this.takenChargeBy = this.resolveTakenCharge(reference);
 
-    const med = this.medEvent.med || {};
-    const rawName = med.name;
-    const name = typeof rawName === 'string' ? rawName.trim() : rawName != null ? String(rawName) : '';
-    const rawDosage = med.dosage;
-    const dosageStr = rawDosage == null ? '' : typeof rawDosage === 'string' ? rawDosage.trim() : String(rawDosage);
-    this.title = `${name}${dosageStr ? ' ' + dosageStr : ''}`.trim() || 'Medicamento';
+    this.title = formatMedTitle(this.medEvent.med) || 'Medicamento';
 
     let formattedDate = '';
     try {

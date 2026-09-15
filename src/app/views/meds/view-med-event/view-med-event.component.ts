@@ -3,9 +3,11 @@ import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { formatDosage } from 'src/app/utils/med-dosage';
 import { titleCase } from 'src/app/utils/title-case';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import {
+  isOverdue,
   resolveEventStatus,
   STATUS_BADGE_CLASS,
 } from 'src/app/constants/EventStatus.constant';
@@ -45,7 +47,7 @@ import {
           <div class="vm__summary-body">
             <p class="vm__summary-name">{{ medEvent?.med?.name }}</p>
             <p class="vm__summary-meta">
-              <span *ngIf="medEvent?.med?.dosage">{{ medEvent?.med?.dosage }}</span>
+              <span *ngIf="dosageLabel">{{ dosageLabel }}</span>
             </p>
           </div>
           <span
@@ -192,6 +194,11 @@ export class ViewMedEventComponent implements OnInit {
     this.navController.navigateBack([fallback]);
   }
 
+  /** "400 mg": la dosis nunca va sin su unidad. */
+  get dosageLabel(): string {
+    return formatDosage(this.medEvent?.med);
+  }
+
   /** Mismo criterio que las listas: se resuelve en un solo lugar. */
   get statusLabel(): string {
     return resolveEventStatus(this.medEvent)?.text ?? '';
@@ -202,7 +209,19 @@ export class ViewMedEventComponent implements OnInit {
     return status ? STATUS_BADGE_CLASS[status.color] : '';
   }
 
+  /**
+   * Etiqueta de cada toma del tratamiento.
+   *
+   * En la medicación propia no hay nada que responder —confirmar una toma no
+   * está cableado en la app—, así que "PENDIENTE" prometía una acción que no
+   * existe para algo que además ya pasó. Esas pasan a "VENCIDA", el mismo
+   * criterio que la pastilla de la lista.
+   *
+   * Dentro de un grupo no cambia nada: ahí "PENDIENTE" sí significa algo, que
+   * nadie se hizo cargo de la toma del dependiente todavía.
+   */
   doseLabel(dose: any): string {
+    if (this.isOwnOverdueDose(dose)) return 'VENCIDA';
     const map: Record<string, string> = {
       confirmed: 'TOMADA',
       created: 'PENDIENTE',
@@ -214,7 +233,14 @@ export class ViewMedEventComponent implements OnInit {
   }
 
   doseBadgeClass(dose: any): string {
+    // Ámbar, como la pastilla "VENCIDO" de la lista.
+    if (this.isOwnOverdueDose(dose)) return STATUS_BADGE_CLASS.warning;
     return this.badgeClassFor(dose?.status);
+  }
+
+  /** Sólo aplica fuera de un grupo: la toma de un dependiente no cambia. */
+  private isOwnOverdueDose(dose: any): boolean {
+    return !this.groupId && isOverdue(dose);
   }
 
   private badgeClassFor(status: string): string {

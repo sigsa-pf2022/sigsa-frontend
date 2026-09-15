@@ -5,6 +5,7 @@ import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { addHours, format, formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { formatMedTitle } from 'src/app/utils/med-dosage';
 import { toPickerValue } from 'src/app/utils/to-picker-value';
 import { MedsEventDataService } from '../shared/services/meds-events-data/meds-events-data.service';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
@@ -48,7 +49,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
         </div>
         <div class="wizard-summary__body">
           <p class="wizard-summary__eyebrow">Medicamento</p>
-          <p class="wizard-summary__title">{{ this.med?.name }} {{ this.med?.dosage }}</p>
+          <p class="wizard-summary__title">{{ this.medTitle }}</p>
         </div>
       </div>
 
@@ -186,6 +187,11 @@ export class CreateMedEventComponent implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  /** "Ibuprofeno 400 mg": el resumen del alta también lleva la unidad. */
+  get medTitle(): string {
+    return formatMedTitle(this.med);
+  }
 
   ionViewWillEnter() {
     // Capturar parámetros del dependiente si existen

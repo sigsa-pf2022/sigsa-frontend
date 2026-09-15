@@ -79,3 +79,19 @@ export function isPastEvent(event?: EventLike | null): boolean {
   const date = new Date(event.date);
   return !isNaN(date.getTime()) && date.getTime() < Date.now();
 }
+
+/**
+ * Evento abierto cuya hora ya pasó: nadie lo respondió y el momento se fue.
+ *
+ * Es la mitad temporal de `resolveEventStatus`, expuesta aparte para las vistas
+ * que tienen su propio vocabulario fila por fila —las tomas de un tratamiento—
+ * y necesitan el mismo criterio sin heredar los textos de la pastilla. Vive acá
+ * para que no vuelva a haber dos definiciones de "ya venció".
+ */
+export function isOverdue(event?: EventLike | null): boolean {
+  return (
+    !!event?.status &&
+    ABIERTOS.includes(event.status as EventStatusEnum) &&
+    isPastEvent(event)
+  );
+}
