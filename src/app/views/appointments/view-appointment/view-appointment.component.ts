@@ -106,10 +106,16 @@ import {
     </ion-content>
 
     <ion-footer class="auth-footer" mode="md" *ngIf="appointment">
+      <!--
+        "Confirmar turno" sólo fuera de un grupo. Adentro la acción es
+        "Me hago cargo", que además confirma: tener los dos botones juntos
+        confundía, porque parecían alternativas y en realidad escribían
+        cosas distintas (uno el status, el otro quién se ocupa).
+      -->
       <button
         type="button"
         class="auth-btn auth-btn--primary"
-        *ngIf="!isConfirmed"
+        *ngIf="!isConfirmed && !groupId"
         (click)="confirmAppointment()"
       >
         <ion-icon name="checkmark" aria-hidden="true"></ion-icon>
@@ -191,6 +197,13 @@ export class ViewAppointmentComponent implements OnInit {
   /**
    * Después de confirmar o cancelar volvemos al origen: si el turno es de un
    * dependiente, al home del grupo y no a la pestaña de turnos personales.
+   *
+   * Quien llama tiene que emitir antes `notifyAppointmentsChanged()`. Volver al
+   * grupo usa `navigateRoot`, que reconstruye la vista y dispara su
+   * `ionViewWillEnter`; volver a la pestaña personal no, porque el listado vive
+   * en el outlet anidado de tabs y su vista activa nunca cambió. Sin el aviso,
+   * el turno seguía figurando con el estado viejo hasta salir y entrar de otra
+   * pestaña.
    */
   private leaveAfterAction() {
     if (this.groupId) {
@@ -237,6 +250,7 @@ export class ViewAppointmentComponent implements OnInit {
       await this.appointmentsService
         .confirmAppointment(this.appointmentId)
         .then(() => this.toastService.showSuccess('Turno confirmado correctamente.'))
+        .then(() => this.appointmentsService.notifyAppointmentsChanged())
         .then(() => this.leaveAfterAction())
         .catch(() => {});
     }
@@ -256,6 +270,7 @@ export class ViewAppointmentComponent implements OnInit {
       await this.appointmentsService
         .cancelAppointment(this.appointmentId)
         .then(() => this.toastService.showSuccess('Turno cancelado correctamente.'))
+        .then(() => this.appointmentsService.notifyAppointmentsChanged())
         .then(() => this.leaveAfterAction())
         .catch(() => {});
     }
