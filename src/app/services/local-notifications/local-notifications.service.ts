@@ -5,6 +5,30 @@ import { DateFormatterService } from '../date-formatter/date-formatter.service';
 import { AppointmentsService } from 'src/app/views/appointments/shared/services/appointments/appointments.service';
 import { titleCase } from 'src/app/utils/title-case';
 
+/**
+ * Canal de notificaciones de la app.
+ *
+ * Android decide si una notificación aparece como banner ("heads-up") por la
+ * importancia del CANAL, no por la notificación: con IMPORTANCE_DEFAULT (3)
+ * suena pero no se dibuja arriba, y hace falta IMPORTANCE_HIGH (4) o más.
+ *
+ * Sin un canal propio las notificaciones caían en dos canales ajenos, los dos
+ * de importancia 3: el `default` que crea el plugin (su valor por defecto) y el
+ * `fcm_fallback_notification_channel` que arma Firebase cuando el manifest no
+ * declara ninguno. Por eso sonaban sin mostrarse.
+ *
+ * OJO: la importancia se fija al crear el canal y no se puede subir después
+ * por código, sólo el usuario puede desde la configuración del sistema. Si
+ * alguna vez hay que cambiarla, hay que estrenar OTRO id; éste ya quedó creado
+ * en todo dispositivo que haya abierto la app.
+ *
+ * El id vive en tres lugares que tienen que coincidir: acá, la meta-data
+ * `default_notification_channel_id` de `AndroidManifest.xml` (para el push que
+ * llega con la app cerrada) y el `android.notification.channelId` que manda el
+ * backend en `notifications-push.service.ts`.
+ */
+export const NOTIFICATION_CHANNEL_ID = 'sigsa_reminders';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -14,6 +38,25 @@ export class LocalNotificationsService {
 
   async requestPermissions() {
     return await this.localNotifications.requestPermissions();
+  }
+
+  /**
+   * Crea el canal de importancia alta. Es idempotente: si ya existe, Android
+   * ignora la llamada (y de paso no puede cambiarle la importancia).
+   */
+  async createChannel() {
+    try {
+      await this.localNotifications.createChannel({
+        id: NOTIFICATION_CHANNEL_ID,
+        name: 'Recordatorios',
+        description: 'Turnos y tomas de medicación',
+        importance: 4, // IMPORTANCE_HIGH: suena y se muestra como banner
+        visibility: 1, // VISIBILITY_PUBLIC: se ve en la pantalla bloqueada
+        vibration: true,
+      });
+    } catch (err) {
+      console.error('[LocalNotif] Error creando el canal:', err);
+    }
   }
 
   /**
@@ -35,6 +78,7 @@ export class LocalNotificationsService {
             title: title || 'Notificación',
             body: body || '',
             extra: extra || null,
+            channelId: NOTIFICATION_CHANNEL_ID,
             ...(actionTypeId ? { actionTypeId } : {}),
           },
         ],
@@ -121,6 +165,7 @@ export class LocalNotificationsService {
             schedule: {
               at: subMinutes(parseISO(date), 15),
             },
+            channelId: NOTIFICATION_CHANNEL_ID,
             actionTypeId: 'EVENT',
           },
         ],
@@ -138,6 +183,7 @@ export class LocalNotificationsService {
           schedule: {
             at: subMinutes(parseISO(date), 5),
           },
+          channelId: NOTIFICATION_CHANNEL_ID,
           actionTypeId: 'EVENT',
         },
       ],

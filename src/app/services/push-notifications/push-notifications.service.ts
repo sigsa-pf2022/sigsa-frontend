@@ -72,6 +72,10 @@ export class PushNotificationsService {
       console.error('[Push] Registration error:', JSON.stringify(error));
     });
 
+    // El canal tiene que existir antes de la primera notificación: es lo que
+    // decide que se dibuje como banner y no sólo en el centro de notificaciones.
+    await this.localNotifications.createChannel();
+
     // Botones nativos ("Me hago cargo" / "Descartar") en la notificación local
     // con la que redibujamos el push en primer plano.
     await this.localNotifications.registerActionTypes();
