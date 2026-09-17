@@ -55,10 +55,6 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
             <p class="empty-state__subtitle">
               Agendá tu próxima consulta y la vas a ver acá con todos los recordatorios.
             </p>
-            <button type="button" class="empty-state__cta" (click)="newAppointment()">
-              <ion-icon name="add"></ion-icon>
-              Agendar turno
-            </button>
           </div>
         </ng-template>
       </ng-container>

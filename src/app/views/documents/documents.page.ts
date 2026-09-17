@@ -61,10 +61,6 @@ import { MedicalDocument } from './shared/interfaces/Document.interface';
             <p class="empty-state__subtitle">
               Subí estudios, recetas o informes y los tenés siempre a mano.
             </p>
-            <button type="button" class="empty-state__cta" (click)="newDocument()">
-              <ion-icon name="add"></ion-icon>
-              Agregar documento
-            </button>
           </div>
         </ng-template>
       </ng-container>

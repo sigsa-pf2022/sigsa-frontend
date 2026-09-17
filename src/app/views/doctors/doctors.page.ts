@@ -93,10 +93,6 @@ import { ProfessionalsService } from './shared/services/professionals.service';
             <p class="empty-state__subtitle">
               Sumá tu profesional de confianza para agendar turnos rápido.
             </p>
-            <button type="button" class="empty-state__cta" (click)="newDoctor()">
-              <ion-icon name="add"></ion-icon>
-              Agregar profesional
-            </button>
           </div>
         </ng-template>
       </div>

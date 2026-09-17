@@ -58,10 +58,6 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
             <p class="empty-state__subtitle">
               Agregá tu primer medicamento y te avisamos cuándo tomarlo.
             </p>
-            <button type="button" class="empty-state__cta" (click)="newMedEvent()">
-              <ion-icon name="add"></ion-icon>
-              Agregar medicamento
-            </button>
           </div>
         </ng-template>
       </ng-container>

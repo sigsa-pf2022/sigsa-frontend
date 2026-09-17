@@ -124,10 +124,6 @@ import { titleCase } from 'src/app/utils/title-case';
           <p class="empty-state__subtitle">
             Vinculá pacientes para acceder a su historia clínica y registrar consultas.
           </p>
-          <button type="button" class="empty-state__cta" (click)="addPatient()">
-            <ion-icon name="person-add"></ion-icon>
-            Agregar paciente
-          </button>
         </div>
       </div>
 

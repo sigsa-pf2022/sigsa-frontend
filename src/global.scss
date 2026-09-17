@@ -2044,19 +2044,34 @@ ion-alert .alert-button.alert-button-role-cancel {
 }
 
 .app-fab-button {
-  --background: linear-gradient(135deg, var(--sigsa-500) 0%, var(--sigsa-600) 100%);
+  /* 4px más que el default de Ionic: es la acción principal de cada pestaña
+     y a 56 px quedaba tímido al lado de las cards. */
+  --size: 60px;
+  /* El degradado arranca un tono más claro para que se note que es degradado
+     y no un violeta plano. */
+  --background: linear-gradient(135deg, var(--sigsa-400) 0%, var(--sigsa-600) 100%);
   --background-activated: var(--sigsa-700);
   --background-focused: var(--sigsa-700);
   --background-hover: var(--sigsa-600);
   --color: #ffffff;
-  --box-shadow: var(--shadow-floating);
+  /* Dos sombras en capas: el halo de marca lo despega del fondo y una sombra
+     neutra corta le da apoyo. Con una sola se veía flotando sin peso. */
+  --box-shadow: 0 10px 24px rgba(156, 89, 232, 0.38), 0 2px 6px rgba(17, 24, 39, 0.12);
   --border-radius: 9999px;
-  transition: transform 150ms var(--ease-out-soft);
+  transition: transform 150ms var(--ease-out-soft),
+              box-shadow 200ms var(--ease-out-soft);
 
-  ion-icon { font-size: 24px; }
+  ion-icon {
+    /* El "+" se veía chico y fino para el tamaño del botón. Ionicons no expone
+       grosor de trazo, así que se engorda dibujándolo otra vez por detrás con
+       su propio color y un blur mínimo. */
+    font-size: 30px;
+    filter: drop-shadow(0 0 0.7px currentColor);
+  }
 
   &:active {
     transform: scale(0.92);
+    --box-shadow: 0 4px 12px rgba(156, 89, 232, 0.32);
   }
 }
 

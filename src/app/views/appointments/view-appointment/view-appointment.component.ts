@@ -8,6 +8,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 import { titleCase } from 'src/app/utils/title-case';
 import {
+  isPastEvent,
   resolveEventStatus,
   STATUS_BADGE_CLASS,
 } from 'src/app/constants/EventStatus.constant';
@@ -77,8 +78,16 @@ import {
           </div>
         </section>
 
-        <section class="va__section" *ngIf="this.groupId">
-          <div class="va__takecharge" *ngIf="appointment?.takenChargeByUserId; else takeChargeCta">
+        <!--
+          Sólo el aviso de que alguien ya se ocupa. El botón "Me hago cargo"
+          vive en el footer junto a las demás acciones: tenerlo suelto en el
+          medio del contenido lo separaba de "Cancelar turno" sin motivo.
+        -->
+        <section
+          class="va__section"
+          *ngIf="this.groupId && appointment?.takenChargeByUserId"
+        >
+          <div class="va__takecharge">
             <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
             <span>
               {{ takenChargeLabel }} se hizo cargo
@@ -87,20 +96,6 @@ import {
               </small>
             </span>
           </div>
-          <ng-template #takeChargeCta>
-            <button
-              type="button"
-              class="auth-btn auth-btn--primary va__takecharge-btn"
-              (click)="takeCharge()"
-              [disabled]="responding"
-            >
-              <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
-              <ng-container *ngIf="!responding">Me hago cargo</ng-container>
-            </button>
-            <p class="auth-field__hint va__takecharge-hint">
-              Avisale al grupo que vos lo llevás a este turno.
-            </p>
-          </ng-template>
         </section>
       </ng-container>
     </ion-content>
@@ -123,7 +118,18 @@ import {
       </button>
       <button
         type="button"
+        class="auth-btn auth-btn--primary"
+        *ngIf="groupId && !appointment?.takenChargeByUserId"
+        (click)="takeCharge()"
+        [disabled]="responding"
+      >
+        <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!responding">Me hago cargo</ng-container>
+      </button>
+      <button
+        type="button"
         class="auth-btn va__btn-danger"
+        *ngIf="canCancel"
         (click)="cancelAppointment()"
       >
         Cancelar turno
@@ -166,12 +172,17 @@ export class ViewAppointmentComponent implements OnInit {
         this.appointment.id,
         'take_charge'
       );
+      // El backend deja el turno confirmado al tomarlo, así que la pastilla y
+      // el footer tienen que reflejarlo sin esperar a recargar la vista.
       this.appointment = {
         ...this.appointment,
         takenChargeByUserId: res.takenChargeByUserId,
         takenChargeByName: res.takenChargeByName,
         takenChargeAt: res.takenChargeAt,
+        status: 'confirmed',
       };
+      this.isConfirmed = true;
+      this.appointmentsService.notifyAppointmentsChanged();
       this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
     } catch ({ error }) {
       // 409: otro integrante ganó la carrera. El mensaje dice quién fue.
@@ -210,6 +221,19 @@ export class ViewAppointmentComponent implements OnInit {
       return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
     }
     return this.navController.navigateForward('/tabs/appointments');
+  }
+
+  /**
+   * Cancelar sólo tiene sentido sobre un turno que sigue en pie. Antes el botón
+   * no tenía condición ninguna y se ofrecía incluso sobre un turno ya cancelado
+   * o uno cuya hora había pasado.
+   */
+  get canCancel(): boolean {
+    return (
+      !!this.appointment &&
+      this.appointment.status !== 'canceled' &&
+      !isPastEvent(this.appointment)
+    );
   }
 
   /** Mismo criterio que las listas: se resuelve en un solo lugar. */

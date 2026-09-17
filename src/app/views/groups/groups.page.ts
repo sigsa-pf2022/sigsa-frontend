@@ -37,10 +37,6 @@ import { Subscription } from 'rxjs';
             <p class="empty-state__subtitle">
               Creá un grupo familiar para gestionar la salud de quienes dependen de vos.
             </p>
-            <button type="button" class="empty-state__cta" (click)="navigateTo()">
-              <ion-icon name="add"></ion-icon>
-              Crear grupo
-            </button>
           </div>
         </ng-template>
       </ng-container>
