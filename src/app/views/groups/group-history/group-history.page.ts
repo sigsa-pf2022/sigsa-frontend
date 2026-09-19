@@ -4,29 +4,23 @@ import { NavController } from '@ionic/angular';
 import { GroupEventsService } from '../shared/services/group-events/group-events.service';
 import { titleCase } from 'src/app/utils/title-case';
 
-/** Texto e ícono de cada acción del historial. */
+/**
+ * Texto e ícono de cada acción del historial.
+ *
+ * Adentro de un grupo la fila ya dice de qué evento se trata, así que el texto
+ * de cada movimiento se queda con el verbo y no repite el nombre.
+ */
 const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> = {
-  event_created: {
-    icon: 'add-circle-outline',
-    text: (p) => `Creó ${p?.medName ? `el medicamento ${p.medName}` : 'un turno'}`,
-  },
-  event_taken_charge: {
-    icon: 'hand-left-outline',
-    text: (p) => `Se hizo cargo de ${p?.medName ? p.medName : 'un turno'}`,
-  },
-  event_confirmed: { icon: 'checkmark-circle-outline', text: () => 'Confirmó un evento' },
+  event_created: { icon: 'add-circle-outline', text: () => 'Lo creó' },
+  event_taken_charge: { icon: 'hand-left-outline', text: () => 'Se hizo cargo' },
+  event_declined: { icon: 'remove-circle-outline', text: () => 'Avisó que no puede' },
+  event_deleted: { icon: 'trash-outline', text: () => 'Lo borró' },
+  event_confirmed: { icon: 'checkmark-circle-outline', text: () => 'Lo confirmó' },
   event_canceled: {
     icon: 'close-circle-outline',
-    text: (p) => {
-      const que = p?.treatment
-        ? `el tratamiento de ${p?.medName}`
-        : p?.medName
-        ? `el medicamento ${p.medName}`
-        : 'un turno';
-      // El cron cancela los turnos que vencieron: no es la decisión de nadie,
-      // así que se lee como vencimiento y no como una cancelación del grupo.
-      return p?.automatic ? `Venció ${que}` : `Canceló ${que}`;
-    },
+    // Antes el cron cancelaba los turnos vencidos y por eso se distinguía; ese
+    // cron se apagó, pero quedan entradas viejas con la marca.
+    text: (p) => (p?.automatic ? 'Venció' : 'Lo canceló'),
   },
   member_added: {
     icon: 'person-add-outline',
@@ -67,26 +61,62 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
 
       <div
         class="gh-history__scroll"
-        *ngIf="!loading && entries.length; else emptyState"
+        *ngIf="!loading && groups.length; else emptyState"
       >
-        <ion-item *ngFor="let entry of entries" class="member-row" lines="none">
-          <div class="member-row__avatar">
-            <app-avatar
-              [photo]="entry.actorPhoto"
-              [name]="entry.actorName"
-              icon="ellipse-outline"
-            ></app-avatar>
-          </div>
-          <div class="member-row__body">
-            <span class="member-row__name">{{ describe(entry) }}</span>
-            <span class="member-row__sub">
-              {{ actorFor(entry) }} · {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+        <ng-container *ngFor="let group of groups">
+          <!--
+            Un evento con sus movimientos adentro. Las entradas que no son de un
+            evento (alguien se sumó al grupo) llegan con grouped=false y se
+            dibujan como fila simple, sin desplegable.
+          -->
+          <ion-item
+            class="member-row"
+            lines="none"
+            [button]="group.grouped"
+            detail="false"
+            (click)="group.grouped && toggle(group.groupKey)"
+          >
+            <div class="member-row__avatar">
+              <app-avatar
+                [photo]="group.lastEntry.actorPhoto"
+                [name]="group.lastEntry.actorName"
+                icon="ellipse-outline"
+              ></app-avatar>
+            </div>
+            <div class="member-row__body">
+              <span class="member-row__name">{{ titleFor(group) }}</span>
+              <span class="member-row__sub">
+                {{ actorFor(group.lastEntry) }} {{ describe(group.lastEntry) | lowercase }} ·
+                {{ group.lastEntry.createdAt | date: 'dd/MM HH:mm' }}
+              </span>
+            </div>
+            <span
+              class="gh-history__icon"
+              [class.gh-history__icon--open]="isOpen(group.groupKey)"
+              aria-hidden="true"
+            >
+              <ion-icon
+                [name]="group.grouped ? 'chevron-down' : iconFor(group.lastEntry)"
+              ></ion-icon>
             </span>
+          </ion-item>
+
+          <div class="gh-history__detail" *ngIf="group.grouped && isOpen(group.groupKey)">
+            <div class="gh-history__step" *ngFor="let entry of group.entries">
+              <span class="gh-history__step-icon" aria-hidden="true">
+                <ion-icon [name]="iconFor(entry)"></ion-icon>
+              </span>
+              <div class="gh-history__step-body">
+                <span class="gh-history__step-text">
+                  {{ actorFor(entry) }} · {{ describe(entry) | lowercase }}
+                </span>
+                <span class="gh-history__step-date">
+                  {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+            </div>
           </div>
-          <span class="gh-history__icon" aria-hidden="true">
-            <ion-icon [name]="iconFor(entry)"></ion-icon>
-          </span>
-        </ion-item>
+        </ng-container>
       </div>
 
       <ng-template #emptyState>
@@ -106,8 +136,10 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
 })
 export class GroupHistoryPage implements OnInit {
   groupId: string;
-  entries: any[] = [];
+  groups: any[] = [];
   loading = false;
+  /** Qué grupo está desplegado. Uno por vez: el historial se lee de a uno. */
+  expandedKey: string | null = null;
 
   constructor(
     private groupEventsService: GroupEventsService,
@@ -131,15 +163,46 @@ export class GroupHistoryPage implements OnInit {
     // Antes usábamos un LoadingController con duration: 2000, que se
     // auto-cerraba a los 2s aunque la request siguiera en vuelo. Ahora el
     // skeleton vive y muere con la request.
-    this.loading = this.entries.length === 0;
+    this.loading = this.groups.length === 0;
     try {
       const res = await this.groupEventsService.getHistory(this.groupId);
-      this.entries = res?.entries ?? [];
+      this.groups = res?.groups ?? [];
     } catch {
-      this.entries = [];
+      this.groups = [];
     } finally {
       this.loading = false;
     }
+  }
+
+  toggle(groupKey: string) {
+    this.expandedKey = this.expandedKey === groupKey ? null : groupKey;
+  }
+
+  isOpen(groupKey: string): boolean {
+    return this.expandedKey === groupKey;
+  }
+
+  /**
+   * Título de la fila cerrada: de qué evento se trata.
+   *
+   * El payload trae el nombre del medicamento o el del profesional según el
+   * tipo, más la fecha del evento. En un tratamiento se usa el de la entrada de
+   * creación, porque las otras guardan la fecha de otra toma.
+   */
+  titleFor(group: any): string {
+    const p = group?.title ?? {};
+    if (group?.targetType === 'member') {
+      return this.describe(group.lastEntry);
+    }
+    const nombre = p.medName
+      ? p.medName
+      : p.professionalName
+      ? `Turno con ${titleCase(p.professionalName)}`
+      : group?.targetType === 'med_event'
+      ? 'Medicamento'
+      : 'Turno';
+    const dep = p.dependentName ? ` · ${titleCase(p.dependentName)}` : '';
+    return `${nombre}${dep}`;
   }
 
   describe(entry: any): string {
@@ -160,11 +223,6 @@ export class GroupHistoryPage implements OnInit {
     return entry?.payload?.automatic ? 'El sistema' : 'Alguien';
   }
 
-  getInitials(entry: any): string {
-    const name = (entry?.actorName ?? '').trim();
-    if (!name) return '?';
-    const [first = '', last = ''] = name.split(' ');
-    return ((first[0] || '') + (last[0] || '')).toUpperCase() || '?';
-  }
+
 
 }

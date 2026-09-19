@@ -73,6 +73,11 @@ export class MedsEventsService {
     return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}`, payload).toPromise();
   }
 
+  /** Borrado real. Si la toma es de un tratamiento, el backend borra la serie. */
+  deleteMedEvent(id: number) {
+    return this.http.delete<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
+  }
+
   cancelMedEvent(id: number) {
     return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/cancel`, {}).toPromise();
   }

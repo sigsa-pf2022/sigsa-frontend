@@ -148,3 +148,13 @@
 .va__takecharge--canceled ion-icon {
   color: #b91c1c;
 }
+
+/* El "lo cargué por error", al pie del contenido y bien separado del footer de
+   acciones: es terciario y no tiene que competir con "Cancelar turno". */
+.va__danger-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 24px 20px 8px;
+}

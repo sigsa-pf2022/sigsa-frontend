@@ -109,6 +109,27 @@ import {
             </span>
           </div>
         </section>
+
+        <!--
+          Borrar es para lo que se cargó por error, y por eso la etiqueta nombra
+          la situación y no la operación: un botón que dijera "Borrar" obligaría
+          a compararlo con "Cancelar", y son cosas distintas. Va acá abajo, con
+          mucho menos peso que las acciones del footer.
+
+          OJO: la condición NO es canAct. Esa función da false justo para los
+          vencidos y los cancelados, que son los que más ganas hay de borrar.
+        -->
+        <div class="va__danger-zone" *ngIf="canDelete">
+          <button
+            type="button"
+            class="auth-btn auth-btn--ghost-danger"
+            (click)="deleteEvent()"
+            [disabled]="deleting"
+          >
+            <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
+          </button>
+        </div>
       </ng-container>
     </ion-content>
 
@@ -156,6 +177,7 @@ export class ViewAppointmentComponent implements OnInit {
   groupId: string | null = null;
   isConfirmed: boolean = false;
   responding = false;
+  deleting = false;
   loading = true;
   constructor(
     private appointmentsService: AppointmentsService,
@@ -176,6 +198,16 @@ export class ViewAppointmentComponent implements OnInit {
    */
   get canAct(): boolean {
     return isActionable(this.appointment);
+  }
+
+  /**
+   * Si se puede borrar. Deliberadamente distinto de `canAct`: un turno vencido o
+   * cancelado no admite acciones pero sí se puede sacar de la lista. Lo único
+   * que lo impide es que alguien se haya comprometido, porque el grupo coordinó
+   * sobre eso y hacerlo desaparecer para todos sería peor que dejarlo cancelado.
+   */
+  get canDelete(): boolean {
+    return !!this.appointment && !this.appointment.takenChargeByUserId;
   }
 
   /** Nombre de quien canceló, vacío si no lo canceló nadie. */
@@ -293,6 +325,36 @@ export class ViewAppointmentComponent implements OnInit {
         .then(() => this.appointmentsService.notifyAppointmentsChanged())
         .then(() => this.leaveAfterAction())
         .catch(() => {});
+    }
+  }
+
+  async deleteEvent() {
+    if (this.deleting) return;
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        title: '¿Borrar el turno?',
+        text: 'Se va a borrar de la agenda como si nunca lo hubieras cargado.',
+        subtext: 'Esta acción no se puede deshacer.',
+        confirmText: 'Borrar',
+        cancelText: 'No',
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (!data) return;
+
+    this.deleting = true;
+    try {
+      await this.appointmentsService.deleteAppointment(this.appointmentId);
+      this.toastService.showSuccess('Turno borrado.');
+      this.appointmentsService.notifyAppointmentsChanged();
+      this.leaveAfterAction();
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos borrar el turno');
+    } finally {
+      this.deleting = false;
     }
   }
 

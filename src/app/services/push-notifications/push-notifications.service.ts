@@ -127,6 +127,10 @@ export class PushNotificationsService {
         );
         if (action.actionId === 'take_charge') {
           this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
+        } else {
+          // Antes esta rama no daba ninguna señal: se tocaba el botón y no
+          // pasaba nada visible.
+          this.toastService.showSuccess('Avisamos al grupo que no podés.');
         }
       } catch ({ error }) {
         this.toastService.showError(error?.message || 'No pudimos registrar la acción');

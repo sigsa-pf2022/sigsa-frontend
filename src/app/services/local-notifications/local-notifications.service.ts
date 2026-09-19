@@ -105,8 +105,11 @@ export class LocalNotificationsService {
                 title: 'Me hago cargo',
               },
               {
+                // "Descartar" sonaba a dar de baja el evento, y con el borrado
+                // nuevo la palabra chocaba de frente. Esto es personal: avisás
+                // que vos no podés y el evento sigue abierto para el resto.
                 id: 'dismiss',
-                title: 'Descartar',
+                title: 'No puedo',
                 destructive: true,
               },
             ],

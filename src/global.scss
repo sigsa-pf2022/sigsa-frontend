@@ -359,6 +359,40 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   font-weight: 600;
 }
 
+/* Destructivo sólido, para confirmar algo que no se deshace. Antes el botón de
+   confirmar de los modales era siempre violeta, así que "cancelar el turno" y
+   "borrarlo para siempre" se veían idénticos. */
+.auth-btn--danger {
+  background: #b91c1c;
+  color: #ffffff;
+
+  &:active:not(:disabled) {
+    background: #991b1b;
+    transform: scale(0.97);
+  }
+}
+
+/* Acción terciaria destructiva: el "lo cargué por error" al pie del detalle.
+   Mismo peso que `--ghost`, que es violeta y acá no corresponde. */
+.auth-btn--ghost-danger {
+  background: transparent;
+  color: #b91c1c;
+  min-height: auto;
+  font-size: 14px;
+  font-weight: 600;
+
+  &:active:not(:disabled) {
+    opacity: 0.6;
+  }
+}
+
+/* Segunda línea del modal, para la advertencia de irreversibilidad. */
+.app-modal__text--warning {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-top: -6px;
+}
+
 .auth-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;

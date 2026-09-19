@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
+import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 import { formatDosage } from 'src/app/utils/med-dosage';
@@ -8,6 +9,7 @@ import { actorName } from 'src/app/utils/event-actor';
 import { titleCase } from 'src/app/utils/title-case';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import {
+  isActionable,
   isOverdue,
   resolveEventStatus,
   STATUS_BADGE_CLASS,
@@ -117,7 +119,7 @@ import {
           </div>
         </section>
 
-        <section class="vm__section" *ngIf="this.groupId && !canceledLabel">
+        <section class="vm__section" *ngIf="this.groupId && !canceledLabel && canAct">
           <div class="vm__takecharge" *ngIf="medEvent?.takenChargeByUserId; else takeChargeCta">
             <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
             <span>
@@ -142,6 +144,26 @@ import {
             </p>
           </ng-template>
         </section>
+
+        <!--
+          Mismo patrón que el detalle del turno: la etiqueta nombra la situación
+          y no la operación, y la condición NO es canAct —una toma vencida o
+          cancelada no admite acciones pero sí se puede sacar de la lista.
+        -->
+        <div class="vm__danger-zone" *ngIf="canDelete">
+          <button
+            type="button"
+            class="auth-btn auth-btn--ghost-danger"
+            (click)="deleteEvent()"
+            [disabled]="deleting"
+          >
+            <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
+            <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
+          </button>
+          <p class="auth-field__hint" *ngIf="medEvent?.seriesId">
+            Se borra el tratamiento completo.
+          </p>
+        </div>
       </ng-container>
     </ion-content>
   `,
@@ -156,13 +178,33 @@ export class ViewMedEventComponent implements OnInit {
   loading = false;
   notFound = false;
   responding = false;
+  deleting = false;
   constructor(
     private route: ActivatedRoute,
     private medsEventsService: MedsEventsService,
     private groupEventsService: GroupEventsService,
     private toastService: ToastService,
+    private modalController: ModalController,
     private navController: NavController
   ) {}
+
+  /**
+   * Si la toma todavía admite acciones. Mismo criterio que el detalle del turno
+   * y que los listados: sobre una toma vencida o cancelada no hay de qué
+   * hacerse cargo. Faltaba acá y era el único lugar que no lo chequeaba.
+   */
+  get canAct(): boolean {
+    return isActionable(this.medEvent);
+  }
+
+  /**
+   * Si se puede borrar. Distinto de `canAct` a propósito: lo vencido y lo
+   * cancelado no admite acciones pero sí se puede sacar de la lista. Lo único
+   * que lo impide es que alguien se haya hecho cargo.
+   */
+  get canDelete(): boolean {
+    return !!this.medEvent && !this.medEvent.takenChargeByUserId;
+  }
 
   /** Nombre de quien canceló, vacío si no la canceló nadie. */
   get canceledLabel(): string {
@@ -206,6 +248,38 @@ export class ViewMedEventComponent implements OnInit {
     const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
     this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     this.load(dependentId);
+  }
+
+  async deleteEvent() {
+    if (this.deleting) return;
+    const esTratamiento = !!this.medEvent?.seriesId;
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        title: esTratamiento ? '¿Borrar el tratamiento?' : '¿Borrar el recordatorio?',
+        text: esTratamiento
+          ? 'Se borran todas las tomas, como si nunca lo hubieras cargado.'
+          : 'Se va a borrar como si nunca lo hubieras cargado.',
+        subtext: 'Esta acción no se puede deshacer.',
+        confirmText: 'Borrar',
+        cancelText: 'No',
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (!data) return;
+
+    this.deleting = true;
+    try {
+      await this.medsEventsService.deleteMedEvent(this.medEventId);
+      this.toastService.showSuccess(esTratamiento ? 'Tratamiento borrado.' : 'Recordatorio borrado.');
+      this.goBack();
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos borrar el recordatorio');
+    } finally {
+      this.deleting = false;
+    }
   }
 
   goBack() {
