@@ -7,7 +7,13 @@ import { ActionSheetController } from '@ionic/angular';
 export class ActionSheetService {
   constructor(private actionSheetCtrl: ActionSheetController) {}
 
-  async createDefault(header: string) {
+  /**
+   * `destructiveText` existe porque la acción destructiva no significa lo mismo
+   * en todos lados: a un turno o a una toma les cambia el estado y la fila
+   * sobrevive, pero a un documento lo borra de la base. Decirle "Cancelar" a un
+   * borrado definitivo era engañoso.
+   */
+  async createDefault(header: string, destructiveText = 'Cancelar') {
     return await this.actionSheetCtrl.create({
       header,
       mode: 'ios',
@@ -21,7 +27,7 @@ export class ActionSheetService {
           role: 'edit',
         },
         {
-          text: 'Cancelar',
+          text: destructiveText,
           role: 'destructive',
         },
         {

@@ -4,6 +4,7 @@ import { NavController } from '@ionic/angular';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 import { formatDosage } from 'src/app/utils/med-dosage';
+import { actorName } from 'src/app/utils/event-actor';
 import { titleCase } from 'src/app/utils/title-case';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import {
@@ -102,7 +103,21 @@ import {
           </div>
         </section>
 
-        <section class="vm__section" *ngIf="this.groupId">
+        <!-- Igual que en el turno: una toma cancelada sigue a la vista, así
+             que tiene que decir quién la dio de baja. -->
+        <section class="vm__section" *ngIf="this.groupId && canceledLabel">
+          <div class="vm__takecharge vm__takecharge--canceled">
+            <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ canceledLabel }} canceló la toma
+              <small *ngIf="medEvent?.canceledAt">
+                · {{ medEvent.canceledAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+        </section>
+
+        <section class="vm__section" *ngIf="this.groupId && !canceledLabel">
           <div class="vm__takecharge" *ngIf="medEvent?.takenChargeByUserId; else takeChargeCta">
             <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
             <span>
@@ -148,6 +163,11 @@ export class ViewMedEventComponent implements OnInit {
     private toastService: ToastService,
     private navController: NavController
   ) {}
+
+  /** Nombre de quien canceló, vacío si no la canceló nadie. */
+  get canceledLabel(): string {
+    return actorName(this.medEvent?.canceledBy);
+  }
 
   get takenChargeLabel(): string {
     // Al cargar viene la relación `takenChargeBy`; al responder en el momento,

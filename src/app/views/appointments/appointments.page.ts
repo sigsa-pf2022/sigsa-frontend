@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { ModalController, NavController } from '@ionic/angular';
 import { Subscription } from 'rxjs';
-import { isAfter, isBefore, parseISO } from 'date-fns';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
+import { isActionable } from 'src/app/constants/EventStatus.constant';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { AppointmentsService } from './shared/services/appointments/appointments.service';
@@ -133,7 +133,8 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   async createActionSheet(appointment){
-    if (appointment.status == 'confirmed' && isAfter(parseISO(appointment.date), new Date())) {
+    // Mismo criterio en todas las listas: lo vencido sólo se mira.
+    if (!isActionable(appointment)) {
       return await this.actionSheetService.createOnlyView('Mi Turno');
     }
     return await this.actionSheetService.createDefault('Mi Turno');

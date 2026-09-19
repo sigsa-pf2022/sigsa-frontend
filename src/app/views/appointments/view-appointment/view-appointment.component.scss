@@ -142,3 +142,9 @@
 .va__takecharge-hint {
   padding: 8px 24px 0;
 }
+
+/* Mismo bloque, otro desenlace: el turno se dio de baja. Rojo oscuro, igual
+   que la pastilla CANCELADO y el botón destructivo del footer. */
+.va__takecharge--canceled ion-icon {
+  color: #b91c1c;
+}

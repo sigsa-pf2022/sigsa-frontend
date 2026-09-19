@@ -143,7 +143,8 @@ export class DocumentsPage implements OnInit, OnDestroy {
   }
 
   async presentActionSheet(document: MedicalDocument) {
-    const actionSheet = await this.actionSheetService.createDefault('Mi Documento');
+    // "Eliminar" y no "Cancelar": acá el endpoint borra la fila de verdad.
+    const actionSheet = await this.actionSheetService.createDefault('Mi Documento', 'Eliminar');
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
     this.doActionByRole(role, document.id);

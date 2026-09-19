@@ -6,9 +6,10 @@ import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { actorName } from 'src/app/utils/event-actor';
 import { titleCase } from 'src/app/utils/title-case';
 import {
-  isPastEvent,
+  isActionable,
   resolveEventStatus,
   STATUS_BADGE_CLASS,
 } from 'src/app/constants/EventStatus.constant';
@@ -78,14 +79,25 @@ import {
           </div>
         </section>
 
-        <!--
-          Sólo el aviso de que alguien ya se ocupa. El botón "Me hago cargo"
-          vive en el footer junto a las demás acciones: tenerlo suelto en el
-          medio del contenido lo separaba de "Cancelar turno" sin motivo.
-        -->
+        <!-- Un turno cancelado dejó de ocultarse de los listados: hay que
+             decir quién lo dio de baja, igual que se dice quién se hizo cargo. -->
+        <section class="va__section" *ngIf="this.groupId && canceledLabel">
+          <div class="va__takecharge va__takecharge--canceled">
+            <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ canceledLabel }} canceló el turno
+              <small *ngIf="appointment?.canceledAt">
+                · {{ appointment.canceledAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+        </section>
+
+        <!-- Sólo el aviso de que alguien ya se ocupa. El botón "Me hago cargo"
+             vive en el footer junto a las demás acciones. -->
         <section
           class="va__section"
-          *ngIf="this.groupId && appointment?.takenChargeByUserId"
+          *ngIf="this.groupId && !canceledLabel && appointment?.takenChargeByUserId"
         >
           <div class="va__takecharge">
             <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
@@ -110,7 +122,7 @@ import {
       <button
         type="button"
         class="auth-btn auth-btn--primary"
-        *ngIf="!isConfirmed && !groupId"
+        *ngIf="canAct && !isConfirmed && !groupId"
         (click)="confirmAppointment()"
       >
         <ion-icon name="checkmark" aria-hidden="true"></ion-icon>
@@ -119,7 +131,7 @@ import {
       <button
         type="button"
         class="auth-btn auth-btn--primary"
-        *ngIf="groupId && !appointment?.takenChargeByUserId"
+        *ngIf="canAct && groupId && !appointment?.takenChargeByUserId"
         (click)="takeCharge()"
         [disabled]="responding"
       >
@@ -129,7 +141,7 @@ import {
       <button
         type="button"
         class="auth-btn va__btn-danger"
-        *ngIf="canCancel"
+        *ngIf="canAct"
         (click)="cancelAppointment()"
       >
         Cancelar turno
@@ -153,6 +165,23 @@ export class ViewAppointmentComponent implements OnInit {
     private groupEventsService: GroupEventsService,
     private toastService: ToastService
   ) {}
+
+  /**
+   * Si el turno todavía admite acciones. Gobierna los tres botones del footer:
+   * sobre un turno vencido o cancelado no se confirma, no se cancela y no hay
+   * de qué hacerse cargo.
+   *
+   * El criterio es el mismo que usan las listas y el desplegable; vive en
+   * `EventStatus.constant` para que no vuelva a haber una copia por pantalla.
+   */
+  get canAct(): boolean {
+    return isActionable(this.appointment);
+  }
+
+  /** Nombre de quien canceló, vacío si no lo canceló nadie. */
+  get canceledLabel(): string {
+    return actorName(this.appointment?.canceledBy);
+  }
 
   get takenChargeLabel(): string {
     // Al cargar viene la relación `takenChargeBy`; al responder en el momento,
@@ -221,19 +250,6 @@ export class ViewAppointmentComponent implements OnInit {
       return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
     }
     return this.navController.navigateForward('/tabs/appointments');
-  }
-
-  /**
-   * Cancelar sólo tiene sentido sobre un turno que sigue en pie. Antes el botón
-   * no tenía condición ninguna y se ofrecía incluso sobre un turno ya cancelado
-   * o uno cuya hora había pasado.
-   */
-  get canCancel(): boolean {
-    return (
-      !!this.appointment &&
-      this.appointment.status !== 'canceled' &&
-      !isPastEvent(this.appointment)
-    );
   }
 
   /** Mismo criterio que las listas: se resuelve en un solo lugar. */

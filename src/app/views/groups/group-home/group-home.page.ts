@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AnimationController, NavController, ModalController } from '@ionic/angular';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
-import { parseISO, isAfter, isBefore } from 'date-fns';
+import { isActionable } from 'src/app/constants/EventStatus.constant';
 import { REMINDERS_TYPE } from '../../home/shared/constants/remindersType';
 import { FAKE_APPOINTMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeAppointmentsReminderData';
 import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeDocumentsReminderData';
@@ -458,7 +458,8 @@ export class GroupHomePage implements OnInit {
     const depName = this.getDependentFullName();
     const formatted = depName ? titleCase(depName) : null;
     const baseTitle = formatted ? `Turno de ${formatted}` : 'Mi Turno';
-    if (appointment.status === 'confirmed' && isAfter(parseISO(appointment.date), new Date())) {
+    // Mismo criterio que la pestaña personal: lo vencido sólo se mira.
+    if (!isActionable(appointment)) {
       return await this.actionSheetService.createOnlyView(baseTitle);
     }
     return await this.actionSheetService.createDefault(baseTitle);
@@ -550,7 +551,8 @@ export class GroupHomePage implements OnInit {
 
   private async createMedEventActionSheet(medEvent: any, formattedDepName: string | null) {
     const baseTitle = formattedDepName ? `Medicamento de ${formattedDepName}` : 'Mi Medicamento';
-    if (medEvent.status === 'confirmed' && isBefore(parseISO(medEvent.date), new Date())) {
+    // Mismo criterio que el turno de arriba y que la pestaña personal.
+    if (!isActionable(medEvent)) {
       return await this.actionSheetService.createOnlyView(baseTitle);
     }
     return await this.actionSheetService.createDefault(baseTitle);
@@ -628,7 +630,8 @@ export class GroupHomePage implements OnInit {
     const depName = this.getDependentFullName();
     const formatted = depName ? titleCase(depName) : null;
     const baseTitle = formatted ? `Documento de ${formatted}` : 'Mi Documento';
-    return await this.actionSheetService.createDefault(baseTitle);
+    // Igual que en la pestaña personal: el documento se borra, no se cancela.
+    return await this.actionSheetService.createDefault(baseTitle, 'Eliminar');
   }
 
   private doDocumentActionByRole(value: string, id: number): boolean {

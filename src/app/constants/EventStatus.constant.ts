@@ -95,3 +95,21 @@ export function isOverdue(event?: EventLike | null): boolean {
     isPastEvent(event)
   );
 }
+
+/**
+ * Si un evento todavía admite acciones: editarlo, cancelarlo o confirmarlo.
+ *
+ * Cancelar es una acción sobre un plan, y un plan sólo existe hacia adelante:
+ * una vez que la hora pasó no queda nada que dar de baja. Lo vencido es
+ * historia y sólo se mira.
+ *
+ * Vive acá porque antes esta decisión estaba escrita cinco veces con tres
+ * criterios distintos —en turnos era "confirmado y futuro", en la pestaña de
+ * medicamentos "pasado" a secas, y en el home del grupo "confirmado y pasado"—,
+ * así que la misma toma ofrecía cosas distintas según desde dónde la abrieras.
+ */
+export function isActionable(event?: EventLike | null): boolean {
+  if (!event) return false;
+  if (event.status === EventStatusEnum.CANCELADO) return false;
+  return !isPastEvent(event);
+}

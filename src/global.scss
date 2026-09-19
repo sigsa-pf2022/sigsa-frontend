@@ -1970,19 +1970,89 @@ ion-toast.toast-danger {
   --background: #b91c1c;
 }
 
+/*
+ * Action sheet. Corre en `mode: 'ios'` —el único componente de la app que no es
+ * `md`—, que es el layout de tarjeta agrupada con el "Cerrar" aparte: el más
+ * parecido al lenguaje de cards del resto. Antes acá sólo se recoloreaban las
+ * custom props y toda la geometría quedaba en el default de Ionic; de ahí que
+ * desentonara.
+ *
+ * Los valores salen de los dos overlays que ya están traducidos al lenguaje de
+ * la app: `.modal` en theme/modals.scss (radio 24 y la sombra doble violeta) y
+ * el bloque de `ion-alert` acá abajo (radio 16 en botones, sin mayúsculas,
+ * peso 600). El `!important` es por la especificidad del shadow DOM de Ionic,
+ * mismo motivo que en `ion-alert`.
+ */
 ion-action-sheet {
-  --background: var(--color-surface-app);
+  --background: var(--color-surface);
   --color: var(--color-text);
   --button-background: var(--color-surface);
   --button-background-selected: var(--color-surface-subtle);
   --button-color: var(--color-text);
   --button-color-selected: var(--color-text);
   --button-color-activated: var(--sigsa-700);
+  --backdrop-opacity: 0.32;
 
+  .action-sheet-group {
+    border-radius: 24px !important;
+    background: var(--color-surface) !important;
+    /* La firma de overlay de la app: sombra doble teñida de violeta oscuro. */
+    box-shadow:
+      0 24px 64px -16px rgba(75, 37, 130, 0.28),
+      0 8px 24px -8px rgba(75, 37, 130, 0.16) !important;
+    overflow: hidden;
+    margin: 0 8px 8px;
+  }
+
+  /* El "Cerrar" va en su propia tarjeta, separado del grupo de acciones. */
+  .action-sheet-group-cancel {
+    margin-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
+
+    .action-sheet-button {
+      color: var(--sigsa-700) !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  .action-sheet-title {
+    padding: 16px 20px 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em;
+    color: var(--color-text-muted) !important;
+    text-transform: none !important;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+
+  .action-sheet-button {
+    min-height: 54px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    color: var(--color-text) !important;
+    /* Ionic iOS dibuja los separadores con un ::after heredado; lo reemplazamos
+       por el hairline del design system. */
+    border-bottom: 1px solid var(--color-hairline);
+
+    &:last-child { border-bottom: none; }
+
+    &::after { background: transparent !important; }
+
+    &.activated {
+      background: var(--color-surface-subtle) !important;
+    }
+  }
+
+  /* Destructivo con el mismo patrón que `.va__btn-danger`: rojo oscuro sobre
+     rosa pálido, no el rojo saturado de Ionic. */
   .action-sheet-button.ion-color-danger,
   .action-sheet-button.action-sheet-destructive {
-    color: #b91c1c;
-    font-weight: 600;
+    color: #b91c1c !important;
+    font-weight: 600 !important;
+    background: #fff5f5 !important;
+
+    &.activated { background: #fee2e2 !important; }
   }
 }
 
@@ -2095,5 +2165,11 @@ ion-fab-list[side="top"] {
 
   ion-icon {
     font-size: 14px;
+  }
+
+  /* Mismo renglón, otra historia: acá el evento se dio de baja. Rojo oscuro,
+     el mismo de la pastilla CANCELADO y del botón destructivo. */
+  &--canceled {
+    color: #b91c1c;
   }
 }

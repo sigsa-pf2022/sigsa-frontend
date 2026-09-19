@@ -2,10 +2,10 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
 import { NavigationEnd, Router } from '@angular/router';
 import { ModalController, NavController } from '@ionic/angular';
-import { isBefore, parseISO } from 'date-fns';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
+import { isActionable } from 'src/app/constants/EventStatus.constant';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { MedsEventsService } from './shared/services/meds-events/meds-events.service';
@@ -155,9 +155,11 @@ export class MedsPage implements OnInit, OnDestroy {
     // Toma única: el objeto agrupado trae la toma en `doses[0]`.
     const dose = item?.doses?.[0] ?? item;
     const headerText = 'Mi Medicamento';
-    const actionSheet = isBefore(parseISO(dose.date), new Date())
-      ? await this.actionSheetService.createOnlyView(headerText)
-      : await this.actionSheetService.createDefault(headerText);
+    // Mismo criterio que turnos: lo vencido sólo se mira. Antes acá se miraba
+    // sólo la fecha y una toma cancelada seguía ofreciendo editar y cancelar.
+    const actionSheet = isActionable(dose)
+      ? await this.actionSheetService.createDefault(headerText)
+      : await this.actionSheetService.createOnlyView(headerText);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
     this.doActionByRole(role, dose.id);

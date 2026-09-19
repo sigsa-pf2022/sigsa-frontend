@@ -6,6 +6,7 @@ import {
   STATUS_BADGE_CLASS,
 } from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
+import { actorName } from 'src/app/utils/event-actor';
 import { titleCase } from 'src/app/utils/title-case';
 
 @Component({
@@ -32,10 +33,19 @@ import { titleCase } from 'src/app/utils/title-case';
           </span>
         </div>
         <span class="list-item__subtitle">{{ this.subtitle }}</span>
-        <span class="list-item__taken" *ngIf="this.takenChargeBy">
-          <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
-          {{ this.takenChargeBy }} se hizo cargo
+        <span
+          class="list-item__taken list-item__taken--canceled"
+          *ngIf="this.canceledBy; else takenChargeLine"
+        >
+          <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+          {{ this.canceledBy }} canceló
         </span>
+        <ng-template #takenChargeLine>
+          <span class="list-item__taken" *ngIf="this.takenChargeBy">
+            <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+            {{ this.takenChargeBy }} se hizo cargo
+          </span>
+        </ng-template>
       </div>
     </ion-item>
   `,
@@ -47,6 +57,7 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
   title: string;
   subtitle: string;
   takenChargeBy: string;
+  canceledBy: string;
   isPast: boolean;
   status: EventStatus;
   statusBadgeClass = '';
@@ -63,8 +74,12 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
 
   /** Nombre de quien se hizo cargo, si alguien lo hizo. */
   private resolveTakenCharge(event: any): string {
-    const by = event?.takenChargeBy;
-    return by ? titleCase(`${by.firstName ?? ''} ${by.lastName ?? ''}`) : '';
+    return actorName(event?.takenChargeBy);
+  }
+
+  /** Nombre de quien lo canceló. Manda sobre el anterior: es el estado actual. */
+  private resolveCanceledBy(event: any): string {
+    return actorName(event?.canceledBy);
   }
 
   setProfessionalData() {
@@ -72,6 +87,7 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
       this.title = 'Turno';
       this.subtitle = '';
       this.takenChargeBy = '';
+      this.canceledBy = '';
       this.status = null;
       this.isPast = false;
       this.statusBadgeClass = '';
@@ -79,6 +95,7 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
     }
 
     this.takenChargeBy = this.resolveTakenCharge(this.appointment);
+    this.canceledBy = this.resolveCanceledBy(this.appointment);
 
     const professional = this.appointment.professional;
     const firstName = professional?.firstName?.trim();

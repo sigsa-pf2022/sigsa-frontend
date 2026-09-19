@@ -144,3 +144,8 @@
 .vm__takecharge-hint {
   padding: 8px 24px 0;
 }
+
+/* Igual que en el detalle del turno: la toma se dio de baja. */
+.vm__takecharge--canceled ion-icon {
+  color: #b91c1c;
+}
