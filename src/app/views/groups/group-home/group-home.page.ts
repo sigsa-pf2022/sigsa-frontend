@@ -136,6 +136,14 @@ import { ToastService } from 'src/app/services/toast/toast.service';
         ></app-reminders>
 
         <div class="gh__fab-scrim" slot="fixed" aria-hidden="true"></div>
+        <!-- Velo mientras el desplegable está abierto: sin él las etiquetas
+             quedaban flotando sobre las cards y costaba leerlas. -->
+        <div
+          class="gh__fab-backdrop"
+          [class.gh__fab-backdrop--open]="opened"
+          slot="fixed"
+          (click)="opened && openFabList($event)"
+        ></div>
 
         <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="center" slot="fixed">
           <ion-fab-button
@@ -145,27 +153,39 @@ import { ToastService } from 'src/app/services/toast/toast.service';
           >
             <ion-icon [name]="opened ? 'close' : 'add'"></ion-icon>
           </ion-fab-button>
+          <!--
+            El orden del DOM está invertido a propósito: con side="top" el primer
+            hijo queda pegado al "+", así que para verlos como medicamento,
+            turno y documento de arriba hacia abajo hay que listarlos al revés.
+
+            La etiqueta la dibuja el ::after de .sub-fab-button desde data-label;
+            envolver el botón en un div rompería la animación de apertura, que
+            Ionic aplica a los hijos directos de la lista.
+          -->
           <ion-fab-list side="top" class="gh__fab__list" #fabList>
             <ion-fab-button
-              class="sub-fab-button"
-              (click)="createMedication()"
-              aria-label="Crear medicamento"
+              class="sub-fab-button sub-fab-button--document"
+              data-label="Documento"
+              (click)="createDocument()"
+              aria-label="Crear documento"
             >
-              <ion-icon name="medkit"></ion-icon>
+              <ion-icon name="document-text"></ion-icon>
             </ion-fab-button>
             <ion-fab-button
-              class="sub-fab-button"
+              class="sub-fab-button sub-fab-button--appointment"
+              data-label="Turno"
               (click)="createAppointment()"
               aria-label="Crear turno"
             >
               <ion-icon name="calendar"></ion-icon>
             </ion-fab-button>
             <ion-fab-button
-              class="sub-fab-button"
-              (click)="createDocument()"
-              aria-label="Crear documento"
+              class="sub-fab-button sub-fab-button--med"
+              data-label="Medicamento"
+              (click)="createMedication()"
+              aria-label="Crear medicamento"
             >
-              <ion-icon name="document-text"></ion-icon>
+              <ion-icon name="medkit"></ion-icon>
             </ion-fab-button>
           </ion-fab-list>
         </ion-fab>
@@ -719,11 +739,7 @@ export class GroupHomePage implements OnInit {
 
     // Navegar a la creación de turno para el dependiente
     this.navController.navigateForward(['/appointments/create/pick-doctor'], {
-      queryParams: {
-        dependentId: this.group.dependent.id,
-        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
-        groupId: this.group.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
@@ -735,11 +751,7 @@ export class GroupHomePage implements OnInit {
     }
     // Navegar al flujo de creación de medicamento para el dependiente
     this.navController.navigateForward(['/meds/create/pick-med'], {
-      queryParams: {
-        dependentId: this.group.dependent.id,
-        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
-        groupId: this.group.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
@@ -752,11 +764,7 @@ export class GroupHomePage implements OnInit {
 
     // Navegar a la creación de documento para el dependiente
     this.navController.navigateForward(['/documents/create'], {
-      queryParams: {
-        dependentId: this.group.dependent.id,
-        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
-        groupId: this.group.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 }

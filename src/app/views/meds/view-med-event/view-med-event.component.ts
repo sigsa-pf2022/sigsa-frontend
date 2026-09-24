@@ -119,8 +119,13 @@ import {
           </div>
         </section>
 
-        <section class="vm__section" *ngIf="this.groupId && !canceledLabel && canAct">
-          <div class="vm__takecharge" *ngIf="medEvent?.takenChargeByUserId; else takeChargeCta">
+        <!-- Sólo el aviso. El botón "Me hago cargo" vive en el footer, junto al
+             borrar, igual que en el detalle del turno. -->
+        <section
+          class="vm__section"
+          *ngIf="this.groupId && !canceledLabel && medEvent?.takenChargeByUserId"
+        >
+          <div class="vm__takecharge">
             <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
             <span>
               {{ takenChargeLabel }} se hizo cargo
@@ -129,43 +134,61 @@ import {
               </small>
             </span>
           </div>
-          <ng-template #takeChargeCta>
-            <button
-              type="button"
-              class="auth-btn auth-btn--primary vm__takecharge-btn"
-              (click)="takeCharge()"
-              [disabled]="responding"
-            >
-              <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
-              <ng-container *ngIf="!responding">Me hago cargo</ng-container>
-            </button>
-            <p class="auth-field__hint vm__takecharge-hint">
-              Avisale al grupo que vos te ocupás de esta toma.
-            </p>
-          </ng-template>
         </section>
-
-        <!--
-          Mismo patrón que el detalle del turno: la etiqueta nombra la situación
-          y no la operación, y la condición NO es canAct —una toma vencida o
-          cancelada no admite acciones pero sí se puede sacar de la lista.
-        -->
-        <div class="vm__danger-zone" *ngIf="canDelete">
-          <button
-            type="button"
-            class="auth-btn auth-btn--ghost-danger"
-            (click)="deleteEvent()"
-            [disabled]="deleting"
-          >
-            <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
-            <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
-          </button>
-          <p class="auth-field__hint" *ngIf="medEvent?.seriesId">
-            Se borra el tratamiento completo.
-          </p>
-        </div>
       </ng-container>
     </ion-content>
+
+    <!--
+      El detalle de la toma no tenía footer y el del turno sí. Se le agrega para
+      que las dos pantallas de detalle tengan la misma estructura.
+
+      Mismo patrón que en el turno: la etiqueta nombra la situación y no la
+      operación, y la condición NO es canAct —una toma vencida o cancelada no
+      admite acciones pero sí se puede sacar de la lista.
+    -->
+    <ion-footer
+      class="auth-footer"
+      mode="md"
+      *ngIf="!loading && medEvent && (canTakeCharge || canDelete)"
+    >
+      <!-- Las dos respuestas del grupo, lado a lado: son alternativas. -->
+      <div class="auth-footer__row" *ngIf="canTakeCharge">
+        <button
+          type="button"
+          class="auth-btn auth-btn--primary"
+          *ngIf="canTakeCharge"
+          (click)="takeCharge()"
+          [disabled]="responding"
+        >
+          <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!responding">Me hago cargo</ng-container>
+        </button>
+        <!-- "No puedo": el complemento de "Me hago cargo". No resuelve el evento,
+             avisa al resto del grupo. Antes sólo existía en la notificación. -->
+        <button
+          type="button"
+          class="auth-btn auth-btn--secondary"
+          *ngIf="canTakeCharge && !declined"
+          (click)="decline()"
+          [disabled]="responding"
+        >
+          No puedo
+        </button>
+      </div>
+      <button
+        *ngIf="canDelete"
+        type="button"
+        class="auth-btn auth-btn--outline-danger"
+        (click)="deleteEvent()"
+        [disabled]="deleting"
+      >
+        <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
+      </button>
+      <p class="auth-field__hint vm__delete-hint" *ngIf="medEvent?.seriesId">
+        Se borra el tratamiento completo.
+      </p>
+    </ion-footer>
   `,
   styleUrls: ['./view-med-event.component.scss']
 })
@@ -179,6 +202,8 @@ export class ViewMedEventComponent implements OnInit {
   notFound = false;
   responding = false;
   deleting = false;
+  /** Ya avisó que no puede en esta visita. */
+  declined = false;
   constructor(
     private route: ActivatedRoute,
     private medsEventsService: MedsEventsService,
@@ -202,6 +227,15 @@ export class ViewMedEventComponent implements OnInit {
    * cancelado no admite acciones pero sí se puede sacar de la lista. Lo único
    * que lo impide es que alguien se haya hecho cargo.
    */
+  get canTakeCharge(): boolean {
+    return (
+      !!this.groupId &&
+      !this.canceledLabel &&
+      this.canAct &&
+      !this.medEvent?.takenChargeByUserId
+    );
+  }
+
   get canDelete(): boolean {
     return !!this.medEvent && !this.medEvent.takenChargeByUserId;
   }
@@ -243,11 +277,29 @@ export class ViewMedEventComponent implements OnInit {
   ngOnInit() {}
 
   ionViewWillEnter() {
+    this.declined = false;
     this.medEventId = Number(this.route.snapshot.paramMap.get('id'));
     const dependentIdParam = this.route.snapshot.queryParamMap.get('dependentId');
     const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
     this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     this.load(dependentId);
+  }
+
+  /** Avisa al grupo que este integrante no puede ocuparse. El evento sigue abierto. */
+  async decline() {
+    if (this.responding || !this.medEvent) return;
+    this.responding = true;
+    try {
+      await this.groupEventsService.respondToEvent('med_event', this.medEvent.id, 'discard');
+      // Sólo se oculta el botón: quien dijo que no puede todavía puede
+      // cambiar de idea y hacerse cargo.
+      this.declined = true;
+      this.toastService.showSuccess('Avisamos al grupo que no podés.');
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
   }
 
   async deleteEvent() {

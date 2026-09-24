@@ -166,6 +166,8 @@ export class PushNotificationsService {
     await this.unregisterFromBackend(this.currentToken);
     this.currentToken = null;
     await PushNotifications.removeAllListeners();
+    // El de notificaciones locales también, o queda uno colgado por sesión.
+    await this.localNotifications.removeEventListeners();
   }
 
   private getPlatform(): 'android' | 'ios' | 'web' {

@@ -372,17 +372,23 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   }
 }
 
-/* Acción terciaria destructiva: el "lo cargué por error" al pie del detalle.
-   Mismo peso que `--ghost`, que es violeta y acá no corresponde. */
-.auth-btn--ghost-danger {
-  background: transparent;
+/* Destructivo secundario, con borde: el "lo cargué por error" del footer.
+ *
+ * Antes esto era `--ghost-danger`, que pisaba `min-height` con `auto` y bajaba
+ * la fuente a 14px sobre un base que ya viene sin borde ni fondo: quedaba texto
+ * rojo sin área de toque y no se leía como botón. Acá el alto se baja a 48 —
+ * menos que los 54 de la acción principal, pero sigue siendo un botón. */
+.auth-btn--outline-danger {
+  background: #fff5f5;
   color: #b91c1c;
-  min-height: auto;
-  font-size: 14px;
+  border: 1px solid #fecaca;
+  min-height: 48px;
+  font-size: 15px;
   font-weight: 600;
 
   &:active:not(:disabled) {
-    opacity: 0.6;
+    background: #fee2e2;
+    transform: scale(0.97);
   }
 }
 
@@ -1604,19 +1610,56 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   }
 }
 
-/* Mini sub-fabs (used inside ion-fab-list for group-home) — small
-   circular white buttons stacked above the main FAB. */
+/*
+ * Sub-fabs del desplegable del grupo.
+ *
+ * Eran blancos y planos al lado del "+" de 60px con degradado, y sin texto
+ * había que adivinar qué era cada ícono. Ahora comparten la sombra en capas del
+ * principal y cada uno lleva el tinte de su dominio, el mismo que usan los
+ * íconos de las cards (`.list-item__icon--*`).
+ *
+ * La etiqueta se dibuja con `::after` desde un `data-label` en vez de envolver
+ * el botón: `ion-fab-list` anima sus hijos directos, así que meter un div en el
+ * medio rompería la animación de apertura.
+ */
 .sub-fab-button {
   --background: var(--color-surface);
   --background-activated: var(--color-surface-subtle);
   --background-focused: var(--color-surface-subtle);
   --background-hover: var(--color-surface);
   --color: var(--sigsa-700);
-  --box-shadow: var(--shadow-elevated);
+  --box-shadow: 0 6px 16px rgba(75, 37, 130, 0.22), 0 2px 4px rgba(17, 24, 39, 0.10);
   --border-radius: 9999px;
+  --size: 48px;
+  position: relative;
+  overflow: visible;
 
   ion-icon { font-size: 22px; }
+
+  &::after {
+    content: attr(data-label);
+    position: absolute;
+    /* A la derecha del ícono, y oscura: sobre las cards blancas una pastilla
+       blanca se perdía con el fondo. */
+    left: calc(100% + 12px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 12px;
+    border-radius: 9999px;
+    background: var(--color-text);
+    box-shadow: var(--shadow-elevated);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    pointer-events: none;
+  }
 }
+
+/* Tintes por dominio, los mismos de los íconos de las cards. */
+.sub-fab-button--med { --color: var(--sigsa-700); --background: var(--sigsa-50); }
+.sub-fab-button--appointment { --color: #d97706; --background: #fff3df; }
+.sub-fab-button--document { --color: #0369a1; --background: #e0f2fe; }
 
 /* ===========================================================
  *  Profile / Patients / Doctors — hero, option cards
@@ -2206,4 +2249,13 @@ ion-fab-list[side="top"] {
   &--canceled {
     color: #b91c1c;
   }
+}
+
+/* Dos botones alternativos en el mismo renglón del footer ("Me hago cargo" /
+   "No puedo"). */
+.auth-footer__row {
+  display: flex;
+  gap: 10px;
+
+  .auth-btn { flex: 1; }
 }

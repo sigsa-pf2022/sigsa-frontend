@@ -150,11 +150,15 @@
   color: #b91c1c;
 }
 
-/* Igual que en el detalle del turno: acción terciaria al pie. */
-.vm__danger-zone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 24px 20px 8px;
+/* La aclaración del tratamiento, bajo el botón de borrar del footer. */
+.vm__delete-hint {
+  text-align: center;
+  padding-left: 0;
+}
+
+/* Aire al final del contenido: con un tratamiento largo, la última sección
+   ("X se hizo cargo") quedaba pegada al footer y se cortaba. Incluye el área
+   segura por si el footer no está (evento sin acciones). */
+.vm__section:last-child {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0) + 32px);
 }

@@ -127,6 +127,20 @@ export class LocalNotificationsService {
     });
   }
 
+  /**
+   * Se llama al cerrar sesión. Sin esto los listeners se acumulaban: `initialize`
+   * agrega uno cada vez, así que después de un logout→login un solo toque del
+   * botón disparaba la acción dos veces, y la segunda fallaba con un toast de
+   * error porque el backend ya la había registrado.
+   */
+  async removeEventListeners() {
+    try {
+      await this.localNotifications.removeAllListeners();
+    } catch (err) {
+      console.error('[LocalNotif] Error quitando listeners:', err);
+    }
+  }
+
   async schedule(date: string, professional, idAppointment: number) {
     // El mismo texto se usa para escribir el cuerpo y para reconocer después la
     // notificación que hay que cancelar, así que se arma una sola vez: si se

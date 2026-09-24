@@ -37,6 +37,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
       <header class="listing-header">
         <p class="listing-header__eyebrow">
           {{ this.isEditMode ? 'Editar recordatorio' : 'Nuevo recordatorio' }}
+          <ng-container *ngIf="dependentName"> · para {{ dependentName | titlecase }}</ng-container>
         </p>
         <h1 class="listing-header__title">¿Cuándo lo vas a tomar?</h1>
       </header>

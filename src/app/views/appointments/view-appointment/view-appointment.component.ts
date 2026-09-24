@@ -109,27 +109,6 @@ import {
             </span>
           </div>
         </section>
-
-        <!--
-          Borrar es para lo que se cargó por error, y por eso la etiqueta nombra
-          la situación y no la operación: un botón que dijera "Borrar" obligaría
-          a compararlo con "Cancelar", y son cosas distintas. Va acá abajo, con
-          mucho menos peso que las acciones del footer.
-
-          OJO: la condición NO es canAct. Esa función da false justo para los
-          vencidos y los cancelados, que son los que más ganas hay de borrar.
-        -->
-        <div class="va__danger-zone" *ngIf="canDelete">
-          <button
-            type="button"
-            class="auth-btn auth-btn--ghost-danger"
-            (click)="deleteEvent()"
-            [disabled]="deleting"
-          >
-            <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
-            <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
-          </button>
-        </div>
       </ng-container>
     </ion-content>
 
@@ -149,16 +128,30 @@ import {
         <ion-icon name="checkmark" aria-hidden="true"></ion-icon>
         Confirmar turno
       </button>
-      <button
-        type="button"
-        class="auth-btn auth-btn--primary"
-        *ngIf="canAct && groupId && !appointment?.takenChargeByUserId"
-        (click)="takeCharge()"
-        [disabled]="responding"
-      >
-        <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
-        <ng-container *ngIf="!responding">Me hago cargo</ng-container>
-      </button>
+      <!-- Las dos respuestas del grupo, lado a lado: son alternativas. -->
+      <div class="auth-footer__row" *ngIf="canAct && groupId && !appointment?.takenChargeByUserId">
+        <button
+          type="button"
+          class="auth-btn auth-btn--primary"
+          *ngIf="canAct && groupId && !appointment?.takenChargeByUserId"
+          (click)="takeCharge()"
+          [disabled]="responding"
+        >
+          <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!responding">Me hago cargo</ng-container>
+        </button>
+        <!-- "No puedo": el complemento de "Me hago cargo". No resuelve el evento,
+             avisa al resto del grupo. Antes sólo existía en la notificación. -->
+        <button
+          type="button"
+          class="auth-btn auth-btn--secondary"
+          *ngIf="canAct && groupId && !appointment?.takenChargeByUserId && !declined"
+          (click)="decline()"
+          [disabled]="responding"
+        >
+          No puedo
+        </button>
+      </div>
       <button
         type="button"
         class="auth-btn va__btn-danger"
@@ -166,6 +159,24 @@ import {
         (click)="cancelAppointment()"
       >
         Cancelar turno
+      </button>
+      <!--
+        Borrar es para lo que se cargó por error, y la etiqueta nombra la
+        situación y no la operación: un botón que dijera sólo "Borrar" obligaría
+        a compararlo con "Cancelar", y son cosas distintas.
+
+        OJO: la condición NO es canAct. Esa función da false justo para los
+        vencidos y los cancelados, que son los que más ganas hay de borrar.
+      -->
+      <button
+        type="button"
+        class="auth-btn auth-btn--outline-danger"
+        *ngIf="canDelete"
+        (click)="deleteEvent()"
+        [disabled]="deleting"
+      >
+        <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
       </button>
     </ion-footer>
   `,
@@ -178,6 +189,8 @@ export class ViewAppointmentComponent implements OnInit {
   isConfirmed: boolean = false;
   responding = false;
   deleting = false;
+  /** Ya avisó que no puede en esta visita. */
+  declined = false;
   loading = true;
   constructor(
     private appointmentsService: AppointmentsService,
@@ -223,6 +236,23 @@ export class ViewAppointmentComponent implements OnInit {
     return titleCase(fromRelation || this.appointment?.takenChargeByName) || 'Alguien del grupo';
   }
 
+  /** Avisa al grupo que este integrante no puede ocuparse. El evento sigue abierto. */
+  async decline() {
+    if (this.responding || !this.appointment) return;
+    this.responding = true;
+    try {
+      await this.groupEventsService.respondToEvent('appointment', this.appointment.id, 'discard');
+      // Sólo se oculta el botón: quien dijo que no puede todavía puede
+      // cambiar de idea y hacerse cargo.
+      this.declined = true;
+      this.toastService.showSuccess('Avisamos al grupo que no podés.');
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
+  }
+
   /** Un integrante avisa que él lleva al dependiente a este turno. */
   async takeCharge() {
     if (this.responding || !this.appointment) return;
@@ -255,6 +285,7 @@ export class ViewAppointmentComponent implements OnInit {
 
   ngOnInit() {}
   ionViewWillEnter() {
+    this.declined = false;
     this.appointmentId = Number(this.route.snapshot.paramMap.get('id'));
     this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     this.getAppointment();

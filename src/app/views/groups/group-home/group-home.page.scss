@@ -66,3 +66,19 @@
     height: 20px;
   }
 }
+
+/* Velo del desplegable del "+": oscurece el contenido para que las etiquetas
+   se lean, y al tocarlo se cierra. Queda debajo del fab (que va después en el
+   DOM) y encima de las cards. */
+.gh__fab-backdrop {
+  inset: 0;
+  background: rgba(17, 24, 39, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms var(--ease-out-soft);
+
+  &--open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

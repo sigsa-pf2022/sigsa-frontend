@@ -34,6 +34,7 @@ import { formatDosage } from 'src/app/utils/med-dosage';
       <header class="listing-header">
         <p class="listing-header__eyebrow">
           {{ this.isEditMode ? 'Editar recordatorio' : 'Nuevo recordatorio' }}
+          <ng-container *ngIf="dependentName"> · para {{ dependentName | titlecase }}</ng-container>
         </p>
         <h1 class="listing-header__title">Elegí el medicamento</h1>
       </header>
@@ -135,6 +136,16 @@ export class PickMedComponent implements OnInit, OnDestroy {
         : null;
       this.dependentName = params['dependentName'] || null;
       this.groupId = params['groupId'] || null;
+
+      // Volviendo desde el paso 2 no hay query params y se perdía para quién era
+      // el recordatorio. El paso 2 ya tenía este fallback; acá faltaba.
+      if (!this.dependentId) {
+        const guardado = this.medEventDataService.data;
+        this.dependentId = guardado?.dependentId ?? null;
+        this.dependentName = guardado?.dependentName ?? null;
+        this.groupId = guardado?.groupId ?? null;
+      }
+
       if (this.dependentId) {
         this.medEventDataService.update({
           dependentId: this.dependentId,
