@@ -219,8 +219,16 @@ export class ViewMedEventComponent implements OnInit {
   notFound = false;
   responding = false;
   deleting = false;
-  /** Ya avisó que no puede en esta visita. */
-  declined = false;
+  /**
+   * Tomas sobre las que este usuario ya dijo "No puedo". Se carga del backend
+   * al entrar, así que se recuerda entre visitas, y es por toma: en un
+   * tratamiento cada toma tiene su propia respuesta.
+   */
+  declinedIds = new Set<number>();
+
+  get declined(): boolean {
+    return !!this.medEvent && this.declinedIds.has(this.medEvent.id);
+  }
   constructor(
     private route: ActivatedRoute,
     private medsEventsService: MedsEventsService,
@@ -278,7 +286,6 @@ export class ViewMedEventComponent implements OnInit {
   selectDose(dose: any) {
     if (!this.isSelectableDose(dose) || dose.id === this.medEvent?.id) return;
     this.medEvent = dose;
-    this.declined = false;
   }
 
   /** Quién está a cargo de una toma, para mostrarlo en su fila. */
@@ -317,7 +324,7 @@ export class ViewMedEventComponent implements OnInit {
   ngOnInit() {}
 
   ionViewWillEnter() {
-    this.declined = false;
+    this.declinedIds = new Set();
     this.medEventId = Number(this.route.snapshot.paramMap.get('id'));
     const dependentIdParam = this.route.snapshot.queryParamMap.get('dependentId');
     const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
@@ -331,11 +338,13 @@ export class ViewMedEventComponent implements OnInit {
     this.responding = true;
     try {
       await this.groupEventsService.respondToEvent('med_event', this.medEvent.id, 'discard');
-      // Sólo se oculta el botón: quien dijo que no puede todavía puede
+      // Sólo se oculta "No puedo": quien dijo que no puede todavía puede
       // cambiar de idea y hacerse cargo.
-      this.declined = true;
+      this.declinedIds.add(this.medEvent.id);
       this.toastService.showSuccess('Avisamos al grupo que no podés.');
     } catch ({ error }) {
+      // El backend acepta un solo "No puedo" por toma.
+      if (error?.message === 'Ya avisaste que no podés') this.declinedIds.add(this.medEvent.id);
       this.toastService.showError(error?.message || 'No pudimos registrar la acción');
     } finally {
       this.responding = false;
@@ -403,8 +412,10 @@ export class ViewMedEventComponent implements OnInit {
    * existe para algo que además ya pasó. Esas pasan a "VENCIDA", el mismo
    * criterio que la pastilla de la lista.
    *
-   * Dentro de un grupo no cambia nada: ahí "PENDIENTE" sí significa algo, que
-   * nadie se hizo cargo de la toma del dependiente todavía.
+   * Aplica también dentro de un grupo. Antes ahí se dejaba "PENDIENTE" porque
+   * significaba que nadie se había hecho cargo, pero sobre una toma que ya pasó
+   * nadie puede hacerse cargo (el backend lo rechaza), así que tampoco ahí
+   * queda nada pendiente.
    */
   doseLabel(dose: any): string {
     if (this.isOwnOverdueDose(dose)) return 'VENCIDA';
@@ -428,9 +439,9 @@ export class ViewMedEventComponent implements OnInit {
     return this.badgeClassFor(dose?.status);
   }
 
-  /** Sólo aplica fuera de un grupo: la toma de un dependiente no cambia. */
+  /** Toma abierta cuya hora ya pasó, propia o de un dependiente. */
   private isOwnOverdueDose(dose: any): boolean {
-    return !this.groupId && isOverdue(dose);
+    return isOverdue(dose);
   }
 
   private badgeClassFor(status: string): string {
@@ -449,10 +460,27 @@ export class ViewMedEventComponent implements OnInit {
     this.notFound = false;
     await this.fallbackLoad(dependentId);
     this.notFound = !this.medEvent;
+    await this.loadMyResponses();
     this.loading = false;
     if (this.notFound) {
       // Navegar atrás solo si realmente no hay nada
       this.navController.navigateBack(['/meds']);
+    }
+  }
+
+  /** Qué tomas ya declinó este usuario, para no volver a ofrecerle "No puedo". */
+  private async loadMyResponses() {
+    if (!this.groupId || !this.medEvent) return;
+    const ids = this.seriesDoses.length ? this.seriesDoses.map((d) => d.id) : [this.medEvent.id];
+    try {
+      const res = await this.groupEventsService.getMyResponses('med_event', ids);
+      this.declinedIds = new Set(
+        Object.entries(res || {})
+          .filter(([, action]) => action === 'discard')
+          .map(([id]) => Number(id)),
+      );
+    } catch {
+      // Si falla, se ofrece el botón y el backend rechaza el segundo intento.
     }
   }
 

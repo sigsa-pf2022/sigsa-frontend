@@ -206,7 +206,9 @@ export class GroupHistoryPage implements OnInit {
   }
 
   describe(entry: any): string {
-    return ACTION_LABELS[entry?.action]?.text(entry?.payload) ?? 'Actividad del grupo';
+    const text = ACTION_LABELS[entry?.action]?.text(entry?.payload) ?? 'Actividad del grupo';
+    // En un tratamiento el backend dice de qué toma es cada movimiento.
+    return entry?.doseIndex ? `${text} (toma ${entry.doseIndex})` : text;
   }
 
   iconFor(entry: any): string {

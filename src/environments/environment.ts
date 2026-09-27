@@ -8,7 +8,8 @@ export const environment = {
 };
 
 // Levantar el emulador:
-// ~/Library/Android/sdk/emulator/emulator -avd Pixel_4_API_34
+// ~/Library/Android/sdk/emulator/emulator -avd Pixel_4_API_34 -timezone America/Argentina/Buenos_Aires
+// (sin -timezone arranca en GMT y todas las horas se ven corridas +3)
 //
 // Actualizar cambios y correr en el emulador:
 // ionic build && npx cap sync android && npx cap run android --target emulator-5554

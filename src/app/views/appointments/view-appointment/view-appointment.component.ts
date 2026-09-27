@@ -189,7 +189,7 @@ export class ViewAppointmentComponent implements OnInit {
   isConfirmed: boolean = false;
   responding = false;
   deleting = false;
-  /** Ya avisó que no puede en esta visita. */
+  /** Si este usuario ya dijo "No puedo" sobre el turno. Viene del backend. */
   declined = false;
   loading = true;
   constructor(
@@ -247,6 +247,8 @@ export class ViewAppointmentComponent implements OnInit {
       this.declined = true;
       this.toastService.showSuccess('Avisamos al grupo que no podés.');
     } catch ({ error }) {
+      // El backend acepta un solo "No puedo" por turno.
+      if (error?.message === 'Ya avisaste que no podés') this.declined = true;
       this.toastService.showError(error?.message || 'No pudimos registrar la acción');
     } finally {
       this.responding = false;
@@ -336,6 +338,18 @@ export class ViewAppointmentComponent implements OnInit {
       this.loading = false;
     }
     this.isConfirmed = this.appointment && this.appointment.status === 'confirmed';
+    await this.loadMyResponse();
+  }
+
+  /** Si ya dijo "No puedo" en otra visita, no se le vuelve a ofrecer. */
+  private async loadMyResponse() {
+    if (!this.groupId || !this.appointment) return;
+    try {
+      const res = await this.groupEventsService.getMyResponses('appointment', [this.appointment.id]);
+      this.declined = res?.[this.appointment.id] === 'discard';
+    } catch {
+      // Si falla, se ofrece el botón y el backend rechaza el segundo intento.
+    }
   }
 
   async confirmAppointment() {

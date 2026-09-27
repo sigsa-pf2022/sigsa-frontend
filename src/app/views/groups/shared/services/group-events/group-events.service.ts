@@ -28,6 +28,18 @@ export class GroupEventsService {
       .toPromise();
   }
 
+  /**
+   * Qué respondió el usuario sobre cada evento: { [id]: 'discard' | 'take_charge' | null }.
+   * Sirve para no volver a ofrecer "No puedo" a quien ya lo dijo.
+   */
+  getMyResponses(targetType: 'med_event' | 'appointment', ids: number[]) {
+    return this.http
+      .get<Record<number, string | null>>(
+        `${environment.apiUrl}/group-events/events/${targetType}/my-responses?ids=${ids.join(',')}`
+      )
+      .toPromise();
+  }
+
   getHistory(groupId: number | string, limit = 50, offset = 0) {
     return this.http
       .get<any>(`${environment.apiUrl}/group-events/${groupId}/history?limit=${limit}&offset=${offset}`)

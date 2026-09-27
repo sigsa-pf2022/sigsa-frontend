@@ -197,3 +197,14 @@
     opacity: 0.85;
   }
 }
+
+/* La fecha y el estado de cada toma no se parten: con "a cargo de" y un
+   nombre largo al lado, la fecha quedaba en dos líneas. */
+.vm__dose .vm__row-value {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.vm__dose-head {
+  min-width: 0;
+}
