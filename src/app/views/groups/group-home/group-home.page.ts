@@ -1,6 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AnimationController, NavController, ModalController } from '@ionic/angular';
+import { NavController, ModalController } from '@ionic/angular';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { isActionable } from 'src/app/constants/EventStatus.constant';
@@ -142,52 +142,39 @@ import { ToastService } from 'src/app/services/toast/toast.service';
           class="gh__fab-backdrop"
           [class.gh__fab-backdrop--open]="opened"
           slot="fixed"
-          (click)="opened && openFabList($event)"
+          (click)="closeMenu()"
         ></div>
+
+        <!--
+          Menú propio en lugar de ion-fab-list. El de Ionic tiene estado interno
+          y se desincronizaba de "opened": al tocar afuera se cerraba la lista
+          pero quedaba la "x" sin opciones. Además la etiqueta era un ::after,
+          fuera del área tocable. Acá cada fila es un único botón con texto e
+          ícono, y "opened" es la única fuente de verdad.
+        -->
+        <div class="gh-dial" [class.gh-dial--open]="opened" slot="fixed">
+          <button type="button" class="gh-dial__item" (click)="createMedication()">
+            <span class="gh-dial__label">Medicamento</span>
+            <span class="gh-dial__icon sub-fab-button--med"><ion-icon name="medkit"></ion-icon></span>
+          </button>
+          <button type="button" class="gh-dial__item" (click)="createAppointment()">
+            <span class="gh-dial__label">Turno</span>
+            <span class="gh-dial__icon sub-fab-button--appointment"><ion-icon name="calendar"></ion-icon></span>
+          </button>
+          <button type="button" class="gh-dial__item" (click)="createDocument()">
+            <span class="gh-dial__label">Documento</span>
+            <span class="gh-dial__icon sub-fab-button--document"><ion-icon name="document-text"></ion-icon></span>
+          </button>
+        </div>
 
         <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="center" slot="fixed">
           <ion-fab-button
             class="app-fab-button"
-            (click)="openFabList($event)"
+            (click)="toggleMenu()"
             aria-label="Crear recordatorio"
           >
             <ion-icon [name]="opened ? 'close' : 'add'"></ion-icon>
           </ion-fab-button>
-          <!--
-            El orden del DOM está invertido a propósito: con side="top" el primer
-            hijo queda pegado al "+", así que para verlos como medicamento,
-            turno y documento de arriba hacia abajo hay que listarlos al revés.
-
-            La etiqueta la dibuja el ::after de .sub-fab-button desde data-label;
-            envolver el botón en un div rompería la animación de apertura, que
-            Ionic aplica a los hijos directos de la lista.
-          -->
-          <ion-fab-list side="top" class="gh__fab__list" #fabList>
-            <ion-fab-button
-              class="sub-fab-button sub-fab-button--document"
-              data-label="Documento"
-              (click)="createDocument()"
-              aria-label="Crear documento"
-            >
-              <ion-icon name="document-text"></ion-icon>
-            </ion-fab-button>
-            <ion-fab-button
-              class="sub-fab-button sub-fab-button--appointment"
-              data-label="Turno"
-              (click)="createAppointment()"
-              aria-label="Crear turno"
-            >
-              <ion-icon name="calendar"></ion-icon>
-            </ion-fab-button>
-            <ion-fab-button
-              class="sub-fab-button sub-fab-button--med"
-              data-label="Medicamento"
-              (click)="createMedication()"
-              aria-label="Crear medicamento"
-            >
-              <ion-icon name="medkit"></ion-icon>
-            </ion-fab-button>
-          </ion-fab-list>
         </ion-fab>
       </ion-content>
     </div>
@@ -195,7 +182,6 @@ import { ToastService } from 'src/app/services/toast/toast.service';
   styleUrls: ['./group-home.page.scss'],
 })
 export class GroupHomePage implements OnInit {
-  @ViewChild('fabList', { read: ElementRef }) fabListRef: ElementRef;
   events = [];
   opened = false;
   group: FamilyGroup;
@@ -221,7 +207,6 @@ export class GroupHomePage implements OnInit {
   private remindersRequestId = 0;
 
   constructor(
-    private animationCtrl: AnimationController,
     private route: ActivatedRoute,
     private groupsService: GroupsService,
     private navController: NavController,
@@ -238,6 +223,11 @@ export class GroupHomePage implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  /** Que al volver al grupo el menú del "+" no aparezca abierto. */
+  ionViewWillLeave() {
+    this.closeMenu();
+  }
 
   async ionViewWillEnter() {
     // Reset completo de estado
@@ -331,33 +321,12 @@ export class GroupHomePage implements OnInit {
     this.navController.navigateForward([`/groups/professional-requests/${this.group.id}`]);
   }
 
-  openFabList(ev: Event) {
-    if (this.opened) {
-      ev.stopPropagation();
-      this.closeAnimation();
-    } else {
-      this.openAnimation();
-    }
+  toggleMenu() {
     this.opened = !this.opened;
   }
-  closeAnimation() {
-    this.animationCtrl
-      .create()
-      .addElement(this.fabListRef.nativeElement)
-      .duration(250)
-      .fromTo('opacity', '1', '0')
-      .play()
-      .then(() => {
-        this.fabListRef.nativeElement.click();
-      });
-  }
-  openAnimation() {
-    this.animationCtrl
-      .create()
-      .addElement(this.fabListRef.nativeElement)
-      .duration(250)
-      .fromTo('opacity', '0', '1')
-      .play();
+
+  closeMenu() {
+    this.opened = false;
   }
 
   async changeReminders(value) {
@@ -732,10 +701,7 @@ export class GroupHomePage implements OnInit {
 
   createAppointment() {
     // Cerrar el FAB primero
-    if (this.opened) {
-      this.closeAnimation();
-      this.opened = false;
-    }
+    this.closeMenu();
 
     // Navegar a la creación de turno para el dependiente
     this.navController.navigateForward(['/appointments/create/pick-doctor'], {
@@ -745,10 +711,7 @@ export class GroupHomePage implements OnInit {
 
   createMedication() {
     // Cerrar el FAB primero
-    if (this.opened) {
-      this.closeAnimation();
-      this.opened = false;
-    }
+    this.closeMenu();
     // Navegar al flujo de creación de medicamento para el dependiente
     this.navController.navigateForward(['/meds/create/pick-med'], {
       queryParams: this.groupContextParams(),
@@ -757,10 +720,7 @@ export class GroupHomePage implements OnInit {
 
   createDocument() {
     // Cerrar el FAB primero
-    if (this.opened) {
-      this.closeAnimation();
-      this.opened = false;
-    }
+    this.closeMenu();
 
     // Navegar a la creación de documento para el dependiente
     this.navController.navigateForward(['/documents/create'], {

@@ -162,3 +162,38 @@
 .vm__section:last-child {
   padding-bottom: calc(env(safe-area-inset-bottom, 0) + 32px);
 }
+
+/* Las tomas futuras se eligen tocándolas: "Me hago cargo" actúa sobre la
+   seleccionada. */
+.vm__dose--selectable {
+  cursor: pointer;
+
+  &:active { background: var(--color-surface-subtle); }
+}
+
+.vm__dose-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vm__dose-owner {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-success, #16a34a);
+}
+
+/* "Me hago cargo" con la toma debajo: en media fila del footer no entra en
+   una sola línea. */
+.vm__btn-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+
+  small {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.85;
+  }
+}

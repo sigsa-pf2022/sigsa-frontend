@@ -11,6 +11,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
 import {
   isActionable,
   isOverdue,
+  isPastEvent,
   resolveEventStatus,
   STATUS_BADGE_CLASS,
 } from 'src/app/constants/EventStatus.constant';
@@ -91,12 +92,23 @@ import {
             <h2>Tomas del tratamiento</h2>
           </div>
           <div class="vm__card">
+            <!--
+              Cada toma se puede elegir tocándola: "Me hago cargo" actúa sobre la
+              seleccionada y lo dice. Antes actuaba siempre sobre la próxima
+              pendiente sin avisar cuál, y entrar varias veces iba tomando las
+              siguientes una tras otra.
+            -->
             <div
               class="vm__row vm__dose"
               *ngFor="let dose of seriesDoses"
               [class.vm__dose--current]="dose.id === medEvent?.id"
+              [class.vm__dose--selectable]="isSelectableDose(dose)"
+              (click)="selectDose(dose)"
             >
-              <span class="vm__row-label">Toma {{ dose.doseIndex }}</span>
+              <span class="vm__dose-head">
+                <span class="vm__row-label">Toma {{ dose.doseIndex }}</span>
+                <small class="vm__dose-owner" *ngIf="doseOwner(dose)">a cargo de {{ doseOwner(dose) }}</small>
+              </span>
               <span class="vm__row-value">
                 {{ dose.date | date: 'dd/MM HH:mm' }}
                 <span class="status-badge" [ngClass]="doseBadgeClass(dose)">{{ doseLabel(dose) }}</span>
@@ -128,7 +140,7 @@ import {
           <div class="vm__takecharge">
             <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
             <span>
-              {{ takenChargeLabel }} se hizo cargo
+              {{ takenChargeLabel }} se hizo cargo<ng-container *ngIf="medEvent?.seriesId"> de la toma {{ medEvent.doseIndex }}</ng-container>
               <small *ngIf="medEvent?.takenChargeAt">
                 · {{ medEvent.takenChargeAt | date: 'dd/MM HH:mm' }}
               </small>
@@ -161,7 +173,12 @@ import {
           [disabled]="responding"
         >
           <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
-          <ng-container *ngIf="!responding">Me hago cargo</ng-container>
+          <span class="vm__btn-stack" *ngIf="!responding">
+            Me hago cargo
+            <small *ngIf="medEvent?.seriesId">
+              Toma {{ medEvent.doseIndex }} · {{ medEvent.date | date: 'dd/MM HH:mm' }}
+            </small>
+          </span>
         </button>
         <!-- "No puedo": el complemento de "Me hago cargo". No resuelve el evento,
              avisa al resto del grupo. Antes sólo existía en la notificación. -->
@@ -253,18 +270,41 @@ export class ViewMedEventComponent implements OnInit {
     return titleCase(fromRelation || this.medEvent?.takenChargeByName) || 'Alguien del grupo';
   }
 
+  /** Una toma se puede elegir si todavía admite acciones (futura, no cancelada). */
+  isSelectableDose(dose: any): boolean {
+    return !!this.groupId && isActionable(dose);
+  }
+
+  selectDose(dose: any) {
+    if (!this.isSelectableDose(dose) || dose.id === this.medEvent?.id) return;
+    this.medEvent = dose;
+    this.declined = false;
+  }
+
+  /** Quién está a cargo de una toma, para mostrarlo en su fila. */
+  doseOwner(dose: any): string {
+    if (!dose?.takenChargeByUserId) return '';
+    return actorName(dose.takenChargeBy) || titleCase(dose.takenChargeByName) || '';
+  }
+
   /** Un integrante avisa que él se ocupa de esta toma del dependiente. */
   async takeCharge() {
     if (this.responding || !this.medEvent) return;
     this.responding = true;
     try {
       const res = await this.groupEventsService.respondToEvent('med_event', this.medEvent.id, 'take_charge');
-      this.medEvent = {
-        ...this.medEvent,
+      const patch = {
+        status: 'confirmed',
         takenChargeByUserId: res.takenChargeByUserId,
         takenChargeByName: res.takenChargeByName,
         takenChargeAt: res.takenChargeAt,
       };
+      this.medEvent = { ...this.medEvent, ...patch };
+      // El cronograma también: antes quedaba con el estado viejo hasta salir y
+      // volver a entrar.
+      this.seriesDoses = this.seriesDoses.map((d) =>
+        d.id === this.medEvent.id ? { ...d, ...patch } : d,
+      );
       this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
     } catch ({ error }) {
       // 409: otro integrante ganó la carrera. El mensaje dice quién fue.
@@ -368,6 +408,9 @@ export class ViewMedEventComponent implements OnInit {
    */
   doseLabel(dose: any): string {
     if (this.isOwnOverdueDose(dose)) return 'VENCIDA';
+    // Hacerse cargo escribe `confirmed`, pero de una toma futura no se puede
+    // decir que ya se tomó: hasta que pase la hora es sólo un compromiso.
+    if (dose?.status === 'confirmed' && !isPastEvent(dose)) return 'CONFIRMADA';
     const map: Record<string, string> = {
       confirmed: 'TOMADA',
       created: 'PENDIENTE',
@@ -381,6 +424,7 @@ export class ViewMedEventComponent implements OnInit {
   doseBadgeClass(dose: any): string {
     // Ámbar, como la pastilla "VENCIDO" de la lista.
     if (this.isOwnOverdueDose(dose)) return STATUS_BADGE_CLASS.warning;
+    if (dose?.status === 'confirmed' && !isPastEvent(dose)) return 'status-badge--info';
     return this.badgeClassFor(dose?.status);
   }
 
