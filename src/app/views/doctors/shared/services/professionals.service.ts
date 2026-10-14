@@ -1,7 +1,11 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'src/environments/environment';
-import { Professional } from '../interfaces/Professional.interface';
+import {
+  Professional,
+  ProfessionalsPage,
+  ProfessionalsQuery,
+} from '../interfaces/Professional.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -13,8 +17,17 @@ export class ProfessionalsService {
     return this.http.get<Professional[]>(`${environment.apiUrl}/professionals/my-professionals`).toPromise();
   }
 
-  getProfessionals(): Promise<Professional[]> {
-    return this.http.get<Professional[]>(`${environment.apiUrl}/professionals`).toPromise();
+  /** Búsqueda paginada: el backend filtra, ordena (vinculados primero) y pagina. */
+  searchProfessionals(query: ProfessionalsQuery): Promise<ProfessionalsPage> {
+    let params = new HttpParams();
+    Object.entries(query).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params = params.set(key, String(value));
+      }
+    });
+    return this.http
+      .get<ProfessionalsPage>(`${environment.apiUrl}/professionals`, { params })
+      .toPromise();
   }
 
   getProfessionalsSpecializations(): Promise<any[]> {

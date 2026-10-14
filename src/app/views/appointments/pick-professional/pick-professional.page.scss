@@ -7,3 +7,19 @@
 .pick-prof__scroll {
   padding: 0 20px calc(env(safe-area-inset-bottom, 0) + 120px);
 }
+
+.pick-prof__specialty {
+  margin-top: 8px;
+}
+
+.pick-prof__section {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.pick-prof__selected {
+  margin: 0;
+  padding: 0 20px 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}

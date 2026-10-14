@@ -3,6 +3,7 @@ import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
+import { Specialization } from '../../doctors/shared/interfaces/Specialization.interface';
 import { ProfessionalsService } from '../../doctors/shared/services/professionals.service';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
@@ -44,29 +45,64 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
         <ion-searchbar
           class="listing-searchbar"
           formControlName="search"
-          placeholder="Buscar profesional..."
+          placeholder="Buscar por nombre o apellido..."
           debounce="400"
           type="string"
           mode="md"
-          (ionChange)="handleChange($event)"
+          (ionChange)="handleSearch()"
         ></ion-searchbar>
+        <div class="auth-input pick-prof__specialty">
+          <ion-select
+            aria-label="Especialidad"
+            formControlName="specializationId"
+            placeholder="Todas las especialidades"
+            interface="alert"
+            okText="Confirmar"
+            cancelText="Cancelar"
+            (ionChange)="handleSearch()"
+          >
+            <ion-select-option [value]="null">Todas las especialidades</ion-select-option>
+            <ion-select-option *ngFor="let spec of specializations" [value]="spec.id">
+              {{ spec.name }}
+            </ion-select-option>
+          </ion-select>
+        </div>
       </form>
+
+      <p class="pick-prof__selected" *ngIf="this.doctor && !isLoaded(this.doctor)">
+        Seleccionado: Dr/a {{ this.doctor.firstName + ' ' + this.doctor.lastName | titlecase }}
+      </p>
 
       <app-loading-state *ngIf="this.isLoading" [rows]="6"></app-loading-state>
 
       <div class="pick-prof__scroll" *ngIf="!this.isLoading">
-        <ng-container *ngIf="this.filteredDoctors?.length > 0; else emptyState">
+        <ng-container *ngIf="this.doctors?.length > 0; else emptyState">
+          <ng-container *ngIf="this.linkedDoctors.length > 0">
+            <div class="section-title pick-prof__section"><h2>Tus profesionales</h2></div>
+            <ng-container *ngFor="let doctorOption of this.linkedDoctors">
+              <ng-container *ngTemplateOutlet="doctorItem; context: { $implicit: doctorOption }"></ng-container>
+            </ng-container>
+            <div class="section-title pick-prof__section" *ngIf="this.otherDoctors.length > 0">
+              <h2>Otros profesionales</h2>
+            </div>
+          </ng-container>
+          <ng-container *ngFor="let doctorOption of this.otherDoctors">
+            <ng-container *ngTemplateOutlet="doctorItem; context: { $implicit: doctorOption }"></ng-container>
+          </ng-container>
+        </ng-container>
+
+        <ng-template #doctorItem let-doctorOption>
           <app-items-list
-            *ngFor="let doctorOption of this.filteredDoctors"
             (click)="setDoctor(doctorOption)"
             [showIcon]="false"
             [isSelectable]="true"
             [value]="doctorOption.id"
             [selectedValue]="this.doctor?.id"
             [title]="'Dr/a ' + (doctorOption.firstName + ' ' + doctorOption.lastName | titlecase)"
+            [subtitle]="specialtiesOf(doctorOption)"
             img="doctor"
           ></app-items-list>
-        </ng-container>
+        </ng-template>
 
         <ng-template #emptyState>
           <div class="empty-state" role="status">
@@ -84,6 +120,14 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
           </div>
         </ng-template>
       </div>
+
+      <ion-infinite-scroll
+        *ngIf="!this.isLoading"
+        [disabled]="!this.hasMore"
+        (ionInfinite)="loadMore($event)"
+      >
+        <ion-infinite-scroll-content loadingSpinner="crescent"></ion-infinite-scroll-content>
+      </ion-infinite-scroll>
     </ion-content>
 
     <ion-footer class="auth-footer" mode="md">
@@ -101,18 +145,25 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
   styleUrls: ['./pick-professional.page.scss'],
 })
 export class PickProfessionalPage implements OnInit {
+  private static readonly pageSize = 20;
+
   searchForm = this.fb.group({
     search: '',
+    specializationId: null as number | null,
   });
   doctor: Professional;
-  doctors: Professional[];
-  filteredDoctors: Professional[];
+  doctors: Professional[] = [];
+  specializations: Specialization[] = [];
   isLoading = true;
+  hasMore = false;
   isEditMode = false;
   appointmentId: number;
   dependentId: number;
   dependentName: string;
   groupId: string;
+  private page = 0;
+  /** Descarta respuestas viejas si el usuario sigue tipeando. */
+  private requestId = 0;
 
   constructor(
     private fb: FormBuilder,
@@ -123,7 +174,17 @@ export class PickProfessionalPage implements OnInit {
     private route: ActivatedRoute
   ) {}
 
-  ngOnInit() {}
+  get linkedDoctors(): Professional[] {
+    return this.doctors.filter((d) => d.linked);
+  }
+
+  get otherDoctors(): Professional[] {
+    return this.doctors.filter((d) => !d.linked);
+  }
+
+  ngOnInit() {
+    this.loadSpecializations();
+  }
 
   ionViewWillEnter() {
     // Capturar parámetros del dependiente si existen
@@ -146,7 +207,7 @@ export class PickProfessionalPage implements OnInit {
       }
     });
 
-    this.getProfessionals();
+    this.loadFirstPage();
     this.setMode();
   }
 
@@ -168,26 +229,62 @@ export class PickProfessionalPage implements OnInit {
     this.doctor = value;
   }
 
-  async handleChange(event) {
-    const search = (event.detail.value || '').toLowerCase();
-    this.filteredDoctors = this.doctors.filter(
-      (professional: Professional) =>
-        (professional.firstName ?? '').toLowerCase().includes(search) ||
-        (professional.lastName ?? '').toLowerCase().includes(search)
-    );
+  handleSearch() {
+    this.loadFirstPage();
   }
 
-  async getProfessionals() {
+  /** En edición el profesional del turno puede no estar en la página cargada. */
+  isLoaded(professional: Professional): boolean {
+    return this.doctors.some((d) => d.id === professional?.id);
+  }
+
+  specialtiesOf(professional: Professional): string {
+    return (professional.specialization || []).map((s) => s.name).join(', ');
+  }
+
+  async loadSpecializations() {
+    try {
+      const all: Specialization[] = await this.professionalsService.getProfessionalsSpecializations();
+      this.specializations = (all || [])
+        .filter((s) => !s.deleted)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    } catch (error) {
+      console.error('PickProfessionalPage: error cargando especialidades', error);
+    }
+  }
+
+  async loadFirstPage() {
     // Sin este flag el listado vacío hacía aparecer "No encontramos
     // profesionales" mientras la request estaba en vuelo.
-    this.isLoading = !this.doctors?.length;
+    this.isLoading = true;
+    this.page = 0;
     try {
-      this.doctors = await this.professionalsService.getProfessionals();
-      this.filteredDoctors = this.doctors;
+      const result = await this.fetchPage(0);
+      // Una búsqueda más nueva ya está en vuelo: ella apaga el loading.
+      if (!result) {
+        return;
+      }
+      this.doctors = result.data;
+      this.hasMore = this.doctors.length < result.total;
+      this.isLoading = false;
     } catch (error) {
       console.error('PickProfessionalPage: error cargando profesionales', error);
-    } finally {
       this.isLoading = false;
+    }
+  }
+
+  async loadMore(event) {
+    try {
+      const result = await this.fetchPage(this.page + 1);
+      if (result) {
+        this.page += 1;
+        this.doctors = [...this.doctors, ...result.data];
+        this.hasMore = this.doctors.length < result.total;
+      }
+    } catch (error) {
+      console.error('PickProfessionalPage: error cargando más profesionales', error);
+    } finally {
+      event.target.complete();
     }
   }
 
@@ -236,5 +333,19 @@ export class PickProfessionalPage implements OnInit {
     } : {};
 
     return this.navController.navigateForward([url], navigationExtras);
+  }
+
+  /** null si mientras tanto salió otra búsqueda más nueva. */
+  private async fetchPage(page: number) {
+    const id = ++this.requestId;
+    const { search, specializationId } = this.searchForm.value;
+    const result = await this.professionalsService.searchProfessionals({
+      search: (search || '').trim(),
+      specializationId: specializationId || undefined,
+      dependentId: this.dependentId || undefined,
+      page,
+      take: PickProfessionalPage.pageSize,
+    });
+    return id === this.requestId ? result : null;
   }
 }
