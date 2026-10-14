@@ -63,6 +63,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   navigateToProfile() {
-    return this.navController.navigateRoot(['profile']);
+    // Forward y no root: root no se anima y borra el historial, así que al
+    // volver el home se reconstruía entero.
+    return this.navController.navigateForward(['/profile']);
   }
 }

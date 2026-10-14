@@ -335,6 +335,6 @@ export class AddMembersPage implements OnInit {
 
   success() {
     this.toastService.showSuccess('Grupo creado exitosamente');
-    this.navController.navigateRoot(['/tabs/groups']);
+    this.navController.navigateRoot(['/tabs/groups'], { animated: true, animationDirection: 'back' });
   }
 }

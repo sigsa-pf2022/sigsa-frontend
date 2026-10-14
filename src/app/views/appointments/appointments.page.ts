@@ -189,10 +189,10 @@ export class AppointmentsPage implements OnInit, OnDestroy {
   }
 
   editAppointment(id) {
-    return this.navController.navigateRoot([`/appointments/edit/${id}/pick-doctor`]);
+    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`]);
   }
 
   viewAppointment(id) {
-    return this.navController.navigateRoot([`/appointments/view/${id}`]);
+    return this.navController.navigateForward([`/appointments/view/${id}`]);
   }
 }

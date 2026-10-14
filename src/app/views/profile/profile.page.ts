@@ -95,7 +95,8 @@ export class ProfilePage implements OnInit {
     // Hay que esperar: si se navega antes de que la sesión se limpie,
     // `AlreadyLoggedGuard` todavía ve al usuario logueado y devuelve al home.
     await this.auth.signOut();
-    return this.navController.navigateRoot(['welcome']);
+    // Root no se anima si no se le pide: el login aparecía de golpe.
+    return this.navController.navigateRoot(['welcome'], { animated: true, animationDirection: 'back' });
   }
 
   buildOptions() {

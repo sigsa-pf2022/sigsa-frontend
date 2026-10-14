@@ -418,7 +418,7 @@ export class CreateDocumentPage implements OnInit {
         this.toastService.showSuccess(
           `Documento creado correctamente para ${titleCase(this.dependentName)}`,
         );
-        this.navController.navigateRoot(['/groups/home/' + this.groupId]);
+        this.navController.navigateRoot(['/groups/home/' + this.groupId], { animated: true, animationDirection: 'back' });
       } else {
         // Crear documento para usuario
         await this.documentsService.createDocument(payload);
@@ -456,7 +456,7 @@ export class CreateDocumentPage implements OnInit {
 
       if (this.dependentId) {
         // Navegar de vuelta al grupo si estamos editando un documento de dependiente
-        this.navController.navigateRoot(['/groups/home/' + this.groupId]);
+        this.navController.navigateRoot(['/groups/home/' + this.groupId], { animated: true, animationDirection: 'back' });
       } else {
         // Navegar a la lista de documentos si estamos editando un documento propio
         this.navController.navigateForward(['/tabs/clipboard']);

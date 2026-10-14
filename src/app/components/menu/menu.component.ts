@@ -109,7 +109,7 @@ export class MenuComponent implements OnInit {
                   {
                     text: 'OK',
                     handler: async () => {
-                      await this.navController.navigateRoot(['/tabs/groups']);
+                      await this.navController.navigateRoot(['/tabs/groups'], { animated: true, animationDirection: 'back' });
                     },
                   },
                 ],

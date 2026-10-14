@@ -143,7 +143,7 @@ export class LoginPage implements OnInit {
   }
 
   goHome() {
-    this.navController.navigateRoot(['tabs/home']);
+    this.navController.navigateRoot(['tabs/home'], { animated: true });
   }
 
   async sendVerificationEmailModal() {

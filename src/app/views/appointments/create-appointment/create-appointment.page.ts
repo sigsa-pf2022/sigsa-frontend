@@ -303,7 +303,7 @@ export class CreateAppointmentPage implements OnInit {
 
     // Si venimos de un grupo específico, regresar a ese grupo
     if (this.dependentId && this.groupId) {
-      return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
+      return this.navController.navigateRoot([`/groups/home/${this.groupId}`], { animated: true, animationDirection: 'back' });
     } else if (this.dependentId) {
       // Si solo tenemos dependentId pero no groupId, ir al listado de grupos
       return this.navController.navigateBack(['/groups']);

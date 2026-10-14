@@ -327,7 +327,7 @@ export class ViewAppointmentComponent implements OnInit {
    */
   private leaveAfterAction() {
     if (this.groupId) {
-      return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
+      return this.navController.navigateRoot([`/groups/home/${this.groupId}`], { animated: true, animationDirection: 'back' });
     }
     return this.navController.navigateForward('/tabs/appointments');
   }

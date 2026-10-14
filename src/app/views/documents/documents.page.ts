@@ -194,10 +194,10 @@ export class DocumentsPage implements OnInit, OnDestroy {
   }
 
   editDocument(id: number) {
-    return this.navController.navigateRoot([`/documents/edit/${id}`]);
+    return this.navController.navigateForward([`/documents/edit/${id}`]);
   }
 
   viewDocument(id: number) {
-    return this.navController.navigateRoot([`/documents/view/${id}`]);
+    return this.navController.navigateForward([`/documents/view/${id}`]);
   }
 }

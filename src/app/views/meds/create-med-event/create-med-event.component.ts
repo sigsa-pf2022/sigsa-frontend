@@ -397,11 +397,11 @@ export class CreateMedEventComponent implements OnInit {
     const grpId = this.groupId || this.medsEventDataService.data?.groupId;
     this.medsEventDataService.clean();
     if (depId && grpId) {
-      return this.navController.navigateRoot(`/groups/home/${grpId}`);
+      return this.navController.navigateRoot(`/groups/home/${grpId}`, { animated: true, animationDirection: 'back' });
     } else if (depId) {
       return this.navController.navigateBack('/groups');
     }
-    return this.navController.navigateRoot('/tabs/meds');
+    return this.navController.navigateRoot('/tabs/meds', { animated: true, animationDirection: 'back' });
   }
 
   successEdition() {
@@ -410,11 +410,11 @@ export class CreateMedEventComponent implements OnInit {
     const grpId = this.groupId || this.medsEventDataService.data?.groupId;
     this.medsEventDataService.clean();
     if (depId && grpId) {
-      return this.navController.navigateRoot(`/groups/home/${grpId}`);
+      return this.navController.navigateRoot(`/groups/home/${grpId}`, { animated: true, animationDirection: 'back' });
     } else if (depId) {
       return this.navController.navigateBack('/groups');
     }
-    return this.navController.navigateRoot('/tabs/meds');
+    return this.navController.navigateRoot('/tabs/meds', { animated: true, animationDirection: 'back' });
   }
 
   dispatch(notification, id) {
