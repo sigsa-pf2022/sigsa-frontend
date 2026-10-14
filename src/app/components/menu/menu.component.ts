@@ -66,8 +66,9 @@ export class MenuComponent implements OnInit {
 
   async onOptionClick(option: any) {
     // Se cierra antes de navegar: si no, al volver (por ejemplo del historial)
-    // el menú seguía abierto sobre el inicio del grupo.
-    await this.menu?.close(false);
+    // el menú seguía abierto sobre el inicio del grupo. Con la animación: sin
+    // ella el menú desaparecía de golpe y la transición se veía cortada.
+    await this.menu?.close();
     switch (option.action) {
       case 'see-members':
         if (option.groupId) {
