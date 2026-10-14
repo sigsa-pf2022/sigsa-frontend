@@ -45,6 +45,14 @@ export const PROFILE_OPTIONS = [
     },
   },
   {
+    icon: 'people-outline',
+    title: 'Mis Grupos',
+    action: {
+      type: 'navigate',
+      payload: '/tabs/groups',
+    },
+  },
+  {
     icon: 'help-circle-outline',
     title: 'Preguntas frecuentes',
     action: {
