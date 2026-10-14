@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AlertController, NavController } from '@ionic/angular';
 import { GroupsService } from '../shared/services/groups/groups.service';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
 
 @Component({
   selector: 'app-group-members',
@@ -50,7 +51,7 @@ import { AuthenticationService } from 'src/app/services/authentication/authentic
           <button
             type="button"
             class="member-row__action member-row__action--danger"
-            *ngIf="member.id != loggedUserId"
+            *ngIf="canRemove(member.id)"
             (click)="deleteMember(member.id)"
             aria-label="Eliminar miembro"
           >
@@ -84,7 +85,8 @@ export class GroupMembersPage implements OnInit {
     private navController: NavController,
     private alertController: AlertController,
     private route: ActivatedRoute,
-    private auth: AuthenticationService
+    private auth: AuthenticationService,
+    private toastService: ToastService
   ) {}
 
   ngOnInit() {
@@ -106,7 +108,9 @@ export class GroupMembersPage implements OnInit {
     try {
       const group = await this.groupsService.getFamilyGroupById(this.groupId);
       this.members = group.members;
-      this.adminId = group.createdBy;
+      // El backend manda el responsable como objeto; comparar contra el objeto
+      // hacía que nunca se mostrara "Administrador".
+      this.adminId = group.createdBy?.id ?? group.createdBy;
 
       // Ordenar: admin primero, luego alfabéticamente
       this.members.sort((a, b) => {
@@ -140,8 +144,9 @@ export class GroupMembersPage implements OnInit {
             try {
               await this.groupsService.deleteMember(this.groupId, memberId);
               this.getMembers();
-            } catch (error) {
+            } catch ({ error }) {
               console.error('Error eliminar miembro:', error);
+              this.toastService.showError(error?.message || 'No se pudo eliminar al miembro');
             }
           },
         },
@@ -155,8 +160,13 @@ export class GroupMembersPage implements OnInit {
     });
   }
 
-  isAdmin(memberId: string): boolean {
-    return this.adminId === memberId;
+  isAdmin(memberId: string | number): boolean {
+    return this.adminId != null && String(this.adminId) === String(memberId);
+  }
+
+  /** Sólo el responsable saca a otros; uno mismo se va desde el menú del grupo. */
+  canRemove(memberId: string): boolean {
+    return this.isAdmin(this.loggedUserId) && String(memberId) !== String(this.loggedUserId);
   }
 
   getInitials(member: any): string {
