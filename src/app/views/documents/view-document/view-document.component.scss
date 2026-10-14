@@ -133,3 +133,23 @@
 .vd__bottom-spacer {
   height: calc(env(safe-area-inset-bottom, 0) + 24px);
 }
+
+.vd__pdf-native {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 18px;
+  text-align: center;
+
+  > ion-icon {
+    font-size: 40px;
+    color: var(--sigsa-600);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+}
