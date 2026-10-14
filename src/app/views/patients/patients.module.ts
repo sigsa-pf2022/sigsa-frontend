@@ -11,6 +11,7 @@ import { PatientsPage } from './patients.page';
 import { AddPatientPage } from './add-patient/add-patient.page';
 import { PatientDocumentsPage } from './patient-documents/patient-documents.page';
 import { PatientDetailPage } from './patient-detail/patient-detail.page';
+import { AgendaPage } from './agenda/agenda.page';
 
 const routes: Routes = [
   {
@@ -20,6 +21,11 @@ const routes: Routes = [
   {
     path: 'add',
     component: AddPatientPage,
+  },
+  // Antes que ':patientId', o el comodín se la come.
+  {
+    path: 'agenda',
+    component: AgendaPage,
   },
   {
     path: ':patientId',
@@ -41,7 +47,7 @@ const routes: Routes = [
     SharedComponentsModule,
     SharedDocumentsModule,
   ],
-  declarations: [PatientsPage, AddPatientPage, PatientDocumentsPage, PatientDetailPage],
+  declarations: [PatientsPage, AddPatientPage, PatientDocumentsPage, PatientDetailPage, AgendaPage],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],
