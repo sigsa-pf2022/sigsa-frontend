@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { NavController } from '@ionic/angular';
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { ProfessionalNote } from 'src/app/interfaces/professional-note';
 import { titleCase } from 'src/app/utils/title-case';
+import { MedicalDocument } from 'src/app/views/documents/shared/interfaces/Document.interface';
 import { PatientsService } from '../shared/services/patients.service';
 import {
   Adherence,
@@ -178,6 +179,31 @@ const NOTE_MAX_LENGTH = 1000;
         </div>
       </div>
 
+      <!-- Documentos -->
+      <div class="pdt__scroll" *ngIf="!isLoading && tab === 'documents'">
+        <ng-container *ngIf="documents.length">
+          <div class="section-title">
+            <h2>Documentos</h2>
+            <span>{{ documents.length }}</span>
+          </div>
+          <app-document-item-list
+            *ngFor="let doc of documents"
+            [document]="doc"
+            [flush]="true"
+            (click)="viewDocument(doc.id)"
+          ></app-document-item-list>
+        </ng-container>
+        <div *ngIf="!documents.length" class="empty-state" role="status">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="document-text"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Sin documentos</h2>
+          <p class="empty-state__subtitle">
+            Este paciente todavía no cargó estudios, recetas ni informes.
+          </p>
+        </div>
+      </div>
+
       <div *ngIf="!isLoading && !summary && tab === 'summary'" class="empty-state" role="status">
         <div class="empty-state__icon" aria-hidden="true">
           <ion-icon name="alert-circle"></ion-icon>
@@ -197,6 +223,7 @@ export class PatientDetailPage {
   treatments: PatientTreatment[] = [];
   singleDoses = { count: 0, names: '', adherence: null as Adherence | null };
   notes: ProfessionalNote[] = [];
+  documents: MedicalDocument[] = [];
   newNote = '';
   noteMaxLength = NOTE_MAX_LENGTH;
   isLoading = true;
@@ -204,6 +231,7 @@ export class PatientDetailPage {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private navController: NavController,
     private patientsService: PatientsService,
     private toastService: ToastService,
@@ -236,28 +264,32 @@ export class PatientDetailPage {
   }
 
   changeTab(event) {
-    const value = event.detail.value as Tab;
-    if (value === 'documents') {
-      // Documentos ya tiene su pantalla: se navega en vez de duplicarla acá, y
-      // el segmento vuelve a la pestaña en la que estaba.
-      event.target.value = this.tab;
-      this.navController.navigateForward([`/patients/${this.patientId}/documents`], {
-        queryParams: { patientType: this.patientType, name: this.patientName },
-      });
-      return;
-    }
-    this.tab = value;
+    this.tab = event.detail.value as Tab;
+  }
+
+  viewDocument(id: number) {
+    // La vista de documento es compartida y por sí sola no sabe de dónde vino.
+    // Con la URL exacta de la ficha, al volver Ionic retoma esta misma página y
+    // sigue en la pestaña Documentos.
+    this.navController.navigateForward([`/documents/view/${id}`], {
+      queryParams: { returnUrl: this.router.url },
+    });
   }
 
   private async load() {
     this.isLoading = !this.summary;
     try {
-      const [summary, notes] = await Promise.all([
+      const [summary, notes, documents] = await Promise.all([
         this.patientsService.getPatientSummary(this.patientId, this.patientType),
         this.patientsService.getPatientNotes(this.patientId, this.patientType),
+        // Si fallan los documentos, la ficha igual se muestra.
+        this.patientsService
+          .getPatientDocuments(this.patientId, this.patientType)
+          .catch(() => [] as MedicalDocument[]),
       ]);
       this.summary = summary;
       this.notes = notes || [];
+      this.documents = documents || [];
       this.splitTreatments(summary.activeTreatments || []);
     } catch (error) {
       this.summary = null;

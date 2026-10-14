@@ -4,8 +4,10 @@
   height: 100%;
 }
 
+/* El header no deja aire abajo: sin el padding superior el nombre quedaba
+   pegado al segmento. 16px, igual que `.listing-search` en los listados. */
 .pdt__tabs {
-  padding: 0 20px 4px;
+  padding: 16px 20px 4px;
 }
 
 /* Mismo segmento que el de la home (reminders.component.scss). */

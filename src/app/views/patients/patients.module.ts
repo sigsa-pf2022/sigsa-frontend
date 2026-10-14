@@ -9,7 +9,6 @@ import { SharedComponentsModule } from 'src/app/components/shared-components.mod
 import { SharedDocumentsModule } from '../documents/shared/shared-documents.module';
 import { PatientsPage } from './patients.page';
 import { AddPatientPage } from './add-patient/add-patient.page';
-import { PatientDocumentsPage } from './patient-documents/patient-documents.page';
 import { PatientDetailPage } from './patient-detail/patient-detail.page';
 import { AgendaPage } from './agenda/agenda.page';
 
@@ -31,10 +30,6 @@ const routes: Routes = [
     path: ':patientId',
     component: PatientDetailPage,
   },
-  {
-    path: ':patientId/documents',
-    component: PatientDocumentsPage,
-  },
 ];
 
 @NgModule({
@@ -47,7 +42,7 @@ const routes: Routes = [
     SharedComponentsModule,
     SharedDocumentsModule,
   ],
-  declarations: [PatientsPage, AddPatientPage, PatientDocumentsPage, PatientDetailPage, AgendaPage],
+  declarations: [PatientsPage, AddPatientPage, PatientDetailPage, AgendaPage],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],
