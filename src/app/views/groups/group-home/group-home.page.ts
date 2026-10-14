@@ -25,7 +25,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
 @Component({
   selector: 'app-group-home',
   template: `
-    <app-menu contentId="group-home" title="Menu del grupo" [options]="this.options"></app-menu>
+    <app-menu contentId="group-home" title="Menú del grupo" [options]="this.options"></app-menu>
     <div class="ui-main-menu-content" id="group-home">
       <ion-header class="auth-page-header" mode="md">
         <ion-toolbar class="auth-page-toolbar" mode="md">
@@ -52,7 +52,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
       <ion-content class="listing gh" *ngIf="!this.isLoading && this.group">
         <header class="listing-header gh__header">
           <p class="listing-header__eyebrow">Grupo familiar</p>
-          <h1 class="listing-header__title">{{ this.group.name | titlecase }}</h1>
+          <h1 class="listing-header__title">{{ this.group.name | capitalizeWords }}</h1>
         </header>
 
         <article class="group-card" *ngIf="this.group.dependent">

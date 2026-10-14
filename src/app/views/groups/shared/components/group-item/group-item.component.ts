@@ -8,7 +8,7 @@ import { Component, Input, OnInit } from '@angular/core';
         <app-avatar [photo]="this.group?.photo" [name]="this.group?.name" icon="people"></app-avatar>
       </div>
       <div class="list-item__body">
-        <span class="list-item__title">{{ this.group?.name | titlecase }}</span>
+        <span class="list-item__title">{{ this.group?.name | capitalizeWords }}</span>
         <span class="list-item__subtitle">
           {{ this.group?.members?.length || 0 }} {{ (this.group?.members?.length === 1) ? 'miembro' : 'miembros' }}
         </span>

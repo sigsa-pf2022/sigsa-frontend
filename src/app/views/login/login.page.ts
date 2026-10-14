@@ -56,6 +56,10 @@ import { UserValidationModalComponent } from './shared-login/components/user-val
                 inputmode="email"
               ></ion-input>
             </div>
+            <!-- Sin esto el botón "Ingresar" quedaba deshabilitado sin explicar por qué. -->
+            <p class="auth-field__error" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid">
+              {{ loginForm.get('email')?.hasError('required') ? 'Ingresá tu email.' : 'El email no es válido.' }}
+            </p>
           </div>
 
           <div class="auth-field">

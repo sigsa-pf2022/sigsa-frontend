@@ -101,7 +101,7 @@ export class AuthenticationService {
     return res;
   }
 
-  getUserByDni(value: number): Promise<any> {
+  getUserByDni(value: number | string): Promise<any> {
     return this.http.get<any>(`${environment.apiUrl}/users/${value}`).toPromise();
   }
 

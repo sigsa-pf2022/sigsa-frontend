@@ -56,6 +56,7 @@ import { ActivatedRoute } from '@angular/router';
             <p class="auth-field__error" *ngIf="form.get('search')?.value?.length > 0 && form.get('search')?.value?.length < 7">
               El DNI debe tener al menos 7 dígitos.
             </p>
+            <p class="auth-field__error" *ngIf="searchMessage" role="status">{{ searchMessage }}</p>
           </div>
 
           <ion-item
@@ -181,6 +182,8 @@ export class AddMembersPage implements OnInit {
   /** Solo sobre un grupo existente: los miembros actuales llegan por API. */
   isLoadingCurrentMembers = false;
   memberToAdd: { firstName: string; lastName: string; dni: number };
+  /** Por qué la búsqueda por DNI no trajo a nadie. */
+  searchMessage = '';
   members: { firstName: string; lastName: string; dni: number }[] = [];
   form = this.fb.group({
     search: null,
@@ -228,18 +231,48 @@ export class AddMembersPage implements OnInit {
     }
   }
 
+  /**
+   * Antes, si el DNI no existía (o era el propio, o alguien ya agregado) la
+   * búsqueda simplemente no mostraba nada y no se entendía qué pasaba.
+   */
   async handleChange(event) {
-    const dni = event.detail.value;
+    const dni = String(event.detail.value ?? '').trim();
     this.memberToAdd = null;
-    if (dni.length >= 7 && !this.memberAlreadyAdded(dni) && !this.isNotMe(dni)) {
-      this.memberToAdd = await this.auth.getUserByDni(dni);
+    this.searchMessage = '';
+    if (dni.length < 7) {
+      return;
+    }
+
+    if (this.isNotMe(dni)) {
+      this.searchMessage = 'Ese DNI es el tuyo.';
+      return;
+    }
+    if (this.memberAlreadyAdded(dni)) {
+      this.searchMessage = 'Esa persona ya está en el grupo o en la lista.';
+      return;
+    }
+    try {
+      const found = await this.auth.getUserByDni(dni);
+      // Si mientras tanto se cambió el DNI, esta respuesta ya no aplica.
+      if (String(this.form.get('search')?.value ?? '').trim() !== dni) {
+        return;
+      }
+      if (found) {
+        this.memberToAdd = found;
+      } else {
+        this.searchMessage = 'No encontramos a nadie registrado con ese DNI.';
+      }
+    } catch (error) {
+      console.error('AddMembersPage: error buscando por DNI', error);
+      this.searchMessage = 'No pudimos buscar ese DNI. Probá de nuevo.';
     }
   }
 
-  memberAlreadyAdded(dni: number) {
-    const alreadyInList = this.members.some((m) => m.dni === dni);
-    const alreadyInGroup = this.currentGroupMembers.some((m) => m.dni === dni);
-    return alreadyInList || alreadyInGroup;
+  // El buscador entrega strings y los DNI pueden venir como número: con `===`
+  // estas comparaciones nunca coincidían.
+  memberAlreadyAdded(dni: string | number) {
+    const same = (m) => String(m?.dni) === String(dni);
+    return this.members.some(same) || this.currentGroupMembers.some(same);
   }
 
   clearMembers() {
@@ -253,12 +286,12 @@ export class AddMembersPage implements OnInit {
     this.form.reset();
   }
   removeMember(dni: number) {
-    this.members = this.members.filter((m) => m.dni !== dni);
+    this.members = this.members.filter((m) => String(m.dni) !== String(dni));
     this.form.reset();
   }
 
   isNotMe(dni: string) {
-    return dni === this.auth.user().dni;
+    return String(dni) === String(this.auth.user()?.dni);
   }
 
   getInitials(member: any): string {

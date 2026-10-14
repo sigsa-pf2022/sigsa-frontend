@@ -86,7 +86,7 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
             <div class="member-row__body">
               <span class="member-row__name">{{ titleFor(group) }}</span>
               <span class="member-row__sub">
-                {{ actorFor(group.lastEntry) }} {{ describe(group.lastEntry) | lowercase }} ·
+                {{ actorFor(group.lastEntry) }} {{ describeInline(group.lastEntry) }} ·
                 {{ group.lastEntry.createdAt | date: 'dd/MM HH:mm' }}
               </span>
             </div>
@@ -108,7 +108,7 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
               </span>
               <div class="gh-history__step-body">
                 <span class="gh-history__step-text">
-                  {{ actorFor(entry) }} · {{ describe(entry) | lowercase }}
+                  {{ actorFor(entry) }} · {{ describeInline(entry) }}
                 </span>
                 <span class="gh-history__step-date">
                   {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
@@ -209,6 +209,16 @@ export class GroupHistoryPage implements OnInit {
     const text = ACTION_LABELS[entry?.action]?.text(entry?.payload) ?? 'Actividad del grupo';
     // En un tratamiento el backend dice de qué toma es cada movimiento.
     return entry?.doseIndex ? `${text} (toma ${entry.doseIndex})` : text;
+  }
+
+  /**
+   * La acción a continuación del nombre de quien la hizo ("Lucía agregó a …").
+   * Antes se pasaba todo por `| lowercase` y los nombres de las personas
+   * quedaban en minúscula; ahora sólo se baja la primera letra del verbo.
+   */
+  describeInline(entry: any): string {
+    const text = this.describe(entry);
+    return text.charAt(0).toLowerCase() + text.slice(1);
   }
 
   iconFor(entry: any): string {

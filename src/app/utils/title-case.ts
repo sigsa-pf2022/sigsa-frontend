@@ -15,3 +15,16 @@ export function titleCase(value?: string | null): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 }
+
+/**
+ * Pone en mayúscula la primera letra de cada palabra y deja el resto como se
+ * escribió. Para nombres que eligió el usuario, como los de los grupos: con
+ * `titlecase` "Familia QA" se mostraba "Familia Qa".
+ */
+export function capitalizeWords(value?: string | null): string {
+  if (!value) return '';
+  return value
+    .split(/(\s+)/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join('');
+}

@@ -21,6 +21,7 @@ import { MedsEventsItemListComponent } from './meds-event-item-list/meds-event-i
 import { SharedDocumentsModule } from '../views/documents/shared/shared-documents.module';
 import { AvatarModule } from './avatar/avatar.module';
 import { LoadingStateComponent } from './loading-state/loading-state.component';
+import { PipesModule } from '../pipes/pipes.module';
 
 @NgModule({
   declarations: [
@@ -57,7 +58,8 @@ import { LoadingStateComponent } from './loading-state/loading-state.component';
     YesNoModalComponent,
     MedsEventsItemListComponent,
     LoadingStateComponent,
-    AvatarModule
+    AvatarModule,
+    PipesModule
   ],
 })
 export class SharedComponentsModule {}

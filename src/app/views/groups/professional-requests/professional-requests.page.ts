@@ -42,7 +42,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
             <div class="pr__card-titles">
               <p class="pr__card-eyebrow">Solicitud para</p>
               <p class="pr__card-title">{{ req.dependentFirstName | titlecase }} {{ req.dependentLastName | titlecase }}</p>
-              <p class="pr__card-sub">Grupo: {{ req.groupName | titlecase }}</p>
+              <p class="pr__card-sub">Grupo: {{ req.groupName | capitalizeWords }}</p>
             </div>
           </header>
 

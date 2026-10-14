@@ -104,7 +104,7 @@ import { PatientsService } from '../shared/services/patients.service';
           <div class="ap__notice">
             <ion-icon name="information-circle" aria-hidden="true"></ion-icon>
             <p>
-              Pertenece al grupo <strong>{{ foundPatient.groupName | titlecase }}</strong>, administrado por
+              Pertenece al grupo <strong>{{ foundPatient.groupName | capitalizeWords }}</strong>, administrado por
               <strong>{{ foundPatient.responsibleFirstName | titlecase }} {{ foundPatient.responsibleLastName | titlecase }}</strong>.
               El responsable va a recibir una notificación para autorizar la solicitud.
             </p>
