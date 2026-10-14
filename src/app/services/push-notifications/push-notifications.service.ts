@@ -7,6 +7,8 @@ import { environment } from 'src/environments/environment';
 import { LocalNotificationsService } from '../local-notifications/local-notifications.service';
 import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
 import { ToastService } from '../toast/toast.service';
+import { AppointmentsService } from 'src/app/views/appointments/shared/services/appointments/appointments.service';
+import { isActionable } from 'src/app/constants/EventStatus.constant';
 import { timeout } from 'rxjs/operators';
 
 @Injectable({ providedIn: 'root' })
@@ -18,6 +20,7 @@ export class PushNotificationsService {
     private platform: Platform,
     private localNotifications: LocalNotificationsService,
     private groupEventsService: GroupEventsService,
+    private appointmentsService: AppointmentsService,
     private toastService: ToastService,
     private navController: NavController,
     private zone: NgZone,
@@ -93,7 +96,7 @@ export class PushNotificationsService {
           notification.title ?? 'Notificación',
           notification.body ?? '',
           notification.data,
-          this.isActionable(notification.data) ? 'GROUP_EVENT' : undefined,
+          this.actionTypeFor(notification.data),
         );
       }),
     );
@@ -112,6 +115,36 @@ export class PushNotificationsService {
   /** El backend marca así los eventos de un dependiente, que son accionables. */
   private isActionable(data: any): boolean {
     return String(data?.actionable) === 'true';
+  }
+
+  /** Botones de la notificación local: grupales, de turno propio o ninguno. */
+  private actionTypeFor(data: any): string | undefined {
+    if (this.isActionable(data)) return 'GROUP_EVENT';
+    if (String(data?.selfAppointment) === 'true') return 'SELF_APPOINTMENT';
+    return undefined;
+  }
+
+  /**
+   * "Confirmar" desde la bandeja. Mismo criterio que la pantalla del turno:
+   * sobre uno vencido o cancelado no se actúa.
+   */
+  private async confirmFromNotification(appointmentId: number) {
+    try {
+      const appointment = await this.appointmentsService.getAppointment(appointmentId);
+      if (!isActionable(appointment)) {
+        this.toastService.showError('El turno ya pasó o fue cancelado.');
+        return;
+      }
+      if (appointment.status === 'confirmed') {
+        this.toastService.showSuccess('El turno ya estaba confirmado.');
+        return;
+      }
+      await this.appointmentsService.confirmAppointment(appointmentId);
+      this.toastService.showSuccess('Turno confirmado correctamente.');
+      this.appointmentsService.notifyAppointmentsChanged();
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos confirmar el turno');
+    }
   }
 
   /** Respuesta desde los botones nativos de la notificación local. */
@@ -138,15 +171,26 @@ export class PushNotificationsService {
       return;
     }
 
+    if (action.actionId === 'confirm_appointment') {
+      await this.confirmFromNotification(Number(data.referenceId));
+      return;
+    }
+
+    // Se abre el turno y la pantalla pregunta antes de cancelar.
+    if (action.actionId === 'cancel_appointment') {
+      this.openEvent(data, { action: 'cancel' });
+      return;
+    }
+
     // 'tap' o cualquier otra: abrir el evento.
     this.openEvent(data);
   }
 
   /** Deep link al turno o medicamento que originó la notificación. */
-  private openEvent(data: any) {
+  private openEvent(data: any, extraParams: Record<string, string> = {}) {
     if (!data?.type || !data?.referenceId) return;
 
-    const queryParams: any = {};
+    const queryParams: any = { ...extraParams };
     if (data.groupId) queryParams.groupId = data.groupId;
     if (data.dependentId) queryParams.dependentId = data.dependentId;
     if (data.dependentName) queryParams.dependentName = data.dependentName;

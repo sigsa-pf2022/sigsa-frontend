@@ -1,6 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NavController } from '@ionic/angular';
+import { Capacitor } from '@capacitor/core';
+import { Directory, Filesystem } from '@capacitor/filesystem';
+import { ToastService } from 'src/app/services/toast/toast.service';
 import { DocumentsService } from '../shared/services/documents.service';
 import { MedicalDocument } from '../shared/interfaces/Document.interface';
 
@@ -86,8 +89,10 @@ import { MedicalDocument } from '../shared/interfaces/Document.interface';
         type="button"
         class="auth-btn auth-btn--primary"
         (click)="downloadDocument()"
+        [disabled]="downloading || !fileContent"
       >
-        <ion-icon name="download" aria-hidden="true"></ion-icon>
+        <ion-spinner *ngIf="downloading" name="crescent"></ion-spinner>
+        <ion-icon *ngIf="!downloading" name="download" aria-hidden="true"></ion-icon>
         Descargar
       </button>
     </ion-footer>
@@ -101,10 +106,12 @@ export class ViewDocumentComponent implements OnInit {
   documentId: number;
   groupId: string | null = null;
   returnUrl: string | null = null;
+  downloading = false;
 
   constructor(
     private route: ActivatedRoute,
     private documentsService: DocumentsService,
+    private toastService: ToastService,
     private navController: NavController
   ) {}
 
@@ -183,7 +190,46 @@ export class ViewDocumentComponent implements OnInit {
     return new Blob(byteArrays, { type: contentType });
   }
 
-  downloadDocument() {
+  /**
+   * En el teléfono el `<a download>` no hace nada: el WebView de Capacitor no
+   * atiende descargas, así que el toque se perdía sin error. Ahí se escribe el
+   * archivo en la carpeta pública Documentos. En el navegador el link sí anda.
+   */
+  async downloadDocument() {
+    if (!Capacitor.isNativePlatform()) {
+      this.downloadInBrowser();
+      return;
+    }
+    if (this.downloading || !this.fileContent) return;
+
+    this.downloading = true;
+    // Una barra en el nombre se tomaría como carpeta.
+    const fileName = (this.document.fileName || `documento-${this.documentId}`).replace(/[\\/]/g, '-');
+    try {
+      // Sólo pide algo en Android 10 o anterior; desde el 11 vuelve `granted`.
+      const perm = await Filesystem.requestPermissions();
+      if (perm.publicStorage !== 'granted') {
+        this.toastService.showError('Sin permiso para guardar en el teléfono');
+        return;
+      }
+      // `fileContent` ya es base64 sin prefijo, que es como el plugin espera un binario.
+      // Si ya existe, se pisa: es el mismo documento descargado otra vez.
+      await Filesystem.writeFile({
+        path: fileName,
+        data: this.fileContent,
+        directory: Directory.Documents,
+        recursive: true,
+      });
+      this.toastService.showSuccess(`Guardado en Documentos/${fileName}`);
+    } catch (err) {
+      console.error('[Documento] Error guardando el archivo:', err);
+      this.toastService.showError('No pudimos guardar el documento');
+    } finally {
+      this.downloading = false;
+    }
+  }
+
+  private downloadInBrowser() {
     const link = document.createElement('a');
     if (this.document?.mimeType?.includes('pdf')) {
       link.href = this.pdfUrl;

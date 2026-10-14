@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 
 import { ProfilePage } from './profile.page';
 import { MyDataPage } from './my-data/my-data.page';
+import { FaqPage } from './faq/faq.page';
 import { SharedProfileComponentsModule } from './components/shared-profile.module';
 import { RouterModule, Routes } from '@angular/router';
 import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
@@ -20,6 +21,10 @@ const routes: Routes = [
   {
     path: 'my-data',
     component: MyDataPage
+  },
+  {
+    path: 'faq',
+    component: FaqPage
   }
 ];
 
@@ -33,7 +38,7 @@ const routes: Routes = [
     SharedProfileComponentsModule,
     AvatarModule
   ],
-  declarations: [ProfilePage, MyDataPage],
+  declarations: [ProfilePage, MyDataPage, FaqPage],
   providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }]
 })
 export class ProfilePageModule {}

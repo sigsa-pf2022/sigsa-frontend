@@ -152,6 +152,9 @@ export class ProfessionalRequestsPage implements OnInit {
         text: `¿Aceptar la solicitud de ${titleCase(
           `${req.professionalFirstName} ${req.professionalLastName}`,
         )} para ${titleCase(`${req.dependentFirstName} ${req.dependentLastName}`)}?`,
+        // El modal viene en rojo por defecto, pensado para cancelar o borrar.
+        // Aceptar es una acción positiva: en rojo parecía un error.
+        yesColor: 'primary',
       },
     });
     await modal.present();

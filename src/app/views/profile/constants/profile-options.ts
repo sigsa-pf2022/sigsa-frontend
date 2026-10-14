@@ -37,15 +37,11 @@ export const PROFILE_OPTIONS = [
   },
   {
     icon: 'help-circle-outline',
-    title: 'Ayuda',
-    content: [
-      {
-        title: 'Preguntas frecuentes',
-      },
-      {
-        title: 'Hablar con soporte',
-      },
-    ],
+    title: 'Preguntas frecuentes',
+    action: {
+      type: 'navigate',
+      payload: '/profile/faq',
+    },
   },
   // "Seguridad → Cambiar contraseña" se movió a "Mis datos", donde el ítem
   // efectivamente dispara el flujo de recuperación por email.

@@ -192,6 +192,8 @@ export class ViewAppointmentComponent implements OnInit {
   /** Si este usuario ya dijo "No puedo" sobre el turno. Viene del backend. */
   declined = false;
   loading = true;
+  /** Si ya se atendió el `action` con el que se abrió esta pantalla. */
+  private pendingActionDone = false;
   constructor(
     private appointmentsService: AppointmentsService,
     private route: ActivatedRoute,
@@ -290,7 +292,20 @@ export class ViewAppointmentComponent implements OnInit {
     this.declined = false;
     this.appointmentId = Number(this.route.snapshot.paramMap.get('id'));
     this.groupId = this.route.snapshot.queryParamMap.get('groupId');
-    this.getAppointment();
+    const action = this.route.snapshot.queryParamMap.get('action');
+    this.getAppointment().then(() => this.runPendingAction(action));
+  }
+
+  /**
+   * "Cancelar" desde la notificación de un turno propio abre esta pantalla con
+   * `action=cancel` y acá se pregunta, con el mismo diálogo del botón. Se
+   * atiende una sola vez: la URL conserva el parámetro, y sin la marca cada
+   * vuelta a la pantalla (por ejemplo, desde editar) volvía a preguntar.
+   */
+  private runPendingAction(action: string | null) {
+    if (action !== 'cancel' || this.pendingActionDone) return;
+    this.pendingActionDone = true;
+    if (this.canAct && !this.groupId) this.cancelAppointment();
   }
 
   goBack() {

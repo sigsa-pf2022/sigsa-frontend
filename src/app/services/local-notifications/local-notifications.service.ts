@@ -114,6 +114,23 @@ export class LocalNotificationsService {
               },
             ],
           },
+          {
+            // Turno propio, sin grupo. "Cancelar" no cancela desde la bandeja:
+            // abre el turno con el mismo diálogo de confirmación de la pantalla,
+            // para que un toque accidental no lo dé de baja.
+            id: 'SELF_APPOINTMENT',
+            actions: [
+              {
+                id: 'confirm_appointment',
+                title: 'Confirmar',
+              },
+              {
+                id: 'cancel_appointment',
+                title: 'Cancelar',
+                destructive: true,
+              },
+            ],
+          },
         ],
       });
     } catch (err) {
