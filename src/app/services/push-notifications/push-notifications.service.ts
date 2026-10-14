@@ -202,6 +202,9 @@ export class PushNotificationsService {
       this.navController.navigateForward([`/meds/view/${data.referenceId}`], { queryParams });
     } else if (type === 'appointment') {
       this.navController.navigateForward([`/appointments/view/${data.referenceId}`], { queryParams });
+    } else if (type === 'professional_note') {
+      // Las indicaciones se leen todas juntas: no hay vista de una sola.
+      this.navController.navigateForward(['/notes'], { queryParams });
     }
   }
 

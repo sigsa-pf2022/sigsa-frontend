@@ -11,6 +11,15 @@ export const PROFILE_OPTIONS = [
       payload: '/doctors',
     },
   },
+  // Para el profesional, buildOptions la reemplaza por "Mi agenda".
+  {
+    icon: 'chatbox-ellipses-outline',
+    title: 'Indicaciones de mis profesionales',
+    action: {
+      type: 'navigate',
+      payload: '/notes',
+    },
+  },
   {
     icon: 'time-outline',
     title: 'Mis Turnos',

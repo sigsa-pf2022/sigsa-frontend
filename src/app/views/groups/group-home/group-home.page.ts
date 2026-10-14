@@ -20,6 +20,8 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
 import { titleCase } from 'src/app/utils/title-case';
 import { PhotoPickerService } from 'src/app/services/photo-picker/photo-picker.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { NotesService } from '../../notes/shared/services/notes.service';
+import { ProfessionalNote } from 'src/app/interfaces/professional-note';
 
 
 @Component({
@@ -115,6 +117,30 @@ import { ToastService } from 'src/app/services/toast/toast.service';
           <span class="alert-card__badge">{{ pendingRequestsCount }}</span>
         </ion-item>
 
+        <!-- Sólo aparece cuando hay alguna: vacía sería ruido en la ficha. -->
+        <ion-item
+          *ngIf="lastNote"
+          class="list-item gh__notes"
+          lines="none"
+          [button]="true"
+          detail="false"
+          (click)="openNotes()"
+        >
+          <div class="list-item__icon list-item__icon--med" aria-hidden="true">
+            <ion-icon name="chatbox-ellipses"></ion-icon>
+          </div>
+          <div class="list-item__body">
+            <div class="list-item__row">
+              <span class="list-item__title">Indicaciones del profesional</span>
+              <span class="status-badge status-badge--violet">{{ notesCount }}</span>
+            </div>
+            <span class="list-item__subtitle gh__notes-excerpt">{{ lastNote.content }}</span>
+            <span class="list-item__meta">
+              {{ noteAuthor(lastNote) }} · {{ lastNote.createdAt | date: 'dd/MM HH:mm' }}
+            </span>
+          </div>
+        </ion-item>
+
         <div class="section-title">
           <h2>Próximos eventos</h2>
           <span *ngIf="events?.length">{{ events.length }}</span>
@@ -189,6 +215,8 @@ export class GroupHomePage implements OnInit {
   currentReminderType: string = REMINDERS_TYPE.appointments;
   options: any;
   pendingRequestsCount = 0;
+  notesCount = 0;
+  lastNote: ProfessionalNote | null = null;
   savingPhoto = false;
   /**
    * Cuántos recordatorios se ven en el home. El resto sale por "Ver todos": la
@@ -219,7 +247,8 @@ export class GroupHomePage implements OnInit {
     private actionSheetService: ActionSheetService,
     private modalController: ModalController,
     private photoPicker: PhotoPickerService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    private notesService: NotesService
   ) {}
 
   ngOnInit() {}
@@ -237,6 +266,8 @@ export class GroupHomePage implements OnInit {
     this.isLoading = true;
     this.isLoadingEvents = true;
     this.isLoadingReminders = true;
+    this.lastNote = null;
+    this.notesCount = 0;
 
     const groupId = this.route.snapshot.paramMap.get('id');
     try {
@@ -266,6 +297,7 @@ export class GroupHomePage implements OnInit {
     await this.loadDependentEvents();
     await this.loadDependentReminders();
     await this.loadPendingRequestsCount();
+    await this.loadNotes();
 
     // Volvimos de ver o editar un item que se eligió desde "Ver todos": lo
     // devolvemos a esa lista, ya recargada, en vez de dejarlo en el home.
@@ -315,6 +347,34 @@ export class GroupHomePage implements OnInit {
     } catch {
       this.pendingRequestsCount = 0;
     }
+  }
+
+  private async loadNotes() {
+    if (!this.group?.dependent?.id) return;
+    try {
+      const notes = await this.notesService.getReceivedNotes(this.group.dependent.id);
+      this.notesCount = notes?.length || 0;
+      this.lastNote = notes?.[0] ?? null;
+    } catch {
+      this.notesCount = 0;
+      this.lastNote = null;
+    }
+  }
+
+  noteAuthor(note: ProfessionalNote): string {
+    const p = note?.professional;
+    return p ? `Dr/a ${titleCase(`${p.firstName} ${p.lastName}`)}` : 'Profesional';
+  }
+
+  openNotes() {
+    const dependent = this.group?.dependent;
+    this.navController.navigateForward(['/notes'], {
+      queryParams: {
+        dependentId: dependent?.id,
+        groupId: this.group?.id,
+        dependentName: dependent ? `${dependent.firstName} ${dependent.lastName}` : '',
+      },
+    });
   }
 
   openProfessionalRequests() {

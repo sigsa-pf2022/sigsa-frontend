@@ -16,6 +16,7 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
   event_declined: { icon: 'remove-circle-outline', text: () => 'Avisó que no puede' },
   event_deleted: { icon: 'trash-outline', text: () => 'Lo borró' },
   event_confirmed: { icon: 'checkmark-circle-outline', text: () => 'Lo confirmó' },
+  event_skipped: { icon: 'remove-circle-outline', text: () => 'Marcó que no se tomó' },
   event_canceled: {
     icon: 'close-circle-outline',
     // Antes el cron cancelaba los turnos vencidos y por eso se distinguía; ese
@@ -34,6 +35,11 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
   professional_linked: {
     icon: 'medkit-outline',
     text: (p) => `Vinculó a ${titleCase(p?.professionalName) || 'un profesional'}`,
+  },
+  professional_note: {
+    icon: 'chatbox-ellipses-outline',
+    // El actor de la entrada es el propio profesional.
+    text: (p) => `Dejó una indicación para ${titleCase(p?.dependentName) || 'el dependiente'}`,
   },
 };
 

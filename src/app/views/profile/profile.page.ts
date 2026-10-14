@@ -115,6 +115,17 @@ export class ProfilePage implements OnInit {
           payload: '/patients',
         },
       };
+      const notesIndex = this.options.findIndex((o) => o.action?.payload === '/notes');
+      if (notesIndex >= 0) {
+        this.options[notesIndex] = {
+          icon: 'calendar-outline',
+          title: 'Mi agenda',
+          action: {
+            type: 'navigate',
+            payload: '/patients/agenda',
+          },
+        };
+      }
     }
   }
 

@@ -56,6 +56,11 @@ const routes: Routes = [
     canActivate: [AuthGuard, ProfessionalGuard],
   },
   {
+    path: 'notes',
+    loadChildren: () => import('./views/notes/notes.module').then((m) => m.NotesPageModule),
+    canActivate: [AuthGuard],
+  },
+  {
     path: 'recovery-password',
     loadChildren: () => import('./views/recovery-password/recovery-password.module').then( m => m.RecoveryPasswordModule)
   },
