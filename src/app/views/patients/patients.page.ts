@@ -21,7 +21,15 @@ import { titleCase } from 'src/app/utils/title-case';
           >
             <ion-icon name="chevron-back"></ion-icon>
           </button>
-          <div></div>
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goToAgenda()"
+            aria-label="Mi agenda"
+            title="Mi agenda"
+          >
+            <ion-icon name="calendar-outline"></ion-icon>
+          </button>
         </div>
       </ion-toolbar>
     </ion-header>
@@ -63,7 +71,7 @@ import { titleCase } from 'src/app/utils/title-case';
             lines="none"
             [button]="true"
             detail="false"
-            (click)="viewDocuments(patient)"
+            (click)="viewPatient(patient)"
           >
             <div class="list-item__icon list-item__icon--med" aria-hidden="true">
               <ion-icon name="person"></ion-icon>
@@ -72,6 +80,13 @@ import { titleCase } from 'src/app/utils/title-case';
               <span class="list-item__title">{{ patient.firstName | titlecase }} {{ patient.lastName | titlecase }}</span>
               <span class="list-item__subtitle">
                 {{ patient.patientType === 'dependent' ? 'Dependiente' : 'Usuario titular' }}
+                <ng-container *ngIf="patient.activeTreatmentsCount">
+                  · {{ patient.activeTreatmentsCount }}
+                  {{ patient.activeTreatmentsCount === 1 ? 'tratamiento' : 'tratamientos' }}
+                </ng-container>
+              </span>
+              <span class="list-item__subtitle" *ngIf="patient.nextAppointmentDate">
+                Próximo turno: {{ patient.nextAppointmentDate | date: 'dd/MM HH:mm' }}
               </span>
             </div>
             <!-- Los tres puntos anunciaban un menú de opciones que no existe:
@@ -205,16 +220,14 @@ export class PatientsPage implements OnInit {
     this.navController.navigateForward(['/patients/add']);
   }
 
-  viewDocuments(patient: PatientLink) {
-    this.navController.navigateForward(
-      [`/patients/${patient.patientId}/documents`],
-      {
-        queryParams: {
-          patientType: patient.patientType,
-          name: `${patient.firstName} ${patient.lastName}`,
-        },
-      },
-    );
+  viewPatient(patient: PatientLink) {
+    this.navController.navigateForward([`/patients/${patient.patientId}`], {
+      queryParams: { patientType: patient.patientType },
+    });
+  }
+
+  goToAgenda() {
+    this.navController.navigateForward(['/patients/agenda']);
   }
 
   async confirmUnlink(patient: PatientLink) {

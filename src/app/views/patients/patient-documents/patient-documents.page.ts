@@ -86,7 +86,10 @@ export class PatientDocumentsPage implements OnInit {
   }
 
   goBack() {
-    this.navController.navigateBack(['/patients']);
+    // Se llega desde la ficha del paciente: se vuelve ahí, no al listado.
+    this.navController.navigateBack([`/patients/${this.patientId}`], {
+      queryParams: { patientType: this.patientType },
+    });
   }
 
   private async loadDocuments() {

@@ -10,6 +10,7 @@ import { SharedDocumentsModule } from '../documents/shared/shared-documents.modu
 import { PatientsPage } from './patients.page';
 import { AddPatientPage } from './add-patient/add-patient.page';
 import { PatientDocumentsPage } from './patient-documents/patient-documents.page';
+import { PatientDetailPage } from './patient-detail/patient-detail.page';
 
 const routes: Routes = [
   {
@@ -19,6 +20,10 @@ const routes: Routes = [
   {
     path: 'add',
     component: AddPatientPage,
+  },
+  {
+    path: ':patientId',
+    component: PatientDetailPage,
   },
   {
     path: ':patientId/documents',
@@ -36,7 +41,7 @@ const routes: Routes = [
     SharedComponentsModule,
     SharedDocumentsModule,
   ],
-  declarations: [PatientsPage, AddPatientPage, PatientDocumentsPage],
+  declarations: [PatientsPage, AddPatientPage, PatientDocumentsPage, PatientDetailPage],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],
