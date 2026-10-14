@@ -115,8 +115,11 @@ export class MedsEventsItemListComponent implements OnInit, OnChanges {
       const doseNumber = this.medEvent.nextDose
         ? this.medEvent.nextDose.doseIndex
         : this.medEvent.totalDoses;
+      // La adherencia la calcula el backend; sin tomas para medir viene null.
+      const pct = this.medEvent.adherence?.pct;
       this.treatmentMeta =
-        `Cada ${this.medEvent.intervalHours} hs · toma ${doseNumber} de ${this.medEvent.totalDoses}`;
+        `Cada ${this.medEvent.intervalHours} hs · toma ${doseNumber} de ${this.medEvent.totalDoses}` +
+        (pct !== null && pct !== undefined ? ` · adherencia ${pct}%` : '');
     } else {
       this.treatmentMeta = '';
     }

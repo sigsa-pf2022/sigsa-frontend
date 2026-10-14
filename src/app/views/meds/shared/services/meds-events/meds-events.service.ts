@@ -82,8 +82,14 @@ export class MedsEventsService {
     return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/cancel`, {}).toPromise();
   }
 
+  /** "La tomé". */
   confirmMedEvent(id: number) {
     return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/confirm`, {}).toPromise();
+  }
+
+  /** "No la tomé": queda como omitida para la adherencia. */
+  skipMedEvent(id: number) {
+    return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/skip`, {}).toPromise();
   }
 
   getMeds(): Promise<any[]> {

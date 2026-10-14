@@ -16,6 +16,16 @@ import {
   STATUS_BADGE_CLASS,
 } from 'src/app/constants/EventStatus.constant';
 
+/** Cuánto antes del horario ya se puede marcar una toma como tomada. */
+const MARK_DOSE_WINDOW_MS = 60 * 60 * 1000;
+
+/** Toma abierta cuyo horario llegó o está a menos de una hora. */
+function isMarkableDose(dose: any): boolean {
+  if (!dose || !['created', 'sended'].includes(dose.status)) return false;
+  const time = new Date(dose.date).getTime();
+  return !isNaN(time) && time - Date.now() <= MARK_DOSE_WINDOW_MS;
+}
+
 @Component({
   selector: 'app-view-med-event',
   template: `
@@ -161,8 +171,33 @@ import {
     <ion-footer
       class="auth-footer"
       mode="md"
-      *ngIf="!loading && medEvent && (canTakeCharge || canDelete)"
+      *ngIf="!loading && medEvent && (canTakeCharge || canMarkDose || canDelete)"
     >
+      <!-- Registrar la toma: alimenta la adherencia que ve el profesional. -->
+      <div class="auth-footer__row" *ngIf="canMarkDose">
+        <button
+          type="button"
+          class="auth-btn auth-btn--primary"
+          (click)="markDose('confirm')"
+          [disabled]="marking"
+        >
+          <ion-spinner *ngIf="marking" name="crescent"></ion-spinner>
+          <span class="vm__btn-stack" *ngIf="!marking">
+            La tomé
+            <small *ngIf="medEvent?.seriesId">
+              Toma {{ medEvent.doseIndex }} · {{ medEvent.date | date: 'dd/MM HH:mm' }}
+            </small>
+          </span>
+        </button>
+        <button
+          type="button"
+          class="auth-btn auth-btn--secondary"
+          (click)="markDose('skip')"
+          [disabled]="marking"
+        >
+          No la tomé
+        </button>
+      </div>
       <!-- Las dos respuestas del grupo, lado a lado: son alternativas. -->
       <div class="auth-footer__row" *ngIf="canTakeCharge">
         <button
@@ -218,6 +253,7 @@ export class ViewMedEventComponent implements OnInit {
   loading = false;
   notFound = false;
   responding = false;
+  marking = false;
   deleting = false;
   /**
    * Tomas sobre las que este usuario ya dijo "No puedo". Se carga del backend
@@ -261,6 +297,15 @@ export class ViewMedEventComponent implements OnInit {
     );
   }
 
+  /**
+   * "La tomé" / "No la tomé": toma abierta (ni cancelada ni ya marcada) cuyo
+   * horario llegó o falta menos de una hora. Vale para la medicación propia y
+   * para la de un dependiente.
+   */
+  get canMarkDose(): boolean {
+    return isMarkableDose(this.medEvent) && !this.canceledLabel;
+  }
+
   get canDelete(): boolean {
     return !!this.medEvent && !this.medEvent.takenChargeByUserId;
   }
@@ -280,7 +325,7 @@ export class ViewMedEventComponent implements OnInit {
 
   /** Una toma se puede elegir si todavía admite acciones (futura, no cancelada). */
   isSelectableDose(dose: any): boolean {
-    return !!this.groupId && isActionable(dose);
+    return (!!this.groupId && isActionable(dose)) || isMarkableDose(dose);
   }
 
   selectDose(dose: any) {
@@ -330,6 +375,31 @@ export class ViewMedEventComponent implements OnInit {
     const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
     this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     this.load(dependentId);
+  }
+
+  /** Registra si la toma se tomó o no. */
+  async markDose(action: 'confirm' | 'skip') {
+    if (this.marking || !this.medEvent) return;
+    this.marking = true;
+    try {
+      if (action === 'confirm') {
+        await this.medsEventsService.confirmMedEvent(this.medEvent.id);
+      } else {
+        await this.medsEventsService.skipMedEvent(this.medEvent.id);
+      }
+      const patch = { status: action === 'confirm' ? 'confirmed' : 'discarded' };
+      this.medEvent = { ...this.medEvent, ...patch };
+      this.seriesDoses = this.seriesDoses.map((d) =>
+        d.id === this.medEvent.id ? { ...d, ...patch } : d,
+      );
+      this.toastService.showSuccess(
+        action === 'confirm' ? 'Listo, registramos la toma.' : 'Registramos que no se tomó.',
+      );
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos registrar la toma');
+    } finally {
+      this.marking = false;
+    }
   }
 
   /** Avisa al grupo que este integrante no puede ocuparse. El evento sigue abierto. */
@@ -407,10 +477,10 @@ export class ViewMedEventComponent implements OnInit {
   /**
    * Etiqueta de cada toma del tratamiento.
    *
-   * En la medicación propia no hay nada que responder —confirmar una toma no
-   * está cableado en la app—, así que "PENDIENTE" prometía una acción que no
-   * existe para algo que además ya pasó. Esas pasan a "VENCIDA", el mismo
-   * criterio que la pastilla de la lista.
+   * Una toma abierta que ya pasó se muestra "VENCIDA", el mismo criterio que la
+   * pastilla de la lista: "PENDIENTE" sugería que todavía estaba por venir.
+   * Se puede seguir marcando con "La tomé" / "No la tomé" (tocándola en esta
+   * lista); si nadie la marca, pasadas 2 h cuenta como omitida en la adherencia.
    *
    * Aplica también dentro de un grupo. Antes ahí se dejaba "PENDIENTE" porque
    * significaba que nadie se había hecho cargo, pero sobre una toma que ya pasó
@@ -426,7 +496,7 @@ export class ViewMedEventComponent implements OnInit {
       confirmed: 'TOMADA',
       created: 'PENDIENTE',
       sended: 'AVISADA',
-      discarded: 'DESCARTADA',
+      discarded: 'OMITIDA',
       canceled: 'CANCELADA',
     };
     return map[dose?.status] || (dose?.status || '').toUpperCase();

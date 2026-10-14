@@ -27,7 +27,8 @@ export const EVENT_STATUS: EventStatus[] = [
   { value: EventStatusEnum.CREADO, text: 'PROGRAMADO', color: 'primary' },
   { value: EventStatusEnum.AVISADO, text: 'AVISADO', color: 'neutral' },
   { value: EventStatusEnum.CONFIRMADO, text: 'CONFIRMADO', color: 'success' },
-  { value: EventStatusEnum.DESCARTADO, text: 'DESCARTADO', color: 'neutral' },
+  // Hoy sólo lo produce "No la tomé" sobre una toma de medicamento.
+  { value: EventStatusEnum.DESCARTADO, text: 'OMITIDA', color: 'neutral' },
   { value: EventStatusEnum.CANCELADO, text: 'CANCELADO', color: 'danger' },
 ];
 
