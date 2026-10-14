@@ -77,13 +77,19 @@ import { PatientsService } from '../shared/services/patients.service';
               <p class="ap__result-meta">DNI: {{ foundPatient.dni }}</p>
             </div>
           </div>
+
+          <div class="ap__notice">
+            <ion-icon name="information-circle" aria-hidden="true"></ion-icon>
+            <p>El paciente va a recibir una notificación para aceptar la solicitud.</p>
+          </div>
+
           <button
             type="button"
             class="auth-btn auth-btn--primary"
             (click)="linkPatient()"
             [disabled]="isLinking"
           >
-            {{ isLinking ? 'Vinculando...' : 'Vincular paciente' }}
+            {{ isLinking ? 'Enviando...' : 'Solicitar vinculación' }}
           </button>
         </article>
 
@@ -215,7 +221,9 @@ export class AddPatientPage implements OnInit {
           'Solicitud enviada. El responsable del grupo recibirá una notificación para autorizar la vinculación.',
         );
       } else {
-        this.toastService.showSuccess('Paciente vinculado correctamente');
+        this.toastService.showSuccess(
+          'Solicitud enviada. El paciente recibirá una notificación para aceptar la vinculación.',
+        );
       }
 
       this.navController.back();

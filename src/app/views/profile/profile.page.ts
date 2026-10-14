@@ -126,6 +126,10 @@ export class ProfilePage implements OnInit {
           },
         };
       }
+      // Al profesional no le mandan solicitudes: las manda él.
+      this.options = this.options.filter(
+        (o) => o.action?.payload !== '/groups/professional-requests',
+      );
     }
   }
 

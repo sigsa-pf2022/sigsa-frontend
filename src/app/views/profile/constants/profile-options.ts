@@ -20,6 +20,15 @@ export const PROFILE_OPTIONS = [
       payload: '/notes',
     },
   },
+  // Las solicitudes de vinculación que mandan los profesionales.
+  {
+    icon: 'shield-checkmark-outline',
+    title: 'Solicitudes de profesionales',
+    action: {
+      type: 'navigate',
+      payload: '/groups/professional-requests',
+    },
+  },
   {
     icon: 'time-outline',
     title: 'Mis Turnos',

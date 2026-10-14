@@ -205,6 +205,8 @@ export class PushNotificationsService {
     } else if (type === 'professional_note') {
       // Las indicaciones se leen todas juntas: no hay vista de una sola.
       this.navController.navigateForward(['/notes'], { queryParams });
+    } else if (type === 'professional_link_request') {
+      this.navController.navigateForward(['/groups/professional-requests']);
     }
   }
 

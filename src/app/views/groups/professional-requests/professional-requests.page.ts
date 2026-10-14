@@ -27,7 +27,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
 
     <ion-content class="listing">
       <header class="listing-header">
-        <p class="listing-header__eyebrow">Grupo familiar</p>
+        <p class="listing-header__eyebrow">{{ groupId ? 'Grupo familiar' : 'Profesionales' }}</p>
         <h1 class="listing-header__title">Solicitudes</h1>
       </header>
 
@@ -41,8 +41,11 @@ import { GroupsService } from '../shared/services/groups/groups.service';
             </div>
             <div class="pr__card-titles">
               <p class="pr__card-eyebrow">Solicitud para</p>
-              <p class="pr__card-title">{{ req.dependentFirstName | titlecase }} {{ req.dependentLastName | titlecase }}</p>
-              <p class="pr__card-sub">Grupo: {{ req.groupName | capitalizeWords }}</p>
+              <p class="pr__card-title" *ngIf="req.forMe">Vos</p>
+              <ng-container *ngIf="!req.forMe">
+                <p class="pr__card-title">{{ req.dependentFirstName | titlecase }} {{ req.dependentLastName | titlecase }}</p>
+                <p class="pr__card-sub">Grupo: {{ req.groupName | capitalizeWords }}</p>
+              </ng-container>
             </div>
           </header>
 
@@ -90,7 +93,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
         </div>
         <h2 class="empty-state__title">Sin solicitudes pendientes</h2>
         <p class="empty-state__subtitle">
-          Te avisamos por acá cuando un profesional pida acceso al grupo.
+          {{ groupId ? 'Te avisamos por acá cuando un profesional pida acceso al grupo.' : 'Te avisamos cuando un profesional quiera vincularse con vos o con tus grupos.' }}
         </p>
       </div>
     </ion-content>
@@ -122,7 +125,8 @@ export class ProfessionalRequestsPage implements OnInit {
     if (this.groupId) {
       this.navController.navigateBack([`/groups/home/${this.groupId}`]);
     } else {
-      this.navController.navigateBack(['/tabs/groups']);
+      // Sin grupo se llega desde el perfil o desde la notificación.
+      this.navController.navigateBack(['/profile']);
     }
   }
 
@@ -151,7 +155,7 @@ export class ProfessionalRequestsPage implements OnInit {
       componentProps: {
         text: `¿Aceptar la solicitud de ${titleCase(
           `${req.professionalFirstName} ${req.professionalLastName}`,
-        )} para ${titleCase(`${req.dependentFirstName} ${req.dependentLastName}`)}?`,
+        )} para ${req.forMe ? 'vos' : titleCase(`${req.dependentFirstName} ${req.dependentLastName}`)}?`,
         // El modal viene en rojo por defecto, pensado para cancelar o borrar.
         // Aceptar es una acción positiva: en rojo parecía un error.
         yesColor: 'primary',
