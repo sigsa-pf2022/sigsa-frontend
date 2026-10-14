@@ -100,9 +100,12 @@ export class DoctorsNewPage implements OnInit {
   }
 
   onSubmit() {
-    return this.professionalsService.createMyProfessional(this.form.value).then(() => {
-      this.successCreation();
-    });
+    return this.professionalsService
+      .createMyProfessional(this.form.value)
+      .then(() => this.successCreation())
+      .catch((err) => {
+        this.toastService.showError(err?.error?.message || 'No se pudo crear el profesional');
+      });
   }
 
   successCreation() {

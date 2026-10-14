@@ -290,7 +290,7 @@ export class CreateAppointmentPage implements OnInit {
       const res: any = await this.appointmentsService.createAppointment(appointmentData);
       this.successCreation(res.appointment);
     } catch (err) {
-      this.toastService.showError?.('No se pudo crear el turno');
+      this.toastService.showError?.(err?.error?.message || 'No se pudo crear el turno');
     }
   }
 
