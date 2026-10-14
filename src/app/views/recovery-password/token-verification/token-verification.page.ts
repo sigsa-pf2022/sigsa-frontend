@@ -100,11 +100,14 @@ export class TokenVerificationPage implements OnDestroy{
     this.auth
       .validateCode(this.form.value)
       .then(() => {
-        this.recoveryPasswordFormDataService.resetPasswordForm.patchValue({ email: this.form.get('email').value });
+        this.recoveryPasswordFormDataService.resetPasswordForm.patchValue({
+          email: this.form.get('email').value,
+          code: this.form.get('code').value,
+        });
         this.router.navigateByUrl('/recovery-password/password-reset');
       })
       .catch(({ error }) => {
-        this.toastService.showError(error);
+        this.toastService.showError(error?.message || 'El código es incorrecto.');
       });
   }
 

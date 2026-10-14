@@ -96,13 +96,16 @@ export class PasswordResetPage implements OnDestroy{
 
   onSubmit() {
     if (!this.isFormValid()) return;
+    const { email, code, password } = this.form.value;
     this.auth
-      .resetPassword(this.form.value)
+      .resetPassword({ email, code, password })
       .then(() => {
         this.router.navigateByUrl('/login');
         this.toastService.showSuccess('Contraseña restablecida correctamente');
       })
-      .catch(({ error }) => this.toastService.showError(error));
+      .catch(({ error }) =>
+        this.toastService.showError(error?.message || 'No pudimos restablecer la contraseña')
+      );
   }
 
 

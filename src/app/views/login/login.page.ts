@@ -163,10 +163,16 @@ export class LoginPage implements OnInit {
     await modal.present();
     const { data } = await modal.onWillDismiss();
     if (data?.email) {
-      await this.auth.sendPasswordResetEmail(data.email).then(() => {
-        this.recoveryPasswordFormDataService.tokenForm.patchValue({ email: data.email });
-        this.router.navigateByUrl('/recovery-password/token-verification');
-      });
+      // Si el email no tiene cuenta el backend responde 404 y no se avanza a
+      // "Ingresá el código": antes respondía 201 y la app seguía igual.
+      try {
+        await this.auth.sendPasswordResetEmail(data.email);
+      } catch ({ error }) {
+        this.toastService.showError(error?.message || 'No pudimos enviar el email de recuperación');
+        return;
+      }
+      this.recoveryPasswordFormDataService.tokenForm.patchValue({ email: data.email });
+      this.router.navigateByUrl('/recovery-password/token-verification');
     }
   }
 
