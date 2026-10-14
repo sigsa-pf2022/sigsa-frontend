@@ -78,9 +78,9 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
           <ion-item
             class="member-row"
             lines="none"
-            [button]="group.grouped"
+            [button]="isExpandable(group)"
             detail="false"
-            (click)="group.grouped && toggle(group.groupKey)"
+            (click)="isExpandable(group) && toggle(group.groupKey)"
           >
             <div class="member-row__avatar">
               <app-avatar
@@ -102,10 +102,14 @@ const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> 
               aria-hidden="true"
             >
               <ion-icon
-                [name]="group.grouped ? 'chevron-down' : iconFor(group.lastEntry)"
+                [name]="isExpandable(group) ? 'chevron-down' : iconFor(group.lastEntry)"
               ></ion-icon>
             </span>
           </ion-item>
+
+          <div class="gh-history__detail" *ngIf="noteText(group) && isOpen(group.groupKey)">
+            <p class="gh-history__note">{{ noteText(group) }}</p>
+          </div>
 
           <div class="gh-history__detail" *ngIf="group.grouped && isOpen(group.groupKey)">
             <div class="gh-history__step" *ngFor="let entry of group.entries">
@@ -186,6 +190,20 @@ export class GroupHistoryPage implements OnInit {
 
   isOpen(groupKey: string): boolean {
     return this.expandedKey === groupKey;
+  }
+
+  /**
+   * Texto de la indicación de un profesional. Las entradas viejas sólo
+   * guardaban el extracto (120 caracteres); las nuevas traen el completo.
+   */
+  noteText(group: any): string | null {
+    const entry = group?.lastEntry;
+    if (entry?.action !== 'professional_note') return null;
+    return entry.payload?.content || entry.payload?.excerpt || null;
+  }
+
+  isExpandable(group: any): boolean {
+    return group?.grouped || !!this.noteText(group);
   }
 
   /**
