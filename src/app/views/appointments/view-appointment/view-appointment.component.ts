@@ -5,6 +5,14 @@ import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-moda
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
+import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { actorName } from 'src/app/utils/event-actor';
+import { titleCase } from 'src/app/utils/title-case';
+import {
+  isActionable,
+  resolveEventStatus,
+  STATUS_BADGE_CLASS,
+} from 'src/app/constants/EventStatus.constant';
 
 @Component({
   selector: 'app-view-appointment',
@@ -31,14 +39,16 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         <h1 class="listing-header__title">Turno</h1>
       </header>
 
-      <ng-container *ngIf="appointment">
+      <app-loading-state *ngIf="loading" variant="spinner"></app-loading-state>
+
+      <ng-container *ngIf="!loading && appointment">
         <article class="va__summary">
           <div class="va__summary-icon" aria-hidden="true">
             <ion-icon name="calendar"></ion-icon>
           </div>
           <div class="va__summary-body">
             <p class="va__summary-name">
-              Dr/a. {{ appointment?.professional?.firstName }} {{ appointment?.professional?.lastName }}
+              Dr/a. {{ appointment?.professional?.firstName | titlecase }} {{ appointment?.professional?.lastName | titlecase }}
             </p>
             <p class="va__summary-meta" *ngIf="appointment?.professional?.specialization?.[0]?.name">
               {{ appointment.professional.specialization[0].name }}
@@ -68,25 +78,105 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
             </div>
           </div>
         </section>
+
+        <!-- Un turno cancelado dejó de ocultarse de los listados: hay que
+             decir quién lo dio de baja, igual que se dice quién se hizo cargo. -->
+        <section class="va__section" *ngIf="this.groupId && canceledLabel">
+          <div class="va__takecharge va__takecharge--canceled">
+            <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ canceledLabel }} canceló el turno
+              <small *ngIf="appointment?.canceledAt">
+                · {{ appointment.canceledAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+        </section>
+
+        <!-- Sólo el aviso de que alguien ya se ocupa. El botón "Me hago cargo"
+             vive en el footer junto a las demás acciones. -->
+        <section
+          class="va__section"
+          *ngIf="this.groupId && !canceledLabel && appointment?.takenChargeByUserId"
+        >
+          <div class="va__takecharge">
+            <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ takenChargeLabel }} se hizo cargo
+              <small *ngIf="appointment?.takenChargeAt">
+                · {{ appointment.takenChargeAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+        </section>
       </ng-container>
     </ion-content>
 
     <ion-footer class="auth-footer" mode="md" *ngIf="appointment">
+      <!--
+        "Confirmar turno" sólo fuera de un grupo. Adentro la acción es
+        "Me hago cargo", que además confirma: tener los dos botones juntos
+        confundía, porque parecían alternativas y en realidad escribían
+        cosas distintas (uno el status, el otro quién se ocupa).
+      -->
       <button
         type="button"
         class="auth-btn auth-btn--primary"
-        *ngIf="!isConfirmed"
+        *ngIf="canAct && !isConfirmed && !groupId"
         (click)="confirmAppointment()"
       >
         <ion-icon name="checkmark" aria-hidden="true"></ion-icon>
         Confirmar turno
       </button>
+      <!-- Las dos respuestas del grupo, lado a lado: son alternativas. -->
+      <div class="auth-footer__row" *ngIf="canAct && groupId && !appointment?.takenChargeByUserId">
+        <button
+          type="button"
+          class="auth-btn auth-btn--primary"
+          *ngIf="canAct && groupId && !appointment?.takenChargeByUserId"
+          (click)="takeCharge()"
+          [disabled]="responding"
+        >
+          <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
+          <ng-container *ngIf="!responding">Me hago cargo</ng-container>
+        </button>
+        <!-- "No puedo": el complemento de "Me hago cargo". No resuelve el evento,
+             avisa al resto del grupo. Antes sólo existía en la notificación. -->
+        <button
+          type="button"
+          class="auth-btn auth-btn--secondary"
+          *ngIf="canAct && groupId && !appointment?.takenChargeByUserId && !declined"
+          (click)="decline()"
+          [disabled]="responding"
+        >
+          No puedo
+        </button>
+      </div>
       <button
         type="button"
         class="auth-btn va__btn-danger"
+        *ngIf="canAct"
         (click)="cancelAppointment()"
       >
         Cancelar turno
+      </button>
+      <!--
+        Borrar es para lo que se cargó por error, y la etiqueta nombra la
+        situación y no la operación: un botón que dijera sólo "Borrar" obligaría
+        a compararlo con "Cancelar", y son cosas distintas.
+
+        OJO: la condición NO es canAct. Esa función da false justo para los
+        vencidos y los cancelados, que son los que más ganas hay de borrar.
+      -->
+      <button
+        type="button"
+        class="auth-btn auth-btn--outline-danger"
+        *ngIf="canDelete"
+        (click)="deleteEvent()"
+        [disabled]="deleting"
+      >
+        <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
       </button>
     </ion-footer>
   `,
@@ -95,50 +185,186 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
 export class ViewAppointmentComponent implements OnInit {
   appointmentId: number;
   appointment: any;
+  groupId: string | null = null;
   isConfirmed: boolean = false;
+  responding = false;
+  deleting = false;
+  /** Si este usuario ya dijo "No puedo" sobre el turno. Viene del backend. */
+  declined = false;
+  loading = true;
+  /** Si ya se atendió el `action` con el que se abrió esta pantalla. */
+  private pendingActionDone = false;
   constructor(
     private appointmentsService: AppointmentsService,
     private route: ActivatedRoute,
     private modalController: ModalController,
     private navController: NavController,
+    private groupEventsService: GroupEventsService,
     private toastService: ToastService
   ) {}
 
+  /**
+   * Si el turno todavía admite acciones. Gobierna los tres botones del footer:
+   * sobre un turno vencido o cancelado no se confirma, no se cancela y no hay
+   * de qué hacerse cargo.
+   *
+   * El criterio es el mismo que usan las listas y el desplegable; vive en
+   * `EventStatus.constant` para que no vuelva a haber una copia por pantalla.
+   */
+  get canAct(): boolean {
+    return isActionable(this.appointment);
+  }
+
+  /**
+   * Si se puede borrar. Deliberadamente distinto de `canAct`: un turno vencido o
+   * cancelado no admite acciones pero sí se puede sacar de la lista. Lo único
+   * que lo impide es que alguien se haya comprometido, porque el grupo coordinó
+   * sobre eso y hacerlo desaparecer para todos sería peor que dejarlo cancelado.
+   */
+  get canDelete(): boolean {
+    return !!this.appointment && !this.appointment.takenChargeByUserId;
+  }
+
+  /** Nombre de quien canceló, vacío si no lo canceló nadie. */
+  get canceledLabel(): string {
+    return actorName(this.appointment?.canceledBy);
+  }
+
+  get takenChargeLabel(): string {
+    // Al cargar viene la relación `takenChargeBy`; al responder en el momento,
+    // el nombre lo devuelve el propio endpoint.
+    const by = this.appointment?.takenChargeBy;
+    const fromRelation = by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
+    return titleCase(fromRelation || this.appointment?.takenChargeByName) || 'Alguien del grupo';
+  }
+
+  /** Avisa al grupo que este integrante no puede ocuparse. El evento sigue abierto. */
+  async decline() {
+    if (this.responding || !this.appointment) return;
+    this.responding = true;
+    try {
+      await this.groupEventsService.respondToEvent('appointment', this.appointment.id, 'discard');
+      // Sólo se oculta el botón: quien dijo que no puede todavía puede
+      // cambiar de idea y hacerse cargo.
+      this.declined = true;
+      this.toastService.showSuccess('Avisamos al grupo que no podés.');
+    } catch ({ error }) {
+      // El backend acepta un solo "No puedo" por turno.
+      if (error?.message === 'Ya avisaste que no podés') this.declined = true;
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
+  }
+
+  /** Un integrante avisa que él lleva al dependiente a este turno. */
+  async takeCharge() {
+    if (this.responding || !this.appointment) return;
+    this.responding = true;
+    try {
+      const res = await this.groupEventsService.respondToEvent(
+        'appointment',
+        this.appointment.id,
+        'take_charge'
+      );
+      // El backend deja el turno confirmado al tomarlo, así que la pastilla y
+      // el footer tienen que reflejarlo sin esperar a recargar la vista.
+      this.appointment = {
+        ...this.appointment,
+        takenChargeByUserId: res.takenChargeByUserId,
+        takenChargeByName: res.takenChargeByName,
+        takenChargeAt: res.takenChargeAt,
+        status: 'confirmed',
+      };
+      this.isConfirmed = true;
+      this.appointmentsService.notifyAppointmentsChanged();
+      this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
+    } catch ({ error }) {
+      // 409: otro integrante ganó la carrera. El mensaje dice quién fue.
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
+  }
+
   ngOnInit() {}
   ionViewWillEnter() {
+    this.declined = false;
     this.appointmentId = Number(this.route.snapshot.paramMap.get('id'));
-    this.getAppointment();
+    this.groupId = this.route.snapshot.queryParamMap.get('groupId');
+    const action = this.route.snapshot.queryParamMap.get('action');
+    this.getAppointment().then(() => this.runPendingAction(action));
+  }
+
+  /**
+   * "Cancelar" desde la notificación de un turno propio abre esta pantalla con
+   * `action=cancel` y acá se pregunta, con el mismo diálogo del botón. Se
+   * atiende una sola vez: la URL conserva el parámetro, y sin la marca cada
+   * vuelta a la pantalla (por ejemplo, desde editar) volvía a preguntar.
+   */
+  private runPendingAction(action: string | null) {
+    if (action !== 'cancel' || this.pendingActionDone) return;
+    this.pendingActionDone = true;
+    if (this.canAct && !this.groupId) this.cancelAppointment();
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/appointments']);
+    // Si venimos del home de un grupo, volvemos ahí y no a la pestaña personal.
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/appointments';
+    this.navController.navigateBack([fallback]);
   }
 
+  /**
+   * Después de confirmar o cancelar volvemos al origen: si el turno es de un
+   * dependiente, al home del grupo y no a la pestaña de turnos personales.
+   *
+   * Quien llama tiene que emitir antes `notifyAppointmentsChanged()`. Volver al
+   * grupo usa `navigateRoot`, que reconstruye la vista y dispara su
+   * `ionViewWillEnter`; volver a la pestaña personal no, porque el listado vive
+   * en el outlet anidado de tabs y su vista activa nunca cambió. Sin el aviso,
+   * el turno seguía figurando con el estado viejo hasta salir y entrar de otra
+   * pestaña.
+   */
+  private leaveAfterAction() {
+    if (this.groupId) {
+      return this.navController.navigateRoot([`/groups/home/${this.groupId}`], { animated: true, animationDirection: 'back' });
+    }
+    return this.navController.navigateForward('/tabs/appointments');
+  }
+
+  /** Mismo criterio que las listas: se resuelve en un solo lugar. */
   get statusLabel(): string {
-    const map: Record<string, string> = {
-      confirmed: 'CONFIRMADO',
-      created: 'CREADO',
-      canceled: 'CANCELADO',
-    };
-    return map[this.appointment?.status] || (this.appointment?.status || '').toUpperCase();
+    return resolveEventStatus(this.appointment)?.text ?? '';
   }
 
   get statusBadgeClass(): string {
-    const map: Record<string, string> = {
-      confirmed: 'status-badge--success',
-      created: 'status-badge--violet',
-      canceled: 'status-badge--danger',
-    };
-    return map[this.appointment?.status] || '';
+    const status = resolveEventStatus(this.appointment);
+    return status ? STATUS_BADGE_CLASS[status.color] : '';
   }
 
   async getAppointment() {
+    // Sin esto la pantalla quedaba en blanco hasta que llegaba la respuesta.
+    this.loading = !this.appointment;
     try {
       this.appointment = await this.appointmentsService.getAppointment(this.appointmentId);
     } catch (error) {
       console.log(error);
+    } finally {
+      this.loading = false;
     }
     this.isConfirmed = this.appointment && this.appointment.status === 'confirmed';
+    await this.loadMyResponse();
+  }
+
+  /** Si ya dijo "No puedo" en otra visita, no se le vuelve a ofrecer. */
+  private async loadMyResponse() {
+    if (!this.groupId || !this.appointment) return;
+    try {
+      const res = await this.groupEventsService.getMyResponses('appointment', [this.appointment.id]);
+      this.declined = res?.[this.appointment.id] === 'discard';
+    } catch {
+      // Si falla, se ofrece el botón y el backend rechaza el segundo intento.
+    }
   }
 
   async confirmAppointment() {
@@ -156,8 +382,39 @@ export class ViewAppointmentComponent implements OnInit {
       await this.appointmentsService
         .confirmAppointment(this.appointmentId)
         .then(() => this.toastService.showSuccess('Turno confirmado correctamente.'))
-        .then(() => this.navController.navigateForward('/tabs/appointments'))
+        .then(() => this.appointmentsService.notifyAppointmentsChanged())
+        .then(() => this.leaveAfterAction())
         .catch(() => {});
+    }
+  }
+
+  async deleteEvent() {
+    if (this.deleting) return;
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        title: '¿Borrar el turno?',
+        text: 'Se va a borrar de la agenda como si nunca lo hubieras cargado.',
+        subtext: 'Esta acción no se puede deshacer.',
+        confirmText: 'Borrar',
+        cancelText: 'No',
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (!data) return;
+
+    this.deleting = true;
+    try {
+      await this.appointmentsService.deleteAppointment(this.appointmentId);
+      this.toastService.showSuccess('Turno borrado.');
+      this.appointmentsService.notifyAppointmentsChanged();
+      this.leaveAfterAction();
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos borrar el turno');
+    } finally {
+      this.deleting = false;
     }
   }
 
@@ -175,7 +432,8 @@ export class ViewAppointmentComponent implements OnInit {
       await this.appointmentsService
         .cancelAppointment(this.appointmentId)
         .then(() => this.toastService.showSuccess('Turno cancelado correctamente.'))
-        .then(() => this.navController.navigateForward('/tabs/appointments'))
+        .then(() => this.appointmentsService.notifyAppointmentsChanged())
+        .then(() => this.leaveAfterAction())
         .catch(() => {});
     }
   }

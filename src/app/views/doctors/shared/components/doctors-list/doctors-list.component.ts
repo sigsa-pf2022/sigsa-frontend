@@ -16,7 +16,7 @@ import { Professional } from '../../interfaces/Professional.interface';
           <ion-icon name="medkit"></ion-icon>
         </div>
         <div class="list-item__body">
-          <span class="list-item__title">Dr/a {{ doctor.firstName }} {{ doctor.lastName }}</span>
+          <span class="list-item__title">Dr/a {{ doctor.firstName | titlecase }} {{ doctor.lastName | titlecase }}</span>
         </div>
         <ion-icon name="chevron-forward" class="dl__chevron" aria-hidden="true"></ion-icon>
       </ion-item>

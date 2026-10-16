@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { AlreadyLoggedGuard } from './guards/alreadyLogged/already-logged.guard';
 import { AuthGuard } from './guards/auth/auth.guard';
+import { ProfessionalGuard } from './guards/professional/professional.guard';
 const routes: Routes = [
   { path: '', redirectTo: 'welcome', pathMatch: 'full' },
   {
@@ -52,6 +53,11 @@ const routes: Routes = [
   {
     path: 'patients',
     loadChildren: () => import('./views/patients/patients.module').then((m) => m.PatientsPageModule),
+    canActivate: [AuthGuard, ProfessionalGuard],
+  },
+  {
+    path: 'notes',
+    loadChildren: () => import('./views/notes/notes.module').then((m) => m.NotesPageModule),
     canActivate: [AuthGuard],
   },
   {

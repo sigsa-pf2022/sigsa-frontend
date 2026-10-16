@@ -67,17 +67,68 @@
   }
 }
 
-cdk-virtual-scroll-viewport.rem__scroll {
+/* Modo compacto: pocas filas en flujo normal, sin scroll propio. Mismo inset
+   lateral que `.rem__scroll`, el modo con scroll. */
+.rem__list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 20px 0;
+}
+
+.rem__empty {
+  display: block;
+  padding: 8px 20px 0;
+}
+
+.rem__view-all {
+  margin: 6px 0 0;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-radius: 20px;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+
+  &:active {
+    background: var(--color-primary-softer);
+  }
+
+  &__label {
+    flex: 0 0 auto;
+  }
+
+  &__count {
+    flex: 1 1 auto;
+    text-align: left;
+    color: #6B7280;
+    font-weight: 500;
+  }
+
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 16px;
+  }
+}
+
+.rem__scroll {
   /* El alto lo da el contenedor flex de la página (home / grupo-home),
      que fija el header arriba y deja este listado ocupando el resto. */
   flex: 1 1 auto;
   min-height: 0;
   width: 100%;
-  /* No horizontal padding: cdk-virtual-scroll's inner content
-     wrapper is position: absolute and ignores padding. The items
-     receive their 20px lateral inset via the global
-     `cdk-virtual-scroll-viewport .list-item` rule. */
-  padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 16px);
+  /* Mismo inset lateral que `.rem__list` (modo compacto) y `.listing-scroll`.
+     El selector era `cdk-virtual-scroll-viewport.rem__scroll`: al pasar el
+     listado a un div común dejó de aplicar y se perdieron el tamaño y el
+     inset de una. */
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 16px);
   box-sizing: border-box;
 }
 

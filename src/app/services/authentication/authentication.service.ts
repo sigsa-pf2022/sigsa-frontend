@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { NavController } from '@ionic/angular';
+import { BehaviorSubject } from 'rxjs';
 import { User } from 'src/app/interfaces/user';
 import { environment } from 'src/environments/environment';
 import { PushNotificationsService } from '../push-notifications/push-notifications.service';
@@ -9,14 +10,31 @@ import { PushNotificationsService } from '../push-notifications/push-notificatio
   providedIn: 'root',
 })
 export class AuthenticationService {
+  /**
+   * Usuario actual, para las vistas que no pueden releer localStorage por su
+   * cuenta. El header, por ejemplo, vive en el shell de tabs y no se recrea al
+   * navegar, así que no le sirve `ionViewWillEnter`.
+   */
+  private readonly userSubject = new BehaviorSubject<any>(this.readUser());
+  readonly user$ = this.userSubject.asObservable();
+
   constructor(
     public navController: NavController,
     private http: HttpClient,
-    private pushNotifications: PushNotificationsService
+    private pushNotifications: PushNotificationsService,
+    private zone: NgZone
   ) {}
 
   user() {
-    return JSON.parse(localStorage.getItem('user'));
+    return this.readUser();
+  }
+
+  private readUser() {
+    try {
+      return JSON.parse(localStorage.getItem('user'));
+    } catch {
+      return null;
+    }
   }
 
   userToken() {
@@ -26,11 +44,27 @@ export class AuthenticationService {
   saveUser(data) {
     localStorage.setItem('user', JSON.stringify(data.user));
     localStorage.setItem('jwt', JSON.stringify(data.access_token));
+    this.userSubject.next(data.user);
   }
 
   deleteUser() {
     localStorage.removeItem('user');
     localStorage.removeItem('jwt');
+    this.userSubject.next(null);
+  }
+
+  /**
+   * Refresca sólo el usuario guardado, conservando el token.
+   * Se usa después de editar "Mis datos": las vistas leen `user()` de
+   * localStorage, así que si no se reescribe siguen mostrando lo viejo.
+   */
+  updateStoredUser(user) {
+    localStorage.setItem('user', JSON.stringify(user));
+    this.userSubject.next(user);
+  }
+
+  updateMe(data): Promise<any> {
+    return this.http.patch<any>(`${environment.apiUrl}/users/me`, data).toPromise();
   }
 
   emailVerified(): boolean {
@@ -67,7 +101,7 @@ export class AuthenticationService {
     return res;
   }
 
-  getUserByDni(value: number): Promise<any> {
+  getUserByDni(value: number | string): Promise<any> {
     return this.http.get<any>(`${environment.apiUrl}/users/${value}`).toPromise();
   }
 
@@ -77,8 +111,23 @@ export class AuthenticationService {
       .toPromise();
   }
 
+  /**
+   * Cierra la sesión. Quien llame tiene que **esperarla** antes de navegar: si
+   * no, el usuario sigue en `localStorage` y `AlreadyLoggedGuard` rebota la
+   * navegación de vuelta al home.
+   *
+   * La limpieza va dentro de `NgZone` porque `deregister()` termina con un
+   * `await` al bridge nativo de Capacitor: lo que sigue corre fuera de la zona
+   * de Angular y no dispara change detection, así que la pantalla quedaba
+   * congelada hasta que el usuario tocaba algo.
+   */
   async signOut() {
-    await this.pushNotifications.deregister();
-    return this.deleteUser();
+    try {
+      await this.pushNotifications.deregister();
+    } catch (error) {
+      // Dar de baja el dispositivo es secundario: no puede impedir salir.
+      console.error('AuthenticationService: error dando de baja el push', error);
+    }
+    return this.zone.run(() => this.deleteUser());
   }
 }

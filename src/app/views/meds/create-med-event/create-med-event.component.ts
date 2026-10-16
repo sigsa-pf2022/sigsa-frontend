@@ -2,9 +2,11 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { IonDatetime, IonModal, NavController } from '@ionic/angular';
-import { formatISO } from 'date-fns';
+import { addHours, format, formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { formatMedTitle } from 'src/app/utils/med-dosage';
+import { toPickerValue } from 'src/app/utils/to-picker-value';
 import { MedsEventDataService } from '../shared/services/meds-events-data/meds-events-data.service';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 
@@ -35,21 +37,24 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
       <header class="listing-header">
         <p class="listing-header__eyebrow">
           {{ this.isEditMode ? 'Editar recordatorio' : 'Nuevo recordatorio' }}
+          <ng-container *ngIf="dependentName"> · para {{ dependentName | titlecase }}</ng-container>
         </p>
         <h1 class="listing-header__title">¿Cuándo lo vas a tomar?</h1>
       </header>
 
-      <div class="wizard-summary" *ngIf="this.med">
+      <app-loading-state *ngIf="this.isLoading" variant="spinner"></app-loading-state>
+
+      <div class="wizard-summary" *ngIf="!this.isLoading && this.med">
         <div class="wizard-summary__icon" aria-hidden="true">
           <ion-img src="assets/images/reminders/pill-colored.svg"></ion-img>
         </div>
         <div class="wizard-summary__body">
           <p class="wizard-summary__eyebrow">Medicamento</p>
-          <p class="wizard-summary__title">{{ this.med?.name }} {{ this.med?.dosage }}</p>
+          <p class="wizard-summary__title">{{ this.medTitle }}</p>
         </div>
       </div>
 
-      <form [formGroup]="this.form" class="auth-form cme__form">
+      <form [formGroup]="this.form" class="auth-form cme__form" *ngIf="!this.isLoading">
         <div class="auth-field">
           <label class="auth-field__label" for="open-modal">Fecha y hora de ingesta</label>
           <button
@@ -62,6 +67,44 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
             <ion-icon name="calendar-outline"></ion-icon>
           </button>
           <p class="auth-field__hint">Te vamos a recordar 5 minutos antes.</p>
+        </div>
+
+        <div class="auth-field" *ngIf="!this.isEditMode">
+          <label class="auth-field__label">Frecuencia</label>
+          <div class="cme__chips" role="radiogroup" aria-label="Frecuencia de las tomas">
+            <button
+              *ngFor="let option of this.frequencyOptions"
+              type="button"
+              class="cme__chip"
+              [class.cme__chip--active]="this.intervalHours === option.value"
+              role="radio"
+              [attr.aria-checked]="this.intervalHours === option.value"
+              (click)="setFrequency(option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+        </div>
+
+        <div class="auth-field" *ngIf="!this.isEditMode && this.intervalHours">
+          <label class="auth-field__label" for="cme-duration">Duración del tratamiento</label>
+          <div class="auth-input cme__duration">
+            <ion-input
+              id="cme-duration"
+              type="number"
+              inputmode="numeric"
+              min="1"
+              max="60"
+              [value]="this.durationDays"
+              (ionInput)="durationChanged($any($event).target.value)"
+              placeholder="Ej: 7"
+            ></ion-input>
+            <span class="cme__duration-suffix">días</span>
+          </div>
+          <p class="auth-field__error" *ngIf="this.treatmentError">{{ this.treatmentError }}</p>
+          <p class="auth-field__hint" *ngIf="!this.treatmentError && this.treatmentSummary">
+            {{ this.treatmentSummary }}
+          </p>
         </div>
 
         <ion-modal #dateModal class="calendar-modal-time">
@@ -106,16 +149,34 @@ export class CreateMedEventComponent implements OnInit {
     date: null,
   });
   showCalendar = false;
-  minDate = formatISO(new Date());
+  // Hora actual SIN offset (YYYY-MM-DDTHH:mm:ss). Con el offset (-03:00),
+  // ion-datetime lo convierte a UTC y el mínimo queda corrido +3h, impidiendo
+  // elegir la hora actual.
+  minDate = formatISO(new Date()).slice(0, 19);
   med: any;
   medEventDate;
   medEventId: number;
   isEditMode = false;
+  /** Solo en edición: el form se ve vacío hasta que llega el recordatorio. */
+  isLoading = false;
   backUrl: string;
   dependentId: number;
   dependentName: string;
   groupId: string;
   isSubmitting = false;
+
+  // Tratamiento periódico. `intervalHours` en null = toma única.
+  frequencyOptions = [
+    { label: 'Una vez', value: null },
+    { label: 'Cada 6 hs', value: 6 },
+    { label: 'Cada 8 hs', value: 8 },
+    { label: 'Cada 12 hs', value: 12 },
+    { label: 'Cada 24 hs', value: 24 },
+  ];
+  intervalHours: number | null = null;
+  durationDays: number | null = null;
+  // Mismo tope que el backend (MAX_DOSES_PER_TREATMENT).
+  readonly maxDoses = 180;
   constructor(
     private dateFormatterService: DateFormatterService,
     private fb: FormBuilder,
@@ -127,6 +188,11 @@ export class CreateMedEventComponent implements OnInit {
   ) {}
 
   ngOnInit() {}
+
+  /** "Ibuprofeno 400 mg": el resumen del alta también lleva la unidad. */
+  get medTitle(): string {
+    return formatMedTitle(this.med);
+  }
 
   ionViewWillEnter() {
     // Capturar parámetros del dependiente si existen
@@ -192,7 +258,47 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   goBack() {
-    this.navController.navigateBack([this.backUrl]);
+    // El paso 1 sólo lee el contexto del grupo de los query params, así que hay
+    // que devolvérselo o pierde el dependiente y su botón de volver al grupo.
+    const queryParams = this.dependentId
+      ? { dependentId: this.dependentId, dependentName: this.dependentName, groupId: this.groupId }
+      : {};
+    this.navController.navigateBack([this.backUrl], { queryParams });
+  }
+
+  setFrequency(value: number | null) {
+    this.intervalHours = value;
+    // Al pasar a periódico proponemos una duración razonable; al volver a
+    // "una vez" limpiamos para no mandar basura al backend.
+    this.durationDays = value ? this.durationDays ?? 7 : null;
+  }
+
+  durationChanged(value: any) {
+    const parsed = Number(value);
+    this.durationDays = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
+  }
+
+  /** Cantidad de tomas que genera la combinación elegida. */
+  get totalDoses(): number | null {
+    if (!this.intervalHours || !this.durationDays) return null;
+    return Math.floor((this.durationDays * 24) / this.intervalHours);
+  }
+
+  get treatmentError(): string | null {
+    if (!this.intervalHours) return null;
+    if (!this.durationDays) return null;
+    if (this.durationDays > 60) return 'La duración máxima es de 60 días.';
+    const total = this.totalDoses;
+    if (!total || total < 1) return 'La duración es menor a la frecuencia elegida.';
+    if (total > this.maxDoses) return `Son ${total} tomas y el máximo es ${this.maxDoses}.`;
+    return null;
+  }
+
+  get treatmentSummary(): string | null {
+    const total = this.totalDoses;
+    if (!total || !this.medEventDate) return null;
+    const last = addHours(new Date(this.medEventDate), (total - 1) * this.intervalHours);
+    return `${total} tomas · última: ${format(last, 'dd/MM HH:mm')}`;
   }
 
   async onSubmit() {
@@ -253,31 +359,49 @@ export class CreateMedEventComponent implements OnInit {
       this.toastService.showError?.('La fecha debe ser futura');
       return;
     }
+    if (this.treatmentError) {
+      this.toastService.showError?.(this.treatmentError);
+      return;
+    }
+    if (this.intervalHours && !this.durationDays) {
+      this.toastService.showError?.('Indicá la duración del tratamiento');
+      return;
+    }
+
     this.isSubmitting = true;
-    const payload = { medId, date: isoDate };
+    const payload: any = { medId, date: isoDate };
+    if (this.intervalHours && this.durationDays) {
+      payload.intervalHours = this.intervalHours;
+      payload.durationDays = this.durationDays;
+    }
     try {
       const res: any = this.dependentId
         ? await this.medsEventService.createMedEventForDependent(this.dependentId, payload)
         : await this.medsEventService.createMedEvent(payload);
       this.successCreation(res.medEvent || res);
-    } catch (err) {
-      this.toastService.showError?.('No se pudo crear el recordatorio');
+    } catch ({ error }) {
+      this.toastService.showError?.(error?.message || 'No se pudo crear el recordatorio');
     } finally {
       this.isSubmitting = false;
     }
   }
 
   successCreation(medEvent) {
-    this.toastService.showSuccess('Recordatorio de medicamento creado correctamente.');
+    const total = medEvent?.totalDoses;
+    this.toastService.showSuccess(
+      total > 1
+        ? `Tratamiento creado: ${total} tomas cada ${medEvent.intervalHours} hs.`
+        : 'Recordatorio de medicamento creado correctamente.'
+    );
     const depId = this.dependentId || this.medsEventDataService.data?.dependentId;
     const grpId = this.groupId || this.medsEventDataService.data?.groupId;
     this.medsEventDataService.clean();
     if (depId && grpId) {
-      return this.navController.navigateRoot(`/groups/home/${grpId}`);
+      return this.navController.navigateRoot(`/groups/home/${grpId}`, { animated: true, animationDirection: 'back' });
     } else if (depId) {
       return this.navController.navigateBack('/groups');
     }
-    return this.navController.navigateRoot('/tabs/meds');
+    return this.navController.navigateRoot('/tabs/meds', { animated: true, animationDirection: 'back' });
   }
 
   successEdition() {
@@ -286,11 +410,11 @@ export class CreateMedEventComponent implements OnInit {
     const grpId = this.groupId || this.medsEventDataService.data?.groupId;
     this.medsEventDataService.clean();
     if (depId && grpId) {
-      return this.navController.navigateRoot(`/groups/home/${grpId}`);
+      return this.navController.navigateRoot(`/groups/home/${grpId}`, { animated: true, animationDirection: 'back' });
     } else if (depId) {
       return this.navController.navigateBack('/groups');
     }
-    return this.navController.navigateRoot('/tabs/meds');
+    return this.navController.navigateRoot('/tabs/meds', { animated: true, animationDirection: 'back' });
   }
 
   dispatch(notification, id) {
@@ -306,6 +430,7 @@ export class CreateMedEventComponent implements OnInit {
   }
 
   private async loadMedEvent() {
+    this.isLoading = true;
     try {
       const medEvent = await this.medsEventService.getMedEvent(this.medEventId);
       if (!medEvent) {
@@ -324,10 +449,14 @@ export class CreateMedEventComponent implements OnInit {
       if (!savedMed) {
         this.medsEventDataService.update({ med: this.med, medId: this.med?.id });
       }
-      this.medEventDate = medEvent.date;
+      // La API devuelve UTC y el picker muestra los dígitos crudos: hay que
+      // pasarlo a hora local o la edición corre el horario.
+      this.medEventDate = toPickerValue(medEvent.date);
       this.form.get('date').setValue(this.dateFormatterService.getSpanishFormattedDate(medEvent.date));
     } catch (err) {
       this.toastService.showError?.('No se pudo cargar el recordatorio');
+    } finally {
+      this.isLoading = false;
     }
   }
 

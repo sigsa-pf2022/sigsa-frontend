@@ -1,13 +1,14 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AnimationController, NavController, ModalController } from '@ionic/angular';
+import { NavController, ModalController } from '@ionic/angular';
 import { ActionSheetService } from 'src/app/services/action-sheet/action-sheet.service';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
-import { parseISO, isAfter, isBefore } from 'date-fns';
+import { isActionable } from 'src/app/constants/EventStatus.constant';
 import { REMINDERS_TYPE } from '../../home/shared/constants/remindersType';
 import { FAKE_APPOINTMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeAppointmentsReminderData';
 import { FAKE_DOCUMENTS_REMINDERS_DATA } from '../../home/shared/fakes/fakeDocumentsReminderData';
 import { FAKE_MEDICATIONS_REMINDERS_DATA } from '../../home/shared/fakes/fakeMedicationsReminderData';
+import { GroupRemindersModalComponent } from './group-reminders-modal/group-reminders-modal.component';
 import { FamilyGroup } from '../shared/interfaces/family-group.interface';
 import { GroupsService } from '../shared/services/groups/groups.service';
 import { AuthenticationService } from 'src/app/services/authentication/authentication.service';
@@ -16,12 +17,17 @@ import { AppointmentsService } from '../../appointments/shared/services/appointm
 import { MedsEventsService } from '../../meds/shared/services/meds-events/meds-events.service';
 import { MedsEventDataService } from '../../meds/shared/services/meds-events-data/meds-events-data.service';
 import { DocumentsService } from '../../documents/shared/services/documents.service';
+import { titleCase } from 'src/app/utils/title-case';
+import { PhotoPickerService } from 'src/app/services/photo-picker/photo-picker.service';
+import { ToastService } from 'src/app/services/toast/toast.service';
+import { NotesService } from '../../notes/shared/services/notes.service';
+import { ProfessionalNote } from 'src/app/interfaces/professional-note';
 
 
 @Component({
   selector: 'app-group-home',
   template: `
-    <app-menu contentId="group-home" title="Menu del grupo" [options]="this.options"></app-menu>
+    <app-menu contentId="group-home" title="Menú del grupo" [options]="this.options"></app-menu>
     <div class="ui-main-menu-content" id="group-home">
       <ion-header class="auth-page-header" mode="md">
         <ion-toolbar class="auth-page-toolbar" mode="md">
@@ -41,17 +47,33 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
         </ion-toolbar>
       </ion-header>
 
-      <ion-content class="listing gh" *ngIf="this.group">
+      <ion-content class="listing gh" *ngIf="this.isLoading">
+        <app-loading-state variant="spinner"></app-loading-state>
+      </ion-content>
+
+      <ion-content class="listing gh" *ngIf="!this.isLoading && this.group">
         <header class="listing-header gh__header">
           <p class="listing-header__eyebrow">Grupo familiar</p>
-          <h1 class="listing-header__title">{{ this.group.name | titlecase }}</h1>
+          <h1 class="listing-header__title">{{ this.group.name | capitalizeWords }}</h1>
         </header>
 
         <article class="group-card" *ngIf="this.group.dependent">
           <div class="group-card__head">
-            <div class="group-card__avatar" aria-hidden="true">
-              <ion-icon name="person"></ion-icon>
-            </div>
+            <button
+              type="button"
+              class="group-card__avatar group-card__avatar--tappable"
+              (click)="changeGroupPhoto()"
+              [disabled]="savingPhoto"
+              aria-label="Cambiar la foto del grupo"
+            >
+              <ion-spinner *ngIf="savingPhoto" name="crescent"></ion-spinner>
+              <app-avatar
+                *ngIf="!savingPhoto"
+                [photo]="this.group.photo"
+                [name]="this.group.name"
+                icon="people"
+              ></app-avatar>
+            </button>
             <div class="group-card__heading">
               <p class="group-card__role">Dependiente</p>
               <p class="group-card__name">
@@ -95,52 +117,90 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
           <span class="alert-card__badge">{{ pendingRequestsCount }}</span>
         </ion-item>
 
+        <!-- Sólo aparece cuando hay alguna: vacía sería ruido en la ficha. -->
+        <ion-item
+          *ngIf="lastNote"
+          class="list-item gh__notes"
+          lines="none"
+          [button]="true"
+          detail="false"
+          (click)="openNotes()"
+        >
+          <div class="list-item__icon list-item__icon--med" aria-hidden="true">
+            <ion-icon name="chatbox-ellipses"></ion-icon>
+          </div>
+          <div class="list-item__body">
+            <div class="list-item__row">
+              <span class="list-item__title">Indicaciones del profesional</span>
+              <span class="status-badge status-badge--violet">{{ notesCount }}</span>
+            </div>
+            <span class="list-item__subtitle gh__notes-excerpt">{{ lastNote.content }}</span>
+            <span class="list-item__meta">
+              {{ noteAuthor(lastNote) }} · {{ lastNote.createdAt | date: 'dd/MM HH:mm' }}
+            </span>
+          </div>
+        </ion-item>
+
         <div class="section-title">
           <h2>Próximos eventos</h2>
           <span *ngIf="events?.length">{{ events.length }}</span>
         </div>
 
-        <app-next-events [events]="this.events"></app-next-events>
+        <app-next-events
+          [events]="this.events"
+          [loading]="this.isLoadingEvents"
+        ></app-next-events>
 
         <app-reminders
-          height="37vh"
+          [loading]="this.isLoadingReminders"
           [reminders]="this.reminders"
           [activeTab]="this.currentReminderType"
+          [maxItems]="REMINDERS_PREVIEW_SIZE"
           (tabChanged)="changeReminders($event)"
           (itemClicked)="onReminderItemClicked($event)"
+          (viewAllClicked)="openAllReminders()"
         ></app-reminders>
+
+        <div class="gh__fab-scrim" slot="fixed" aria-hidden="true"></div>
+        <!-- Velo mientras el desplegable está abierto: sin él las etiquetas
+             quedaban flotando sobre las cards y costaba leerlas. -->
+        <div
+          class="gh__fab-backdrop"
+          [class.gh__fab-backdrop--open]="opened"
+          slot="fixed"
+          (click)="closeMenu()"
+        ></div>
+
+        <!--
+          Menú propio en lugar de ion-fab-list. El de Ionic tiene estado interno
+          y se desincronizaba de "opened": al tocar afuera se cerraba la lista
+          pero quedaba la "x" sin opciones. Además la etiqueta era un ::after,
+          fuera del área tocable. Acá cada fila es un único botón con texto e
+          ícono, y "opened" es la única fuente de verdad.
+        -->
+        <div class="gh-dial" [class.gh-dial--open]="opened" slot="fixed">
+          <button type="button" class="gh-dial__item" (click)="createMedication()">
+            <span class="gh-dial__label">Medicamento</span>
+            <span class="gh-dial__icon sub-fab-button--med"><ion-icon name="medkit"></ion-icon></span>
+          </button>
+          <button type="button" class="gh-dial__item" (click)="createAppointment()">
+            <span class="gh-dial__label">Turno</span>
+            <span class="gh-dial__icon sub-fab-button--appointment"><ion-icon name="calendar"></ion-icon></span>
+          </button>
+          <button type="button" class="gh-dial__item" (click)="createDocument()">
+            <span class="gh-dial__label">Documento</span>
+            <span class="gh-dial__icon sub-fab-button--document"><ion-icon name="document-text"></ion-icon></span>
+          </button>
+        </div>
 
         <ion-fab class="app-fab gh__fab" vertical="bottom" horizontal="center" slot="fixed">
           <ion-fab-button
             class="app-fab-button"
-            (click)="openFabList($event)"
+            (click)="toggleMenu()"
             aria-label="Crear recordatorio"
           >
             <ion-icon [name]="opened ? 'close' : 'add'"></ion-icon>
           </ion-fab-button>
-          <ion-fab-list side="top" class="gh__fab__list" #fabList>
-            <ion-fab-button
-              class="sub-fab-button"
-              (click)="createMedication()"
-              aria-label="Crear medicamento"
-            >
-              <ion-icon name="medkit"></ion-icon>
-            </ion-fab-button>
-            <ion-fab-button
-              class="sub-fab-button"
-              (click)="createAppointment()"
-              aria-label="Crear turno"
-            >
-              <ion-icon name="calendar"></ion-icon>
-            </ion-fab-button>
-            <ion-fab-button
-              class="sub-fab-button"
-              (click)="createDocument()"
-              aria-label="Crear documento"
-            >
-              <ion-icon name="document-text"></ion-icon>
-            </ion-fab-button>
-          </ion-fab-list>
         </ion-fab>
       </ion-content>
     </div>
@@ -148,7 +208,6 @@ import { DocumentsService } from '../../documents/shared/services/documents.serv
   styleUrls: ['./group-home.page.scss'],
 })
 export class GroupHomePage implements OnInit {
-  @ViewChild('fabList', { read: ElementRef }) fabListRef: ElementRef;
   events = [];
   opened = false;
   group: FamilyGroup;
@@ -156,9 +215,26 @@ export class GroupHomePage implements OnInit {
   currentReminderType: string = REMINDERS_TYPE.appointments;
   options: any;
   pendingRequestsCount = 0;
+  notesCount = 0;
+  lastNote: ProfessionalNote | null = null;
+  savingPhoto = false;
+  /**
+   * Cuántos recordatorios se ven en el home. El resto sale por "Ver todos": la
+   * idea de esta pantalla es la ficha del dependiente y lo que se viene, no el
+   * historial completo.
+   */
+  readonly REMINDERS_PREVIEW_SIZE = 5;
+  /** El usuario salió de la lista completa a ver/editar: al volver la reabrimos. */
+  private reopenAllReminders = false;
+  /** Spinner de pantalla completa: no hay nada que mostrar hasta tener el grupo. */
+  isLoading = true;
+  /** Los eventos del dependiente llegan después: la ficha ya se ve y sus listas usan skeleton. */
+  isLoadingEvents = true;
+  /** Los recordatorios se recargan también al cambiar de segmento. */
+  isLoadingReminders = true;
+  private remindersRequestId = 0;
 
   constructor(
-    private animationCtrl: AnimationController,
     private route: ActivatedRoute,
     private groupsService: GroupsService,
     private navController: NavController,
@@ -169,31 +245,66 @@ export class GroupHomePage implements OnInit {
     private medsEventDataService: MedsEventDataService,
     private documentsService: DocumentsService,
     private actionSheetService: ActionSheetService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private photoPicker: PhotoPickerService,
+    private toastService: ToastService,
+    private notesService: NotesService
   ) {}
 
   ngOnInit() {}
+
+  /** Que al volver al grupo el menú del "+" no aparezca abierto. */
+  ionViewWillLeave() {
+    this.closeMenu();
+  }
 
   async ionViewWillEnter() {
     // Reset completo de estado
     this.group = null;
     this.events = [];
     this.reminders = [];
+    this.isLoading = true;
+    this.isLoadingEvents = true;
+    this.isLoadingReminders = true;
+    this.lastNote = null;
+    this.notesCount = 0;
 
     const groupId = this.route.snapshot.paramMap.get('id');
-    this.group = await this.groupsService.getFamilyGroupById(groupId);
+    try {
+      this.group = await this.groupsService.getFamilyGroupById(groupId);
+    } catch (error) {
+      console.error('GroupHomePage: error cargando el grupo', error);
+    } finally {
+      // Ya podemos pintar la ficha del grupo; los eventos siguen cargando
+      // y sus propias listas muestran skeleton.
+      this.isLoading = false;
+    }
+
     const currentUser = this.authService.user();
 
     this.options = [
       { title: 'Ver miembros', icon: 'people-outline', action: 'see-members', groupId: this.group?.id, memberId: currentUser?.id },
+      { title: 'Historial del grupo', icon: 'time-outline', action: 'see-history', groupId: this.group?.id },
+      // "Salir" (cerrar sesión) no estaba implementado en el menú: su acción no
+      // existía en el switch, así que no hacía nada. Además se confundía con
+      // "Abandonar grupo", que es la acción que sí corresponde acá; cerrar
+      // sesión vive en el perfil.
       { title: 'Abandonar grupo', icon: 'exit-outline', color: 'danger', action: 'exit-group', groupId: this.group?.id, memberId: currentUser?.id },
-      { title: 'Salir', icon: 'log-out-outline', color: 'danger', action: 'logout' },
     ];
 
-    // Cargar datos secuencialmente para garantizar consistencia
+    // Cargar datos secuencialmente para garantizar consistencia. Cada carga
+    // apaga su propio flag, así la ficha del grupo no espera a las tres.
     await this.loadDependentEvents();
     await this.loadDependentReminders();
     await this.loadPendingRequestsCount();
+    await this.loadNotes();
+
+    // Volvimos de ver o editar un item que se eligió desde "Ver todos": lo
+    // devolvemos a esa lista, ya recargada, en vez de dejarlo en el home.
+    if (this.reopenAllReminders) {
+      this.reopenAllReminders = false;
+      await this.openAllReminders();
+    }
   }
 
   async ionViewDidEnter() {
@@ -210,11 +321,14 @@ export class GroupHomePage implements OnInit {
         this.events = [];
       }
     }
+    this.isLoadingEvents = false;
   }
 
   private async loadDependentReminders() {
     if (this.group?.dependent?.id) {
       await this.changeReminders(this.currentReminderType);
+    } else {
+      this.isLoadingReminders = false;
     }
   }
 
@@ -235,107 +349,184 @@ export class GroupHomePage implements OnInit {
     }
   }
 
+  private async loadNotes() {
+    if (!this.group?.dependent?.id) return;
+    try {
+      const notes = await this.notesService.getReceivedNotes(this.group.dependent.id);
+      this.notesCount = notes?.length || 0;
+      this.lastNote = notes?.[0] ?? null;
+    } catch {
+      this.notesCount = 0;
+      this.lastNote = null;
+    }
+  }
+
+  noteAuthor(note: ProfessionalNote): string {
+    const p = note?.professional;
+    return p ? `Dr/a ${titleCase(`${p.firstName} ${p.lastName}`)}` : 'Profesional';
+  }
+
+  openNotes() {
+    const dependent = this.group?.dependent;
+    this.navController.navigateForward(['/notes'], {
+      queryParams: {
+        dependentId: dependent?.id,
+        groupId: this.group?.id,
+        dependentName: dependent ? `${dependent.firstName} ${dependent.lastName}` : '',
+      },
+    });
+  }
+
   openProfessionalRequests() {
     this.navController.navigateForward([`/groups/professional-requests/${this.group.id}`]);
   }
 
-  openFabList(ev: Event) {
-    if (this.opened) {
-      ev.stopPropagation();
-      this.closeAnimation();
-    } else {
-      this.openAnimation();
-    }
+  toggleMenu() {
     this.opened = !this.opened;
   }
-  closeAnimation() {
-    this.animationCtrl
-      .create()
-      .addElement(this.fabListRef.nativeElement)
-      .duration(250)
-      .fromTo('opacity', '1', '0')
-      .play()
-      .then(() => {
-        this.fabListRef.nativeElement.click();
-      });
-  }
-  openAnimation() {
-    this.animationCtrl
-      .create()
-      .addElement(this.fabListRef.nativeElement)
-      .duration(250)
-      .fromTo('opacity', '0', '1')
-      .play();
+
+  closeMenu() {
+    this.opened = false;
   }
 
   async changeReminders(value) {
     this.currentReminderType = value;
+
+    // El viewport de app-reminders cambia de tipo de forma síncrona, pero la
+    // carga es asíncrona: hay que vaciar la lista ANTES del await para que la
+    // plantilla nueva no llegue a renderizar items del tipo anterior
+    // (p.ej. turnos dentro de app-document-item-list).
+    this.reminders = [];
+
     if (!this.group?.dependent?.id) {
-      this.reminders = [];
+      this.isLoadingReminders = false;
       return;
     }
 
+    // Si el usuario cambia de tab mientras una carga está en vuelo, la respuesta
+    // vieja no debe pisar a la nueva.
+    const requestId = ++this.remindersRequestId;
+    this.isLoadingReminders = true;
+
     try {
+      let result = [];
       switch (value) {
         case REMINDERS_TYPE.appointments:
-          this.reminders = await this.appointmentsService.getAppointmentsByDependent(this.group.dependent.id);
+          result = await this.appointmentsService.getAppointmentsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.medications:
-          this.reminders = await this.medsEventsService.getMedsEventsByDependent(this.group.dependent.id);
+          // Agrupado por tratamiento, igual que en la pestaña personal.
+          result = await this.medsEventsService.getTreatmentsByDependent(this.group.dependent.id);
           break;
         case REMINDERS_TYPE.documents:
-          this.reminders = await this.documentsService.getDocumentsByDependent(this.group.dependent.id);
+          result = await this.documentsService.getDocumentsByDependent(this.group.dependent.id);
           break;
-        default:
-          this.reminders = [];
       }
+      if (requestId !== this.remindersRequestId) return;
+      this.reminders = this.sortByRelevance(result || [], value);
     } catch (error) {
       console.error('Error cargando reminders:', error);
-      this.reminders = [];
+      if (requestId === this.remindersRequestId) this.reminders = [];
+    } finally {
+      // Solo la respuesta más reciente apaga el skeleton.
+      if (requestId === this.remindersRequestId) this.isLoadingReminders = false;
     }
   }
 
-  async onReminderItemClicked(event: { item: any; type: string }) {
-    if (!event?.item) return;
+  /**
+   * Los turnos llegan de más nuevo a más viejo, que sirve para un historial
+   * pero no para un home: acá lo primero que hay que ver es lo que todavía no
+   * pasó. Ordenamos pendientes de más cerca a más lejos y después lo vencido,
+   * de más reciente a más viejo.
+   *
+   * Sólo turnos: los tratamientos ya vienen ordenados así desde el backend
+   * (getMedTreatmentsByCreator) y ni siquiera tienen `date` —usan `nextDose`—,
+   * y los documentos no tienen noción de "próximo".
+   */
+  private sortByRelevance(items: any[], type: string): any[] {
+    if (type !== REMINDERS_TYPE.appointments) return items;
+
+    const now = Date.now();
+    const time = (item: any) => new Date(item?.date).getTime();
+    const isUpcoming = (item: any) => {
+      const t = time(item);
+      return !isNaN(t) && t >= now;
+    };
+
+    return [...items].sort((a, b) => {
+      if (isUpcoming(a) !== isUpcoming(b)) return isUpcoming(a) ? -1 : 1;
+      return isUpcoming(a) ? time(a) - time(b) : time(b) - time(a);
+    });
+  }
+
+  /** "Ver todos": la lista completa del tipo activo, en un modal. */
+  async openAllReminders() {
+    const modal = await this.modalController.create({
+      component: GroupRemindersModalComponent,
+      componentProps: {
+        items: this.reminders,
+        type: this.currentReminderType,
+        dependentName: this.getDependentFullName(),
+      },
+    });
+    await modal.present();
+
+    // Las acciones sobre un item las resuelve el action sheet de esta página,
+    // así que el modal sólo devuelve qué tocó el usuario.
+    const { data } = await modal.onWillDismiss();
+    if (!data?.item) return;
+
+    // Si la acción abre otra pantalla (ver / editar), al volver el usuario
+    // espera reaparecer en la lista completa y no en el home del grupo.
+    this.reopenAllReminders = await this.onReminderItemClicked(data);
+  }
+
+  /** Devuelve true si la acción elegida navega a otra pantalla (ver / editar). */
+  async onReminderItemClicked(event: { item: any; type: string }): Promise<boolean> {
+    if (!event?.item) return false;
     if (event.type === REMINDERS_TYPE.appointments) {
-      await this.presentAppointmentActionSheet(event.item);
-    } else if (event.type === REMINDERS_TYPE.medications) {
-      await this.presentMedEventActionSheet(event.item);
-    } else if (event.type === REMINDERS_TYPE.documents) {
-      await this.presentDocumentActionSheet(event.item);
+      return await this.presentAppointmentActionSheet(event.item);
     }
+    if (event.type === REMINDERS_TYPE.medications) {
+      return await this.presentMedEventActionSheet(event.item);
+    }
+    if (event.type === REMINDERS_TYPE.documents) {
+      return await this.presentDocumentActionSheet(event.item);
+    }
+    return false;
   }
 
-  private async presentAppointmentActionSheet(appointment: any) {
+  private async presentAppointmentActionSheet(appointment: any): Promise<boolean> {
     const actionSheet = await this.createAppointmentActionSheet(appointment);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
-    this.doAppointmentActionByRole(role, appointment.id);
+    return this.doAppointmentActionByRole(role, appointment.id);
   }
 
   private async createAppointmentActionSheet(appointment: any) {
     const depName = this.getDependentFullName();
-    const formatted = depName ? this.toTitleCase(depName) : null;
+    const formatted = depName ? titleCase(depName) : null;
     const baseTitle = formatted ? `Turno de ${formatted}` : 'Mi Turno';
-    if (appointment.status === 'confirmed' && isAfter(parseISO(appointment.date), new Date())) {
+    // Mismo criterio que la pestaña personal: lo vencido sólo se mira.
+    if (!isActionable(appointment)) {
       return await this.actionSheetService.createOnlyView(baseTitle);
     }
     return await this.actionSheetService.createDefault(baseTitle);
   }
 
-  private doAppointmentActionByRole(value: string, id: number) {
+  private doAppointmentActionByRole(value: string, id: number): boolean {
     switch (value) {
       case 'destructive':
         this.cancelAppointment(id);
-        break;
+        return false;
       case 'edit':
         this.editAppointment(id);
-        break;
+        return true;
       case 'view':
         this.viewAppointment(id);
-        break;
+        return true;
       default:
-        break;
+        return false;
     }
   }
 
@@ -356,43 +547,95 @@ export class GroupHomePage implements OnInit {
   }
 
   private editAppointment(id: number) {
-    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`]);
+    return this.navController.navigateForward([`/appointments/edit/${id}/pick-doctor`], {
+      queryParams: this.groupContextParams(),
+    });
   }
 
   private viewAppointment(id: number) {
-    return this.navController.navigateForward([`/appointments/view/${id}`]);
+    return this.navController.navigateForward([`/appointments/view/${id}`], {
+      queryParams: this.groupContextParams(),
+    });
   }
 
-  private async presentMedEventActionSheet(medEvent: any) {
-    const actionSheet = await this.createMedEventActionSheet(medEvent);
+  /**
+   * Contexto del grupo que se propaga a las vistas de ver/editar para que su
+   * flecha de "volver" regrese al grupo y no a la pestaña personal.
+   */
+  private groupContextParams() {
+    return {
+      dependentId: this.group?.dependent?.id,
+      dependentName: this.getDependentFullName(),
+      groupId: this.group?.id,
+    };
+  }
+
+  private async presentMedEventActionSheet(item: any): Promise<boolean> {
+    const depName = this.getDependentFullName();
+    const formatted = depName ? titleCase(depName) : null;
+
+    // Tratamiento periódico: se ve o se cancela entero, no se edita toma a toma.
+    if (item?.totalDoses > 1) {
+      const title = formatted ? `Tratamiento de ${formatted}` : 'Tratamiento';
+      const actionSheet = await this.actionSheetService.createForTreatment(title, !!item.nextDose);
+      await actionSheet.present();
+      const { role } = await actionSheet.onDidDismiss();
+      if (role === 'view') {
+        this.viewMedEvent((item.nextDose ?? item.doses[item.doses.length - 1]).id);
+        return true;
+      }
+      if (role === 'destructive') {
+        this.cancelTreatment(item.seriesId);
+      }
+      return false;
+    }
+
+    // Toma única: el objeto agrupado trae la toma en `doses[0]`.
+    const medEvent = item?.doses?.[0] ?? item;
+    const actionSheet = await this.createMedEventActionSheet(medEvent, formatted);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
-    this.doMedEventActionByRole(role, medEvent.id);
+    return this.doMedEventActionByRole(role, medEvent.id);
   }
 
-  private async createMedEventActionSheet(medEvent: any) {
-    const depName = this.getDependentFullName();
-    const formatted = depName ? this.toTitleCase(depName) : null;
-    const baseTitle = formatted ? `Medicamento de ${formatted}` : 'Mi Medicamento';
-    if (medEvent.status === 'confirmed' && isBefore(parseISO(medEvent.date), new Date())) {
+  private async createMedEventActionSheet(medEvent: any, formattedDepName: string | null) {
+    const baseTitle = formattedDepName ? `Medicamento de ${formattedDepName}` : 'Mi Medicamento';
+    // Mismo criterio que el turno de arriba y que la pestaña personal.
+    if (!isActionable(medEvent)) {
       return await this.actionSheetService.createOnlyView(baseTitle);
     }
     return await this.actionSheetService.createDefault(baseTitle);
   }
 
-  private doMedEventActionByRole(value: string, id: number) {
+  private async cancelTreatment(seriesId: string) {
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: { text: '¿Desea cancelar las tomas pendientes del tratamiento?' },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (data) {
+      await this.medsEventsService
+        .cancelTreatmentForDependent(seriesId, this.group.dependent.id)
+        .then(() => this.changeReminders(this.currentReminderType))
+        .catch(err => console.error('Error cancelando tratamiento:', err));
+    }
+  }
+
+  private doMedEventActionByRole(value: string, id: number): boolean {
     switch (value) {
       case 'destructive':
         this.cancelMedEvent(id);
-        break;
+        return false;
       case 'edit':
         this.editMedEvent(id);
-        break;
+        return true;
       case 'view':
         this.viewMedEvent(id);
-        break;
+        return true;
       default:
-        break;
+        return false;
     }
   }
 
@@ -415,17 +658,13 @@ export class GroupHomePage implements OnInit {
   private editMedEvent(id: number) {
     this.medsEventDataService.clean();
     return this.navController.navigateForward([`/meds/edit/${id}/pick-med`], {
-      queryParams: {
-        dependentId: this.group?.dependent?.id,
-        dependentName: `${this.group?.dependent?.firstName} ${this.group?.dependent?.lastName}`,
-        groupId: this.group?.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
   private viewMedEvent(id: number) {
     return this.navController.navigateForward([`/meds/view/${id}`], {
-      queryParams: { dependentId: this.group?.dependent?.id }
+      queryParams: this.groupContextParams(),
     });
   }
 
@@ -433,29 +672,30 @@ export class GroupHomePage implements OnInit {
     const actionSheet = await this.createDocumentActionSheet(document);
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
-    this.doDocumentActionByRole(role, document.id);
+    return this.doDocumentActionByRole(role, document.id);
   }
 
   private async createDocumentActionSheet(document: any) {
     const depName = this.getDependentFullName();
-    const formatted = depName ? this.toTitleCase(depName) : null;
+    const formatted = depName ? titleCase(depName) : null;
     const baseTitle = formatted ? `Documento de ${formatted}` : 'Mi Documento';
-    return await this.actionSheetService.createDefault(baseTitle);
+    // Igual que en la pestaña personal: el documento se borra, no se cancela.
+    return await this.actionSheetService.createDefault(baseTitle, 'Eliminar');
   }
 
-  private doDocumentActionByRole(value: string, id: number) {
+  private doDocumentActionByRole(value: string, id: number): boolean {
     switch (value) {
       case 'destructive':
         this.deleteDocument(id);
-        break;
+        return false;
       case 'edit':
         this.editDocument(id);
-        break;
+        return true;
       case 'view':
         this.viewDocument(id);
-        break;
+        return true;
       default:
-        break;
+        return false;
     }
   }
 
@@ -480,17 +720,13 @@ export class GroupHomePage implements OnInit {
 
   private editDocument(id: number) {
     return this.navController.navigateForward([`/documents/edit/${id}`], {
-      queryParams: {
-        dependentId: this.group?.dependent?.id,
-        dependentName: `${this.group?.dependent?.firstName} ${this.group?.dependent?.lastName}`,
-        groupId: this.group?.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
   private viewDocument(id: number) {
     return this.navController.navigateForward([`/documents/view/${id}`], {
-      queryParams: { dependentId: this.group?.dependent?.id }
+      queryParams: this.groupContextParams(),
     });
   }
 
@@ -501,13 +737,22 @@ export class GroupHomePage implements OnInit {
     return [first, last].filter(Boolean).join(' ');
   }
 
-  private toTitleCase(value: string): string {
-    return value
-      .toLowerCase()
-      .split(/\s+/)
-      .filter(Boolean)
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
+  /** Cualquier integrante puede cambiar la foto del grupo. */
+  async changeGroupPhoto() {
+    if (this.savingPhoto || !this.group?.id) return;
+    const picked = await this.photoPicker.pick();
+    if (!picked) return;
+
+    this.savingPhoto = true;
+    try {
+      await this.groupsService.updateGroupPhoto(this.group.id, picked);
+      this.group = { ...this.group, photo: picked };
+      this.toastService.showSuccess('Foto del grupo actualizada');
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos guardar la foto');
+    } finally {
+      this.savingPhoto = false;
+    }
   }
 
   exitGroup() {
@@ -516,51 +761,30 @@ export class GroupHomePage implements OnInit {
 
   createAppointment() {
     // Cerrar el FAB primero
-    if (this.opened) {
-      this.closeAnimation();
-      this.opened = false;
-    }
+    this.closeMenu();
 
     // Navegar a la creación de turno para el dependiente
     this.navController.navigateForward(['/appointments/create/pick-doctor'], {
-      queryParams: {
-        dependentId: this.group.dependent.id,
-        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
-        groupId: this.group.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
   createMedication() {
     // Cerrar el FAB primero
-    if (this.opened) {
-      this.closeAnimation();
-      this.opened = false;
-    }
+    this.closeMenu();
     // Navegar al flujo de creación de medicamento para el dependiente
     this.navController.navigateForward(['/meds/create/pick-med'], {
-      queryParams: {
-        dependentId: this.group.dependent.id,
-        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
-        groupId: this.group.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 
   createDocument() {
     // Cerrar el FAB primero
-    if (this.opened) {
-      this.closeAnimation();
-      this.opened = false;
-    }
+    this.closeMenu();
 
     // Navegar a la creación de documento para el dependiente
     this.navController.navigateForward(['/documents/create'], {
-      queryParams: {
-        dependentId: this.group.dependent.id,
-        dependentName: `${this.group.dependent.firstName} ${this.group.dependent.lastName}`,
-        groupId: this.group.id
-      }
+      queryParams: this.groupContextParams(),
     });
   }
 }

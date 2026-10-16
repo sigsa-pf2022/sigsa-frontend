@@ -1,30 +1,22 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { isBefore } from 'date-fns';
-import { EventStatus, EVENT_STATUS, EventStatusEnum } from 'src/app/constants/EventStatus.constant';
+import {
+  EventStatus,
+  isPastEvent,
+  resolveEventStatus,
+  STATUS_BADGE_CLASS,
+} from 'src/app/constants/EventStatus.constant';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
-
-const STATUS_BADGE_CLASS = {
-  danger: 'status-badge--danger',
-  primary: 'status-badge--violet',
-  success: 'status-badge--success',
-  warning: 'status-badge--warning',
-  info: 'status-badge--info',
-};
+import { actorName } from 'src/app/utils/event-actor';
+import { titleCase } from 'src/app/utils/title-case';
 
 @Component({
   selector: 'app-appointments-item-list',
   template: `
-    <ion-item
-      class="list-item"
-      [class.list-item--due]="dueDate"
-      lines="none"
-      [button]="true"
-      detail="false"
-    >
+    <ion-item class="list-item" lines="none" [button]="true" detail="false">
       <div
         class="list-item__icon"
-        [class.list-item__icon--appointment]="!dueDate"
-        [class.list-item__icon--due]="dueDate"
+        [class.list-item__icon--appointment]="!isPast"
+        [class.list-item__icon--past]="isPast"
         aria-hidden="true"
       >
         <ion-icon name="calendar"></ion-icon>
@@ -41,6 +33,19 @@ const STATUS_BADGE_CLASS = {
           </span>
         </div>
         <span class="list-item__subtitle">{{ this.subtitle }}</span>
+        <span
+          class="list-item__taken list-item__taken--canceled"
+          *ngIf="this.canceledBy; else takenChargeLine"
+        >
+          <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+          {{ this.canceledBy }} canceló
+        </span>
+        <ng-template #takenChargeLine>
+          <span class="list-item__taken" *ngIf="this.takenChargeBy">
+            <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+            {{ this.takenChargeBy }} se hizo cargo
+          </span>
+        </ng-template>
       </div>
     </ion-item>
   `,
@@ -51,7 +56,9 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
   @Input() flush: boolean = false; // Quita margen horizontal cuando true
   title: string;
   subtitle: string;
-  dueDate: boolean;
+  takenChargeBy: string;
+  canceledBy: string;
+  isPast: boolean;
   status: EventStatus;
   statusBadgeClass = '';
   constructor(private dateFormatterService: DateFormatterService) {}
@@ -65,21 +72,39 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
     }
   }
 
+  /** Nombre de quien se hizo cargo, si alguien lo hizo. */
+  private resolveTakenCharge(event: any): string {
+    return actorName(event?.takenChargeBy);
+  }
+
+  /** Nombre de quien lo canceló. Manda sobre el anterior: es el estado actual. */
+  private resolveCanceledBy(event: any): string {
+    return actorName(event?.canceledBy);
+  }
+
   setProfessionalData() {
     if (!this.appointment) {
       this.title = 'Turno';
       this.subtitle = '';
+      this.takenChargeBy = '';
+      this.canceledBy = '';
       this.status = null;
-      this.dueDate = false;
+      this.isPast = false;
       this.statusBadgeClass = '';
       return;
     }
+
+    this.takenChargeBy = this.resolveTakenCharge(this.appointment);
+    this.canceledBy = this.resolveCanceledBy(this.appointment);
 
     const professional = this.appointment.professional;
     const firstName = professional?.firstName?.trim();
     const lastName = professional?.lastName?.trim();
     const hasProfessionalNames = Boolean(firstName || lastName);
-    this.title = hasProfessionalNames ? `Dr/a ${firstName || ''} ${lastName || ''}`.trim() : 'Turno sin profesional';
+    // El prefijo queda como está; sólo se capitaliza el nombre.
+    this.title = hasProfessionalNames
+      ? `Dr/a ${titleCase(`${firstName || ''} ${lastName || ''}`)}`.trim()
+      : 'Turno sin profesional';
 
     try {
       this.subtitle = this.dateFormatterService.getSpanishFormattedDate(this.appointment.date);
@@ -87,13 +112,8 @@ export class AppointmentsItemListComponent implements OnInit, OnChanges {
       this.subtitle = '';
     }
 
-    this.status = EVENT_STATUS.find((es) => es.value === this.appointment.status);
-    this.statusBadgeClass = this.status ? (STATUS_BADGE_CLASS[this.status.color] || '') : '';
-    if (this.status && this.status.value === EventStatusEnum.CONFIRMADO) {
-      const date = new Date(this.appointment.date);
-      this.dueDate = isBefore(date, new Date());
-    } else {
-      this.dueDate = false;
-    }
+    this.status = resolveEventStatus(this.appointment);
+    this.statusBadgeClass = this.status ? STATUS_BADGE_CLASS[this.status.color] : '';
+    this.isPast = isPastEvent(this.appointment);
   }
 }

@@ -5,6 +5,7 @@ import { IonDatetime, IonModal, NavController } from '@ionic/angular';
 import { formatISO } from 'date-fns';
 import { DateFormatterService } from 'src/app/services/date-formatter/date-formatter.service';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { toPickerValue } from 'src/app/utils/to-picker-value';
 import { Professional } from '../../doctors/shared/interfaces/Professional.interface';
 import { AppointmentDataService } from '../shared/services/appointment-data/appointment-data.service';
 import { AppointmentsService } from '../shared/services/appointments/appointments.service';
@@ -47,7 +48,7 @@ import { AppointmentsService } from '../shared/services/appointments/appointment
         </div>
         <div class="wizard-summary__body">
           <p class="wizard-summary__eyebrow">Profesional</p>
-          <p class="wizard-summary__title">Dr/a. {{ this.doctor?.firstName }} {{ this.doctor?.lastName }}</p>
+          <p class="wizard-summary__title">Dr/a. {{ this.doctor?.firstName | titlecase }} {{ this.doctor?.lastName | titlecase }}</p>
         </div>
       </div>
 
@@ -121,7 +122,10 @@ export class CreateAppointmentPage implements OnInit {
     description: '',
   });
   showCalendar = false;
-  minDate = formatISO(new Date());
+  // Hora actual SIN offset (YYYY-MM-DDTHH:mm:ss). Con el offset (-03:00),
+  // ion-datetime lo convierte a UTC y el mínimo queda corrido +3h, impidiendo
+  // elegir la hora actual.
+  minDate = formatISO(new Date()).slice(0, 19);
   doctor: Professional;
   appointmentDate;
   appointmentId: number;
@@ -195,7 +199,8 @@ export class CreateAppointmentPage implements OnInit {
 
   setAppointmentInfo() {
     this.form.patchValue({ description: this.appointmentDataService.data.description });
-    this.dateChanged(this.appointmentDataService.data.date);
+    // Idem meds: la fecha guardada viene en UTC y el picker la mostraría corrida.
+    this.dateChanged(toPickerValue(this.appointmentDataService.data.date));
     this.setProfessionalAndType(this.appointmentDataService.data);
   }
 
@@ -223,7 +228,12 @@ export class CreateAppointmentPage implements OnInit {
   }
 
   goBack() {
-    this.navController.navigateBack([this.backUrl]);
+    // El paso 1 sólo lee el contexto del grupo de los query params, así que hay
+    // que devolvérselo o pierde el dependiente y su botón de volver al grupo.
+    const queryParams = this.dependentId
+      ? { dependentId: this.dependentId, dependentName: this.dependentName, groupId: this.groupId }
+      : {};
+    this.navController.navigateBack([this.backUrl], { queryParams });
   }
 
   async onSubmit() {
@@ -280,7 +290,7 @@ export class CreateAppointmentPage implements OnInit {
       const res: any = await this.appointmentsService.createAppointment(appointmentData);
       this.successCreation(res.appointment);
     } catch (err) {
-      this.toastService.showError?.('No se pudo crear el turno');
+      this.toastService.showError?.(err?.error?.message || 'No se pudo crear el turno');
     }
   }
 
@@ -293,7 +303,7 @@ export class CreateAppointmentPage implements OnInit {
 
     // Si venimos de un grupo específico, regresar a ese grupo
     if (this.dependentId && this.groupId) {
-      return this.navController.navigateRoot([`/groups/home/${this.groupId}`]);
+      return this.navController.navigateRoot([`/groups/home/${this.groupId}`], { animated: true, animationDirection: 'back' });
     } else if (this.dependentId) {
       // Si solo tenemos dependentId pero no groupId, ir al listado de grupos
       return this.navController.navigateBack(['/groups']);

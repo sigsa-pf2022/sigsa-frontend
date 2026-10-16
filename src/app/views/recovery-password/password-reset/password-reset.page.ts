@@ -53,6 +53,7 @@ import { ToastService } from 'src/app/services/toast/toast.service';
           <div class="auth-field">
             <label class="auth-field__label">Repetir contraseña</label>
             <app-password-input placeholder="Volvé a escribirla" controlName="repeatPassword"></app-password-input>
+            <p class="auth-field__error" *ngIf="passwordsDontMatch">Las contraseñas no coinciden.</p>
           </div>
           <button type="submit" hidden></button>
         </form>
@@ -82,6 +83,11 @@ export class PasswordResetPage implements OnDestroy{
     private navController: NavController
   ) {}
 
+  get passwordsDontMatch(): boolean {
+    const repeat = this.form?.get('repeatPassword')?.value;
+    return !!repeat && repeat !== this.form.get('password')?.value;
+  }
+
   ionViewWillEnter() {
     this.form = this.recoveryPasswordFormDataService.resetPasswordForm;
   }
@@ -96,13 +102,16 @@ export class PasswordResetPage implements OnDestroy{
 
   onSubmit() {
     if (!this.isFormValid()) return;
+    const { email, code, password } = this.form.value;
     this.auth
-      .resetPassword(this.form.value)
+      .resetPassword({ email, code, password })
       .then(() => {
         this.router.navigateByUrl('/login');
         this.toastService.showSuccess('Contraseña restablecida correctamente');
       })
-      .catch(({ error }) => this.toastService.showError(error));
+      .catch(({ error }) =>
+        this.toastService.showError(error?.message || 'No pudimos restablecer la contraseña')
+      );
   }
 
 

@@ -5,6 +5,7 @@ import { NavController } from '@ionic/angular';
 import { MedsEventDataService } from '../shared/services/meds-events-data/meds-events-data.service';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
 import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
+import { formatDosage } from 'src/app/utils/med-dosage';
 
 @Component({
   selector: 'app-pick-med',
@@ -33,6 +34,7 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
       <header class="listing-header">
         <p class="listing-header__eyebrow">
           {{ this.isEditMode ? 'Editar recordatorio' : 'Nuevo recordatorio' }}
+          <ng-container *ngIf="dependentName"> · para {{ dependentName | titlecase }}</ng-container>
         </p>
         <h1 class="listing-header__title">Elegí el medicamento</h1>
       </header>
@@ -49,7 +51,13 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
         ></ion-searchbar>
       </form>
 
-      <div class="pick-med__scroll">
+      <app-loading-state
+        *ngIf="this.isLoading"
+        [rows]="6"
+        [avatar]="false"
+      ></app-loading-state>
+
+      <div class="pick-med__scroll" *ngIf="!this.isLoading">
         <ng-container *ngIf="this.filteredMeds?.length > 0; else emptyState">
           <app-items-list
             *ngFor="let medOption of this.filteredMeds"
@@ -59,7 +67,7 @@ import { slideUpAnimation } from 'src/app/animations/slide-up.animation';
             [value]="medOption.id"
             [selectedValue]="this.med?.id"
             [title]="medOption.name"
-            [subtitle]="medOption.dosage"
+            [subtitle]="dosageLabel(medOption)"
             img="pill"
           ></app-items-list>
         </ng-container>
@@ -99,6 +107,7 @@ export class PickMedComponent implements OnInit, OnDestroy {
   med: any = null;
   meds: any[];
   filteredMeds: any[];
+  isLoading = true;
   isEditMode = false;
   medEventId: number;
   dependentId: number;
@@ -114,6 +123,11 @@ export class PickMedComponent implements OnInit, OnDestroy {
 
   ngOnInit() {}
 
+  /** "400 mg": la dosis del catálogo nunca va sin su unidad. */
+  dosageLabel(med: any): string {
+    return formatDosage(med);
+  }
+
   ionViewWillEnter() {
     this.route.queryParams.subscribe(params => {
       const rawDependentId = params['dependentId'];
@@ -122,6 +136,16 @@ export class PickMedComponent implements OnInit, OnDestroy {
         : null;
       this.dependentName = params['dependentName'] || null;
       this.groupId = params['groupId'] || null;
+
+      // Volviendo desde el paso 2 no hay query params y se perdía para quién era
+      // el recordatorio. El paso 2 ya tenía este fallback; acá faltaba.
+      if (!this.dependentId) {
+        const guardado = this.medEventDataService.data;
+        this.dependentId = guardado?.dependentId ?? null;
+        this.dependentName = guardado?.dependentName ?? null;
+        this.groupId = guardado?.groupId ?? null;
+      }
+
       if (this.dependentId) {
         this.medEventDataService.update({
           dependentId: this.dependentId,
@@ -176,12 +200,22 @@ export class PickMedComponent implements OnInit, OnDestroy {
   }
 
   async getMeds() {
-    this.meds = await this.medsEventsService.getMeds();
-    this.filteredMeds = this.meds;
+    // Sin este flag el catálogo vacío hacía aparecer "Sin resultados" mientras
+    // la request estaba en vuelo.
+    this.isLoading = !this.meds?.length;
+    try {
+      this.meds = await this.medsEventsService.getMeds();
+      this.filteredMeds = this.meds;
+    } catch (error) {
+      console.error('PickMedComponent: error cargando el catálogo de medicamentos', error);
+    } finally {
+      this.isLoading = false;
+    }
   }
 
   goBack() {
-    this.navController.navigateBack(['/tabs/meds'], { animation: slideUpAnimation });
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/meds';
+    this.navController.navigateBack([fallback], { animation: slideUpAnimation });
   }
 
   nextStep() {

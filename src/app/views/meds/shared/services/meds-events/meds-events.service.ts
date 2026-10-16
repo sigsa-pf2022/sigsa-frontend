@@ -20,6 +20,35 @@ export class MedsEventsService {
     return this.http.get<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
   }
 
+  /**
+   * Tomas agrupadas por tratamiento: una entrada por serie con su próxima
+   * toma. Las tomas únicas vienen con la misma forma (totalDoses: 1).
+   */
+  getTreatmentsByUser() {
+    return this.http.get<any[]>(`${environment.apiUrl}/meds-event/treatments`).toPromise();
+  }
+
+  getTreatmentsByDependent(dependentId: number) {
+    return this.http
+      .get<any[]>(`${environment.apiUrl}/meds-event/treatments/dependent/${dependentId}`)
+      .toPromise();
+  }
+
+  cancelTreatment(seriesId: string) {
+    return this.http
+      .patch<any>(`${environment.apiUrl}/meds-event/treatments/${seriesId}/cancel`, {})
+      .toPromise();
+  }
+
+  cancelTreatmentForDependent(seriesId: string, dependentId: number) {
+    return this.http
+      .patch<any>(
+        `${environment.apiUrl}/meds-event/treatments/${seriesId}/dependent/${dependentId}/cancel`,
+        {}
+      )
+      .toPromise();
+  }
+
   createMedEvent(data) {
     let payload = data;
     if (data && !data.medId && data.med && typeof data.med === 'object' && 'id' in data.med) {
@@ -44,12 +73,23 @@ export class MedsEventsService {
     return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}`, payload).toPromise();
   }
 
+  /** Borrado real. Si la toma es de un tratamiento, el backend borra la serie. */
+  deleteMedEvent(id: number) {
+    return this.http.delete<any>(`${environment.apiUrl}/meds-event/${id}`).toPromise();
+  }
+
   cancelMedEvent(id: number) {
     return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/cancel`, {}).toPromise();
   }
 
+  /** "La tomé". */
   confirmMedEvent(id: number) {
     return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/confirm`, {}).toPromise();
+  }
+
+  /** "No la tomé": queda como omitida para la adherencia. */
+  skipMedEvent(id: number) {
+    return this.http.patch<any>(`${environment.apiUrl}/meds-event/${id}/skip`, {}).toPromise();
   }
 
   getMeds(): Promise<any[]> {

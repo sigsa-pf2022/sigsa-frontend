@@ -1,0 +1,5 @@
+.grm__list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 20px calc(env(safe-area-inset-bottom, 0) + 24px);
+}

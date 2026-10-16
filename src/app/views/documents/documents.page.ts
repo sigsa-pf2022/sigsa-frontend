@@ -18,44 +18,52 @@ import { MedicalDocument } from './shared/interfaces/Document.interface';
         <h1 class="listing-header__title">Mis documentos</h1>
       </header>
 
-      <ng-container *ngIf="this.documents.length > 0; else emptyState">
-        <form [formGroup]="this.searchForm" class="listing-search">
-          <ion-searchbar
-            class="listing-searchbar"
-            formControlName="search"
-            placeholder="Buscar documento..."
-            debounce="400"
-            type="string"
-            mode="md"
-            (ionChange)="handleChange($event)"
-          ></ion-searchbar>
-        </form>
+      <app-loading-state *ngIf="this.isLoading" [rows]="5"></app-loading-state>
 
-        <cdk-virtual-scroll-viewport itemSize="80" class="listing-scroll">
-          <app-document-item-list
-            *cdkVirtualFor="let document of this.filteredDocuments"
-            [document]="document"
-            [flush]="true"
-            (click)="presentActionSheet(document)"
-          ></app-document-item-list>
-        </cdk-virtual-scroll-viewport>
-      </ng-container>
+      <ng-container *ngIf="!this.isLoading">
+        <ng-container *ngIf="this.documents.length > 0; else emptyState">
+          <form [formGroup]="this.searchForm" class="listing-search">
+            <ion-searchbar
+              class="listing-searchbar"
+              formControlName="search"
+              placeholder="Buscar documento..."
+              debounce="400"
+              type="string"
+              mode="md"
+              (ionChange)="handleChange($event)"
+            ></ion-searchbar>
+          </form>
 
-      <ng-template #emptyState>
-        <div class="empty-state" role="status" *ngIf="!this.isLoading">
-          <div class="empty-state__icon" aria-hidden="true">
-            <ion-icon name="document-text"></ion-icon>
+          <!--
+            Lista común y no cdk-virtual-scroll-viewport: el scroll virtual
+            dejaba de redibujar al desplazarse (el scrollTop llegaba al final
+            pero seguía mostrando siempre los mismos ítems), así que los
+            últimos documentos no se veían nunca. Para una historia clínica
+            personal —decenas de documentos como mucho— no aporta nada y sí
+            trae este problema.
+          -->
+          <div class="listing-scroll listing-scroll--plain">
+            <app-document-item-list
+              *ngFor="let document of this.filteredDocuments; trackBy: trackById"
+              [document]="document"
+              [flush]="true"
+              (click)="presentActionSheet(document)"
+            ></app-document-item-list>
           </div>
-          <h2 class="empty-state__title">Sin documentos todavía</h2>
-          <p class="empty-state__subtitle">
-            Subí estudios, recetas o informes y los tenés siempre a mano.
-          </p>
-          <button type="button" class="empty-state__cta" (click)="newDocument()">
-            <ion-icon name="add"></ion-icon>
-            Agregar documento
-          </button>
-        </div>
-      </ng-template>
+        </ng-container>
+
+        <ng-template #emptyState>
+          <div class="empty-state" role="status">
+            <div class="empty-state__icon" aria-hidden="true">
+              <ion-icon name="document-text"></ion-icon>
+            </div>
+            <h2 class="empty-state__title">Sin documentos todavía</h2>
+            <p class="empty-state__subtitle">
+              Subí estudios, recetas o informes y los tenés siempre a mano.
+            </p>
+          </div>
+        </ng-template>
+      </ng-container>
 
       <ion-fab class="app-fab" vertical="bottom" horizontal="center" slot="fixed">
         <ion-fab-button
@@ -73,7 +81,7 @@ import { MedicalDocument } from './shared/interfaces/Document.interface';
 export class DocumentsPage implements OnInit, OnDestroy {
   documents: MedicalDocument[] = [];
   filteredDocuments: MedicalDocument[] = [];
-  isLoading = false;
+  isLoading = true;
   searchForm = this.fb.group({
     search: '',
   });
@@ -106,7 +114,9 @@ export class DocumentsPage implements OnInit, OnDestroy {
   }
 
   async loadDocuments() {
-    this.isLoading = true;
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // tab refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.documents.length === 0;
     try {
       const docs = await this.documentsService.getDocumentsByUser();
       this.documents = [...(docs || [])];
@@ -121,6 +131,10 @@ export class DocumentsPage implements OnInit, OnDestroy {
     }
   }
 
+  trackById(_index: number, document: MedicalDocument) {
+    return document.id;
+  }
+
   private applyFilter(search: string) {
     const term = search.toLowerCase();
     this.filteredDocuments = this.documents.filter((d) =>
@@ -129,7 +143,8 @@ export class DocumentsPage implements OnInit, OnDestroy {
   }
 
   async presentActionSheet(document: MedicalDocument) {
-    const actionSheet = await this.actionSheetService.createDefault('Mi Documento');
+    // "Eliminar" y no "Cancelar": acá el endpoint borra la fila de verdad.
+    const actionSheet = await this.actionSheetService.createDefault('Mi Documento', 'Eliminar');
     await actionSheet.present();
     const { role } = await actionSheet.onDidDismiss();
     this.doActionByRole(role, document.id);
@@ -179,10 +194,10 @@ export class DocumentsPage implements OnInit, OnDestroy {
   }
 
   editDocument(id: number) {
-    return this.navController.navigateRoot([`/documents/edit/${id}`]);
+    return this.navController.navigateForward([`/documents/edit/${id}`]);
   }
 
   viewDocument(id: number) {
-    return this.navController.navigateRoot([`/documents/view/${id}`]);
+    return this.navController.navigateForward([`/documents/view/${id}`]);
   }
 }

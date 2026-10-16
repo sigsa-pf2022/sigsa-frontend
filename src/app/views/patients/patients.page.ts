@@ -5,6 +5,7 @@ import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-moda
 import { ToastService } from 'src/app/services/toast/toast.service';
 import { PatientLink } from './shared/interfaces/PatientLink.interface';
 import { PatientsService } from './shared/services/patients.service';
+import { titleCase } from 'src/app/utils/title-case';
 
 @Component({
   selector: 'app-patients',
@@ -20,7 +21,15 @@ import { PatientsService } from './shared/services/patients.service';
           >
             <ion-icon name="chevron-back"></ion-icon>
           </button>
-          <div></div>
+          <button
+            type="button"
+            class="auth-back"
+            (click)="goToAgenda()"
+            aria-label="Mi agenda"
+            title="Mi agenda"
+          >
+            <ion-icon name="calendar-outline"></ion-icon>
+          </button>
         </div>
       </ion-toolbar>
     </ion-header>
@@ -34,7 +43,7 @@ import { PatientsService } from './shared/services/patients.service';
       <form
         class="listing-search"
         [formGroup]="searchForm"
-        *ngIf="patients.length + pendingRequests.length > 0"
+        *ngIf="!isLoading && patients.length + pendingRequests.length > 0"
       >
         <ion-searchbar
           class="listing-searchbar"
@@ -47,7 +56,9 @@ import { PatientsService } from './shared/services/patients.service';
         ></ion-searchbar>
       </form>
 
-      <div class="pts__scroll">
+      <app-loading-state *ngIf="isLoading" [rows]="5"></app-loading-state>
+
+      <div class="pts__scroll" *ngIf="!isLoading">
         <section *ngIf="filteredPatients.length > 0" class="pts__section">
           <div class="section-title">
             <h2>Mis pacientes</h2>
@@ -60,24 +71,34 @@ import { PatientsService } from './shared/services/patients.service';
             lines="none"
             [button]="true"
             detail="false"
-            (click)="viewDocuments(patient)"
+            (click)="viewPatient(patient)"
           >
             <div class="list-item__icon list-item__icon--med" aria-hidden="true">
               <ion-icon name="person"></ion-icon>
             </div>
             <div class="list-item__body">
-              <span class="list-item__title">{{ patient.firstName }} {{ patient.lastName }}</span>
+              <span class="list-item__title">{{ patient.firstName | titlecase }} {{ patient.lastName | titlecase }}</span>
               <span class="list-item__subtitle">
                 {{ patient.patientType === 'dependent' ? 'Dependiente' : 'Usuario titular' }}
+                <ng-container *ngIf="patient.activeTreatmentsCount">
+                  · {{ patient.activeTreatmentsCount }}
+                  {{ patient.activeTreatmentsCount === 1 ? 'tratamiento' : 'tratamientos' }}
+                </ng-container>
+              </span>
+              <span class="list-item__subtitle" *ngIf="patient.nextAppointmentDate">
+                Próximo turno: {{ patient.nextAppointmentDate | date: 'dd/MM HH:mm' }}
               </span>
             </div>
+            <!-- Los tres puntos anunciaban un menú de opciones que no existe:
+                 el botón desvincula y nada más. El ícono lo dice. -->
             <button
               type="button"
-              class="member-row__action member-row__action--neutral"
+              class="member-row__action member-row__action--danger"
               (click)="confirmUnlink(patient); $event.stopPropagation()"
               aria-label="Desvincular paciente"
+              title="Desvincular paciente"
             >
-              <ion-icon name="ellipsis-vertical"></ion-icon>
+              <ion-icon name="unlink-outline"></ion-icon>
             </button>
           </ion-item>
         </section>
@@ -100,14 +121,14 @@ import { PatientsService } from './shared/services/patients.service';
               <ion-icon name="time"></ion-icon>
             </div>
             <div class="alert-card__body">
-              <span class="alert-card__title">{{ patient.firstName }} {{ patient.lastName }}</span>
+              <span class="alert-card__title">{{ patient.firstName | titlecase }} {{ patient.lastName | titlecase }}</span>
               <span class="alert-card__subtitle">Esperando autorización del responsable</span>
             </div>
           </ion-item>
         </section>
 
         <div
-          *ngIf="filteredPatients.length === 0 && filteredPending.length === 0 && !isLoading"
+          *ngIf="filteredPatients.length === 0 && filteredPending.length === 0"
           class="empty-state"
           role="status"
         >
@@ -118,10 +139,6 @@ import { PatientsService } from './shared/services/patients.service';
           <p class="empty-state__subtitle">
             Vinculá pacientes para acceder a su historia clínica y registrar consultas.
           </p>
-          <button type="button" class="empty-state__cta" (click)="addPatient()">
-            <ion-icon name="person-add"></ion-icon>
-            Agregar paciente
-          </button>
         </div>
       </div>
 
@@ -144,7 +161,7 @@ export class PatientsPage implements OnInit {
   pendingRequests: PatientLink[] = [];
   filteredPatients: PatientLink[] = [];
   filteredPending: PatientLink[] = [];
-  isLoading = false;
+  isLoading = true;
 
   constructor(
     private fb: FormBuilder,
@@ -165,7 +182,9 @@ export class PatientsPage implements OnInit {
   }
 
   private async loadPatients() {
-    this.isLoading = true;
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // vista refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.patients.length + this.pendingRequests.length === 0;
     try {
       const res = await this.patientsService.getPatients();
       this.patients = res?.patients || [];
@@ -201,16 +220,14 @@ export class PatientsPage implements OnInit {
     this.navController.navigateForward(['/patients/add']);
   }
 
-  viewDocuments(patient: PatientLink) {
-    this.navController.navigateForward(
-      [`/patients/${patient.patientId}/documents`],
-      {
-        queryParams: {
-          patientType: patient.patientType,
-          name: `${patient.firstName} ${patient.lastName}`,
-        },
-      },
-    );
+  viewPatient(patient: PatientLink) {
+    this.navController.navigateForward([`/patients/${patient.patientId}`], {
+      queryParams: { patientType: patient.patientType },
+    });
+  }
+
+  goToAgenda() {
+    this.navController.navigateForward(['/patients/agenda']);
   }
 
   async confirmUnlink(patient: PatientLink) {
@@ -218,7 +235,9 @@ export class PatientsPage implements OnInit {
       component: YesNoModalComponent,
       cssClass: 'modal',
       componentProps: {
-        text: `¿Cancelar vinculación con ${patient.firstName} ${patient.lastName}?`,
+        text: `¿Cancelar vinculación con ${titleCase(
+          `${patient.firstName} ${patient.lastName}`,
+        )}?`,
       },
     });
     await modal.present();

@@ -48,7 +48,7 @@ import { ProfessionalsService } from './shared/services/professionals.service';
       <form
         class="listing-search"
         [formGroup]="this.searchForm"
-        *ngIf="doctors.length > 0"
+        *ngIf="!this.isLoading && doctors.length > 0"
       >
         <ion-searchbar
           class="listing-searchbar"
@@ -61,14 +61,23 @@ import { ProfessionalsService } from './shared/services/professionals.service';
         ></ion-searchbar>
       </form>
 
-      <div class="drs__scroll">
+      <app-loading-state *ngIf="this.isLoading" [rows]="5"></app-loading-state>
+
+      <div class="drs__scroll" *ngIf="!this.isLoading">
         <ng-container *ngIf="this.filteredDoctors.length > 0; else emptyState">
+          <!--
+            Fuera del alta/edición de turno esta pantalla es sólo un listado:
+            no hay vista de detalle del profesional a la que ir. Por eso no
+            lleva chevron ni efecto de pulsado, que hacían parecer que la fila
+            abría algo. Al elegir profesional para un turno sí es seleccionable.
+          -->
           <app-items-list
             *ngFor="let doctorOption of this.filteredDoctors"
-            [title]="'Dr/a ' + doctorOption.firstName + ' ' + doctorOption.lastName"
+            [title]="'Dr/a ' + (doctorOption.firstName + ' ' + doctorOption.lastName | titlecase)"
             img="doctor"
             [isSelectable]="this.isAppointmentCreation || this.isAppointmentEdition"
-            [showIcon]="!this.isAppointmentCreation && !this.isAppointmentEdition"
+            [tappable]="this.isAppointmentCreation || this.isAppointmentEdition"
+            [showIcon]="false"
             [value]="doctorOption.id"
             [selectedValue]="this.doctor?.id"
             (click)="doAction(doctorOption)"
@@ -84,10 +93,6 @@ import { ProfessionalsService } from './shared/services/professionals.service';
             <p class="empty-state__subtitle">
               Sumá tu profesional de confianza para agendar turnos rápido.
             </p>
-            <button type="button" class="empty-state__cta" (click)="newDoctor()">
-              <ion-icon name="add"></ion-icon>
-              Agregar profesional
-            </button>
           </div>
         </ng-template>
       </div>
@@ -132,6 +137,7 @@ export class DoctorsPage implements OnInit {
     search: '',
   });
   doctors: Professional[] = [];
+  isLoading = true;
   isAppointmentCreation = false;
   isAppointmentEdition = false;
   doctor: Professional;
@@ -152,7 +158,17 @@ export class DoctorsPage implements OnInit {
   ngOnInit() {}
 
   async ionViewWillEnter() {
-    this.doctors = this.filteredDoctors = await this.professionalsService.getMyProfessionals();
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // vista refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.doctors.length === 0;
+    try {
+      this.doctors = this.filteredDoctors = await this.professionalsService.getMyProfessionals();
+    } catch (error) {
+      console.error('DoctorsPage: error cargando profesionales', error);
+    } finally {
+      this.isLoading = false;
+    }
+
     if (this.route.snapshot.url[0]?.path === 'create') {
       this.isAppointmentCreation = true;
     } else if (this.route.snapshot.url[0]?.path === 'edit') {

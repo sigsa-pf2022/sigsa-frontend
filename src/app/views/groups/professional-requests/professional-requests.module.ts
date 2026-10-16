@@ -7,6 +7,8 @@ import { SharedComponentsModule } from 'src/app/components/shared-components.mod
 import { ProfessionalRequestsPage } from './professional-requests.page';
 
 const routes: Routes = [
+  // Sin grupo: todas las del usuario (las suyas como titular y las de sus grupos).
+  { path: '', component: ProfessionalRequestsPage },
   { path: ':groupId', component: ProfessionalRequestsPage },
 ];
 

@@ -45,10 +45,11 @@ export class DocumentItemListComponent implements OnInit {
     return !!this.document?.fileContent && !!this.document?.mimeType?.includes('image');
   }
 
-  getIconByMimeType(mimeType: string): string {
-    if (mimeType.includes('pdf')) {
+  getIconByMimeType(mimeType?: string): string {
+    const mt = mimeType ?? '';
+    if (mt.includes('pdf')) {
       return 'document-text';
-    } else if (mimeType.includes('image')) {
+    } else if (mt.includes('image')) {
       return 'image';
     } else {
       return 'document';

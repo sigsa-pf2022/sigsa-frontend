@@ -4,12 +4,6 @@
   height: 100%;
 }
 
-.vd__loading {
-  display: flex;
-  justify-content: center;
-  padding: 64px 24px;
-}
-
 .vd__summary {
   margin: 8px 20px 0;
   padding: 16px 18px;
@@ -138,4 +132,24 @@
 
 .vd__bottom-spacer {
   height: calc(env(safe-area-inset-bottom, 0) + 24px);
+}
+
+.vd__pdf-native {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 18px;
+  text-align: center;
+
+  > ion-icon {
+    font-size: 40px;
+    color: var(--sigsa-600);
+  }
+
+  p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
 }

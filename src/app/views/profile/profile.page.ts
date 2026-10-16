@@ -28,17 +28,26 @@ import { PROFILE_OPTIONS } from './constants/profile-options';
         <h1 class="listing-header__title">Mi perfil</h1>
       </header>
 
-      <article class="profile-hero" *ngIf="user">
-        <div class="profile-hero__avatar" aria-hidden="true">
-          {{ getInitials(user) }}
+      <article
+        class="profile-hero profile-hero--tappable"
+        *ngIf="user"
+        role="button"
+        tabindex="0"
+        aria-label="Editar mis datos"
+        (click)="goToMyData()"
+        (keyup.enter)="goToMyData()"
+      >
+        <div class="profile-hero__avatar">
+          <app-avatar [photo]="user.photo" [name]="fullName"></app-avatar>
         </div>
         <div class="profile-hero__body">
           <p class="profile-hero__name">
-            {{ user.firstName }} {{ user.lastName }}
+            {{ user.firstName | titlecase }} {{ user.lastName | titlecase }}
           </p>
           <p class="profile-hero__email" *ngIf="user.email">{{ user.email }}</p>
           <span class="profile-hero__chip" *ngIf="user.role === 'professional'">Profesional</span>
         </div>
+        <ion-icon class="profile-hero__chevron" name="chevron-forward" aria-hidden="true"></ion-icon>
       </article>
 
       <div class="p__sections">
@@ -78,9 +87,16 @@ export class ProfilePage implements OnInit {
     this.navController.navigateBack(['/tabs/home']);
   }
 
-  logout() {
-    this.auth.signOut();
-    return this.navController.navigateRoot(['welcome']);
+  goToMyData() {
+    return this.navController.navigateForward(['/profile/my-data']);
+  }
+
+  async logout() {
+    // Hay que esperar: si se navega antes de que la sesión se limpie,
+    // `AlreadyLoggedGuard` todavía ve al usuario logueado y devuelve al home.
+    await this.auth.signOut();
+    // Root no se anima si no se le pide: el login aparecía de golpe.
+    return this.navController.navigateRoot(['welcome'], { animated: true, animationDirection: 'back' });
   }
 
   buildOptions() {
@@ -100,13 +116,27 @@ export class ProfilePage implements OnInit {
           payload: '/patients',
         },
       };
+      const notesIndex = this.options.findIndex((o) => o.action?.payload === '/notes');
+      if (notesIndex >= 0) {
+        this.options[notesIndex] = {
+          icon: 'calendar-outline',
+          title: 'Mi agenda',
+          action: {
+            type: 'navigate',
+            payload: '/patients/agenda',
+          },
+        };
+      }
+      // Al profesional no le mandan solicitudes: las manda él.
+      this.options = this.options.filter(
+        (o) => o.action?.payload !== '/groups/professional-requests',
+      );
     }
   }
 
-  getInitials(user: any): string {
-    const first = (user?.firstName ?? '').trim();
-    const last = (user?.lastName ?? '').trim();
-    return ((first[0] || '') + (last[0] || '')).toUpperCase() || '?';
+  get fullName(): string {
+    if (!this.user) return '';
+    return `${this.user.firstName ?? ''} ${this.user.lastName ?? ''}`.trim();
   }
 
   doAction(event) {

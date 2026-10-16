@@ -10,7 +10,8 @@ interface Dependent {
 export interface FamilyGroup {
   createdBy: any; // Replace to user
   dependent: Dependent;
-  imgUrl: any;
+  /** Foto del grupo como data URI. */
+  photo?: string | null;
   members: object[];
   name: string;
   id?: string;

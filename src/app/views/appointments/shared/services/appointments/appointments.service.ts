@@ -25,6 +25,11 @@ export class AppointmentsService {
     return this.http.put(`${environment.apiUrl}/appointments/${id}`, data).toPromise();
   }
 
+  /** Borrado real, para el turno cargado por error. No confundir con cancelar. */
+  deleteAppointment(id) {
+    return this.http.delete(`${environment.apiUrl}/appointments/${id}`).toPromise();
+  }
+
   cancelAppointment(id) {
     return this.http.delete(`${environment.apiUrl}/appointments/cancel/${id}`).toPromise();
   }

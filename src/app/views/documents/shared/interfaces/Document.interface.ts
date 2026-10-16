@@ -30,6 +30,11 @@ export interface EditDocumentDTO {
   documentDate?: string;
   date?: string;
   status?: string;
+  // Reemplazo de archivo (opcional, al editar la imagen del documento)
+  fileContent?: string; // Base64
+  fileName?: string;
+  mimeType?: string;
+  fileSize?: number;
 }
 
 export interface DocumentWithContent extends MedicalDocument {

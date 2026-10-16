@@ -1,7 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NavController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
+import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { MedsEventsService } from '../shared/services/meds-events/meds-events.service';
+import { GroupEventsService } from 'src/app/views/groups/shared/services/group-events/group-events.service';
+import { formatDosage } from 'src/app/utils/med-dosage';
+import { actorName } from 'src/app/utils/event-actor';
+import { titleCase } from 'src/app/utils/title-case';
+import { ToastService } from 'src/app/services/toast/toast.service';
+import {
+  isActionable,
+  isOverdue,
+  isPastEvent,
+  resolveEventStatus,
+  STATUS_BADGE_CLASS,
+} from 'src/app/constants/EventStatus.constant';
+
+/** Cuánto antes del horario ya se puede marcar una toma como tomada. */
+const MARK_DOSE_WINDOW_MS = 60 * 60 * 1000;
+
+/** Toma abierta cuyo horario llegó o está a menos de una hora. */
+function isMarkableDose(dose: any): boolean {
+  if (!dose || !['created', 'sended'].includes(dose.status)) return false;
+  const time = new Date(dose.date).getTime();
+  return !isNaN(time) && time - Date.now() <= MARK_DOSE_WINDOW_MS;
+}
 
 @Component({
   selector: 'app-view-med-event',
@@ -28,9 +51,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
         <h1 class="listing-header__title">Medicamento</h1>
       </header>
 
-      <div *ngIf="loading" class="vm__loading">
-        <ion-spinner color="primary"></ion-spinner>
-      </div>
+      <app-loading-state *ngIf="loading" variant="spinner"></app-loading-state>
 
       <ng-container *ngIf="medEvent && !loading">
         <article class="vm__summary">
@@ -40,7 +61,7 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
           <div class="vm__summary-body">
             <p class="vm__summary-name">{{ medEvent?.med?.name }}</p>
             <p class="vm__summary-meta">
-              <span *ngIf="medEvent?.med?.dosage">{{ medEvent?.med?.dosage }}</span>
+              <span *ngIf="dosageLabel">{{ dosageLabel }}</span>
             </p>
           </div>
           <span
@@ -61,57 +82,447 @@ import { MedsEventsService } from '../shared/services/meds-events/meds-events.se
               <span class="vm__row-label">Fecha y hora</span>
               <span class="vm__row-value">{{ medEvent?.date | date: 'dd/MM/yyyy HH:mm' }}</span>
             </div>
+            <div class="vm__row" *ngIf="medEvent?.totalDoses > 1">
+              <span class="vm__row-label">Frecuencia</span>
+              <span class="vm__row-value">Cada {{ medEvent?.intervalHours }} hs</span>
+            </div>
+            <div class="vm__row" *ngIf="medEvent?.totalDoses > 1">
+              <span class="vm__row-label">Toma</span>
+              <span class="vm__row-value">{{ medEvent?.doseIndex }} de {{ medEvent?.totalDoses }}</span>
+            </div>
             <div class="vm__row" *ngIf="medEvent?.description">
               <span class="vm__row-label">Descripción</span>
               <span class="vm__row-value">{{ medEvent?.description }}</span>
             </div>
           </div>
         </section>
+
+        <section class="vm__section" *ngIf="seriesDoses.length > 1">
+          <div class="section-title vm__section-title">
+            <h2>Tomas del tratamiento</h2>
+          </div>
+          <div class="vm__card">
+            <!--
+              Cada toma se puede elegir tocándola: "Me hago cargo" actúa sobre la
+              seleccionada y lo dice. Antes actuaba siempre sobre la próxima
+              pendiente sin avisar cuál, y entrar varias veces iba tomando las
+              siguientes una tras otra.
+            -->
+            <div
+              class="vm__row vm__dose"
+              *ngFor="let dose of seriesDoses"
+              [class.vm__dose--current]="dose.id === medEvent?.id"
+              [class.vm__dose--selectable]="isSelectableDose(dose)"
+              (click)="selectDose(dose)"
+            >
+              <span class="vm__dose-head">
+                <span class="vm__row-label">Toma {{ dose.doseIndex }}</span>
+                <small class="vm__dose-owner" *ngIf="doseOwner(dose)">a cargo de {{ doseOwner(dose) }}</small>
+              </span>
+              <span class="vm__row-value">
+                {{ dose.date | date: 'dd/MM HH:mm' }}
+                <span class="status-badge" [ngClass]="doseBadgeClass(dose)">{{ doseLabel(dose) }}</span>
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Igual que en el turno: una toma cancelada sigue a la vista, así
+             que tiene que decir quién la dio de baja. -->
+        <section class="vm__section" *ngIf="this.groupId && canceledLabel">
+          <div class="vm__takecharge vm__takecharge--canceled">
+            <ion-icon name="close-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ canceledLabel }} canceló la toma
+              <small *ngIf="medEvent?.canceledAt">
+                · {{ medEvent.canceledAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+        </section>
+
+        <!-- Sólo el aviso. El botón "Me hago cargo" vive en el footer, junto al
+             borrar, igual que en el detalle del turno. -->
+        <section
+          class="vm__section"
+          *ngIf="this.groupId && !canceledLabel && medEvent?.takenChargeByUserId"
+        >
+          <div class="vm__takecharge">
+            <ion-icon name="checkmark-circle" aria-hidden="true"></ion-icon>
+            <span>
+              {{ takenChargeLabel }} se hizo cargo<ng-container *ngIf="medEvent?.seriesId"> de la toma {{ medEvent.doseIndex }}</ng-container>
+              <small *ngIf="medEvent?.takenChargeAt">
+                · {{ medEvent.takenChargeAt | date: 'dd/MM HH:mm' }}
+              </small>
+            </span>
+          </div>
+        </section>
       </ng-container>
     </ion-content>
+
+    <!--
+      El detalle de la toma no tenía footer y el del turno sí. Se le agrega para
+      que las dos pantallas de detalle tengan la misma estructura.
+
+      Mismo patrón que en el turno: la etiqueta nombra la situación y no la
+      operación, y la condición NO es canAct —una toma vencida o cancelada no
+      admite acciones pero sí se puede sacar de la lista.
+    -->
+    <ion-footer
+      class="auth-footer"
+      mode="md"
+      *ngIf="!loading && medEvent && (canTakeCharge || canMarkDose || canDelete)"
+    >
+      <!-- Registrar la toma: alimenta la adherencia que ve el profesional. -->
+      <div class="auth-footer__row" *ngIf="canMarkDose">
+        <button
+          type="button"
+          class="auth-btn auth-btn--primary"
+          (click)="markDose('confirm')"
+          [disabled]="marking"
+        >
+          <ion-spinner *ngIf="marking" name="crescent"></ion-spinner>
+          <span class="vm__btn-stack" *ngIf="!marking">
+            La tomé
+            <small *ngIf="medEvent?.seriesId">
+              Toma {{ medEvent.doseIndex }} · {{ medEvent.date | date: 'dd/MM HH:mm' }}
+            </small>
+          </span>
+        </button>
+        <button
+          type="button"
+          class="auth-btn auth-btn--secondary"
+          (click)="markDose('skip')"
+          [disabled]="marking"
+        >
+          No la tomé
+        </button>
+      </div>
+      <!-- Las dos respuestas del grupo, lado a lado: son alternativas. -->
+      <div class="auth-footer__row" *ngIf="canTakeCharge">
+        <button
+          type="button"
+          class="auth-btn auth-btn--primary"
+          *ngIf="canTakeCharge"
+          (click)="takeCharge()"
+          [disabled]="responding"
+        >
+          <ion-spinner *ngIf="responding" name="crescent"></ion-spinner>
+          <span class="vm__btn-stack" *ngIf="!responding">
+            Me hago cargo
+            <small *ngIf="medEvent?.seriesId">
+              Toma {{ medEvent.doseIndex }} · {{ medEvent.date | date: 'dd/MM HH:mm' }}
+            </small>
+          </span>
+        </button>
+        <!-- "No puedo": el complemento de "Me hago cargo". No resuelve el evento,
+             avisa al resto del grupo. Antes sólo existía en la notificación. -->
+        <button
+          type="button"
+          class="auth-btn auth-btn--secondary"
+          *ngIf="canTakeCharge && !declined"
+          (click)="decline()"
+          [disabled]="responding"
+        >
+          No puedo
+        </button>
+      </div>
+      <button
+        *ngIf="canDelete"
+        type="button"
+        class="auth-btn auth-btn--outline-danger"
+        (click)="deleteEvent()"
+        [disabled]="deleting"
+      >
+        <ion-spinner *ngIf="deleting" name="crescent"></ion-spinner>
+        <ng-container *ngIf="!deleting">Lo cargué por error · Borrar</ng-container>
+      </button>
+      <p class="auth-field__hint vm__delete-hint" *ngIf="medEvent?.seriesId">
+        Se borra el tratamiento completo.
+      </p>
+    </ion-footer>
   `,
   styleUrls: ['./view-med-event.component.scss']
 })
 export class ViewMedEventComponent implements OnInit {
   medEventId: number;
   medEvent: any;
+  groupId: string | null = null;
+  /** Todas las tomas del tratamiento, cuando el evento pertenece a una serie. */
+  seriesDoses: any[] = [];
   loading = false;
   notFound = false;
+  responding = false;
+  marking = false;
+  deleting = false;
+  /**
+   * Tomas sobre las que este usuario ya dijo "No puedo". Se carga del backend
+   * al entrar, así que se recuerda entre visitas, y es por toma: en un
+   * tratamiento cada toma tiene su propia respuesta.
+   */
+  declinedIds = new Set<number>();
+
+  get declined(): boolean {
+    return !!this.medEvent && this.declinedIds.has(this.medEvent.id);
+  }
   constructor(
     private route: ActivatedRoute,
     private medsEventsService: MedsEventsService,
+    private groupEventsService: GroupEventsService,
+    private toastService: ToastService,
+    private modalController: ModalController,
     private navController: NavController
   ) {}
+
+  /**
+   * Si la toma todavía admite acciones. Mismo criterio que el detalle del turno
+   * y que los listados: sobre una toma vencida o cancelada no hay de qué
+   * hacerse cargo. Faltaba acá y era el único lugar que no lo chequeaba.
+   */
+  get canAct(): boolean {
+    return isActionable(this.medEvent);
+  }
+
+  /**
+   * Si se puede borrar. Distinto de `canAct` a propósito: lo vencido y lo
+   * cancelado no admite acciones pero sí se puede sacar de la lista. Lo único
+   * que lo impide es que alguien se haya hecho cargo.
+   */
+  get canTakeCharge(): boolean {
+    return (
+      !!this.groupId &&
+      !this.canceledLabel &&
+      this.canAct &&
+      !this.medEvent?.takenChargeByUserId
+    );
+  }
+
+  /**
+   * "La tomé" / "No la tomé": toma abierta (ni cancelada ni ya marcada) cuyo
+   * horario llegó o falta menos de una hora. Vale para la medicación propia y
+   * para la de un dependiente.
+   */
+  get canMarkDose(): boolean {
+    return isMarkableDose(this.medEvent) && !this.canceledLabel;
+  }
+
+  get canDelete(): boolean {
+    return !!this.medEvent && !this.medEvent.takenChargeByUserId;
+  }
+
+  /** Nombre de quien canceló, vacío si no la canceló nadie. */
+  get canceledLabel(): string {
+    return actorName(this.medEvent?.canceledBy);
+  }
+
+  get takenChargeLabel(): string {
+    // Al cargar viene la relación `takenChargeBy`; al responder en el momento,
+    // el nombre lo devuelve el propio endpoint.
+    const by = this.medEvent?.takenChargeBy;
+    const fromRelation = by ? `${by.firstName ?? ''} ${by.lastName ?? ''}`.trim() : '';
+    return titleCase(fromRelation || this.medEvent?.takenChargeByName) || 'Alguien del grupo';
+  }
+
+  /** Una toma se puede elegir si todavía admite acciones (futura, no cancelada). */
+  isSelectableDose(dose: any): boolean {
+    return (!!this.groupId && isActionable(dose)) || isMarkableDose(dose);
+  }
+
+  selectDose(dose: any) {
+    if (!this.isSelectableDose(dose) || dose.id === this.medEvent?.id) return;
+    this.medEvent = dose;
+  }
+
+  /** Quién está a cargo de una toma, para mostrarlo en su fila. */
+  doseOwner(dose: any): string {
+    if (!dose?.takenChargeByUserId) return '';
+    return actorName(dose.takenChargeBy) || titleCase(dose.takenChargeByName) || '';
+  }
+
+  /** Un integrante avisa que él se ocupa de esta toma del dependiente. */
+  async takeCharge() {
+    if (this.responding || !this.medEvent) return;
+    this.responding = true;
+    try {
+      const res = await this.groupEventsService.respondToEvent('med_event', this.medEvent.id, 'take_charge');
+      const patch = {
+        status: 'confirmed',
+        takenChargeByUserId: res.takenChargeByUserId,
+        takenChargeByName: res.takenChargeByName,
+        takenChargeAt: res.takenChargeAt,
+      };
+      this.medEvent = { ...this.medEvent, ...patch };
+      // El cronograma también: antes quedaba con el estado viejo hasta salir y
+      // volver a entrar.
+      this.seriesDoses = this.seriesDoses.map((d) =>
+        d.id === this.medEvent.id ? { ...d, ...patch } : d,
+      );
+      this.toastService.showSuccess('Avisamos al grupo que te hacés cargo.');
+    } catch ({ error }) {
+      // 409: otro integrante ganó la carrera. El mensaje dice quién fue.
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
+  }
 
   ngOnInit() {}
 
   ionViewWillEnter() {
+    this.declinedIds = new Set();
     this.medEventId = Number(this.route.snapshot.paramMap.get('id'));
     const dependentIdParam = this.route.snapshot.queryParamMap.get('dependentId');
     const dependentId = dependentIdParam ? Number(dependentIdParam) : null;
+    this.groupId = this.route.snapshot.queryParamMap.get('groupId');
     this.load(dependentId);
   }
 
-  goBack() {
-    this.navController.navigateBack(['/tabs/meds']);
+  /** Registra si la toma se tomó o no. */
+  async markDose(action: 'confirm' | 'skip') {
+    if (this.marking || !this.medEvent) return;
+    this.marking = true;
+    try {
+      if (action === 'confirm') {
+        await this.medsEventsService.confirmMedEvent(this.medEvent.id);
+      } else {
+        await this.medsEventsService.skipMedEvent(this.medEvent.id);
+      }
+      const patch = { status: action === 'confirm' ? 'confirmed' : 'discarded' };
+      this.medEvent = { ...this.medEvent, ...patch };
+      this.seriesDoses = this.seriesDoses.map((d) =>
+        d.id === this.medEvent.id ? { ...d, ...patch } : d,
+      );
+      this.toastService.showSuccess(
+        action === 'confirm' ? 'Listo, registramos la toma.' : 'Registramos que no se tomó.',
+      );
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos registrar la toma');
+    } finally {
+      this.marking = false;
+    }
   }
 
+  /** Avisa al grupo que este integrante no puede ocuparse. El evento sigue abierto. */
+  async decline() {
+    if (this.responding || !this.medEvent) return;
+    this.responding = true;
+    try {
+      await this.groupEventsService.respondToEvent('med_event', this.medEvent.id, 'discard');
+      // Sólo se oculta "No puedo": quien dijo que no puede todavía puede
+      // cambiar de idea y hacerse cargo.
+      this.declinedIds.add(this.medEvent.id);
+      this.toastService.showSuccess('Avisamos al grupo que no podés.');
+    } catch ({ error }) {
+      // El backend acepta un solo "No puedo" por toma.
+      if (error?.message === 'Ya avisaste que no podés') this.declinedIds.add(this.medEvent.id);
+      this.toastService.showError(error?.message || 'No pudimos registrar la acción');
+    } finally {
+      this.responding = false;
+    }
+  }
+
+  async deleteEvent() {
+    if (this.deleting) return;
+    const esTratamiento = !!this.medEvent?.seriesId;
+    const modal = await this.modalController.create({
+      component: YesNoModalComponent,
+      cssClass: 'modal',
+      componentProps: {
+        title: esTratamiento ? '¿Borrar el tratamiento?' : '¿Borrar el recordatorio?',
+        text: esTratamiento
+          ? 'Se borran todas las tomas, como si nunca lo hubieras cargado.'
+          : 'Se va a borrar como si nunca lo hubieras cargado.',
+        subtext: 'Esta acción no se puede deshacer.',
+        confirmText: 'Borrar',
+        cancelText: 'No',
+      },
+    });
+    await modal.present();
+    const { data } = await modal.onWillDismiss();
+    if (!data) return;
+
+    this.deleting = true;
+    try {
+      await this.medsEventsService.deleteMedEvent(this.medEventId);
+      this.toastService.showSuccess(esTratamiento ? 'Tratamiento borrado.' : 'Recordatorio borrado.');
+      this.goBack();
+    } catch ({ error }) {
+      this.toastService.showError(error?.message || 'No pudimos borrar el recordatorio');
+    } finally {
+      this.deleting = false;
+    }
+  }
+
+  goBack() {
+    // Si venimos del home de un grupo, volvemos ahí y no a la pestaña personal.
+    const fallback = this.groupId ? `/groups/home/${this.groupId}` : '/tabs/meds';
+    this.navController.navigateBack([fallback]);
+  }
+
+  /** "400 mg": la dosis nunca va sin su unidad. */
+  get dosageLabel(): string {
+    return formatDosage(this.medEvent?.med);
+  }
+
+  /** Mismo criterio que las listas: se resuelve en un solo lugar. */
   get statusLabel(): string {
-    const map: Record<string, string> = {
-      confirmed: 'CONFIRMADO',
-      created: 'CREADO',
-      canceled: 'CANCELADO',
-    };
-    return map[this.medEvent?.status] || (this.medEvent?.status || '').toUpperCase();
+    return resolveEventStatus(this.medEvent)?.text ?? '';
   }
 
   get statusBadgeClass(): string {
+    const status = resolveEventStatus(this.medEvent);
+    return status ? STATUS_BADGE_CLASS[status.color] : '';
+  }
+
+  /**
+   * Etiqueta de cada toma del tratamiento.
+   *
+   * Una toma abierta que ya pasó se muestra "VENCIDA", el mismo criterio que la
+   * pastilla de la lista: "PENDIENTE" sugería que todavía estaba por venir.
+   * Se puede seguir marcando con "La tomé" / "No la tomé" (tocándola en esta
+   * lista); si nadie la marca, pasadas 2 h cuenta como omitida en la adherencia.
+   *
+   * Aplica también dentro de un grupo. Antes ahí se dejaba "PENDIENTE" porque
+   * significaba que nadie se había hecho cargo, pero sobre una toma que ya pasó
+   * nadie puede hacerse cargo (el backend lo rechaza), así que tampoco ahí
+   * queda nada pendiente.
+   */
+  doseLabel(dose: any): string {
+    if (this.isOwnOverdueDose(dose)) return 'VENCIDA';
+    // Hacerse cargo escribe `confirmed`, pero de una toma futura no se puede
+    // decir que ya se tomó: hasta que pase la hora es sólo un compromiso.
+    if (dose?.status === 'confirmed' && !isPastEvent(dose)) return 'CONFIRMADA';
+    const map: Record<string, string> = {
+      confirmed: 'TOMADA',
+      created: 'PENDIENTE',
+      sended: 'AVISADA',
+      discarded: 'OMITIDA',
+      canceled: 'CANCELADA',
+    };
+    return map[dose?.status] || (dose?.status || '').toUpperCase();
+  }
+
+  doseBadgeClass(dose: any): string {
+    // Ámbar, como la pastilla "VENCIDO" de la lista.
+    if (this.isOwnOverdueDose(dose)) return STATUS_BADGE_CLASS.warning;
+    if (dose?.status === 'confirmed' && !isPastEvent(dose)) return 'status-badge--info';
+    return this.badgeClassFor(dose?.status);
+  }
+
+  /** Toma abierta cuya hora ya pasó, propia o de un dependiente. */
+  private isOwnOverdueDose(dose: any): boolean {
+    return isOverdue(dose);
+  }
+
+  private badgeClassFor(status: string): string {
     const map: Record<string, string> = {
       confirmed: 'status-badge--success',
       created: 'status-badge--violet',
+      sended: '',
+      discarded: '',
       canceled: 'status-badge--danger',
     };
-    return map[this.medEvent?.status] || '';
+    return map[status] || '';
   }
 
   async load(dependentId?: number) {
@@ -119,10 +530,27 @@ export class ViewMedEventComponent implements OnInit {
     this.notFound = false;
     await this.fallbackLoad(dependentId);
     this.notFound = !this.medEvent;
+    await this.loadMyResponses();
     this.loading = false;
     if (this.notFound) {
       // Navegar atrás solo si realmente no hay nada
       this.navController.navigateBack(['/meds']);
+    }
+  }
+
+  /** Qué tomas ya declinó este usuario, para no volver a ofrecerle "No puedo". */
+  private async loadMyResponses() {
+    if (!this.groupId || !this.medEvent) return;
+    const ids = this.seriesDoses.length ? this.seriesDoses.map((d) => d.id) : [this.medEvent.id];
+    try {
+      const res = await this.groupEventsService.getMyResponses('med_event', ids);
+      this.declinedIds = new Set(
+        Object.entries(res || {})
+          .filter(([, action]) => action === 'discard')
+          .map(([id]) => Number(id)),
+      );
+    } catch {
+      // Si falla, se ofrece el botón y el backend rechaza el segundo intento.
     }
   }
 
@@ -135,8 +563,16 @@ export class ViewMedEventComponent implements OnInit {
         list = await this.medsEventsService.getMedsEventsByUser();
       }
       this.medEvent = list?.find((m) => m.id === this.medEventId);
+      // Si la toma pertenece a un tratamiento, las hermanas ya vienen en la
+      // misma lista: no hace falta otra request.
+      this.seriesDoses = this.medEvent?.seriesId
+        ? (list || [])
+            .filter((m) => m.seriesId === this.medEvent.seriesId)
+            .sort((a, b) => a.doseIndex - b.doseIndex)
+        : [];
     } catch {
       this.medEvent = null;
+      this.seriesDoses = [];
     }
   }
 }

@@ -1,19 +1,5 @@
-.auth-page-header {
-  &::after {
-    background-image: none !important;
-    display: none;
-  }
-}
-
-.auth-page-toolbar {
-  --background: var(--color-surface-app);
-  --border-style: none;
-  --min-height: 56px;
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --padding-start: 0;
-  --padding-end: 0;
-}
+/* `.auth-page-header` / `.auth-page-toolbar` viven en global.scss:
+   las usan todas las páginas, no sólo login. */
 
 .login__hero-icon {
   font-size: 40px;

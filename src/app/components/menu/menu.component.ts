@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { AlertController, NavController } from '@ionic/angular';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { AlertController, IonMenu, NavController } from '@ionic/angular';
 import { GroupsService } from 'src/app/views/groups/shared/services/groups/groups.service';
 
 @Component({
@@ -54,6 +54,7 @@ export class MenuComponent implements OnInit {
   @Input() contentId: string;
   @Input() title: string;
   @Input() options: any;
+  @ViewChild(IonMenu) menu: IonMenu;
 
   constructor(
     private alertController: AlertController,
@@ -64,10 +65,19 @@ export class MenuComponent implements OnInit {
   ngOnInit() {}
 
   async onOptionClick(option: any) {
+    // Se cierra antes de navegar: si no, al volver (por ejemplo del historial)
+    // el menú seguía abierto sobre el inicio del grupo. Con la animación: sin
+    // ella el menú desaparecía de golpe y la transición se veía cortada.
+    await this.menu?.close();
     switch (option.action) {
       case 'see-members':
         if (option.groupId) {
           await this.navController.navigateForward([`/groups/${option.groupId}/members`]);
+        }
+        break;
+      case 'see-history':
+        if (option.groupId) {
+          await this.navController.navigateForward([`/groups/${option.groupId}/history`]);
         }
         break;
       case 'exit-group':
@@ -99,7 +109,7 @@ export class MenuComponent implements OnInit {
                   {
                     text: 'OK',
                     handler: async () => {
-                      await this.navController.navigateRoot(['/tabs/groups']);
+                      await this.navController.navigateRoot(['/tabs/groups'], { animated: true, animationDirection: 'back' });
                     },
                   },
                 ],

@@ -69,19 +69,27 @@ import { PatientsService } from '../shared/services/patients.service';
             <div class="ap__result-avatar" aria-hidden="true">
               {{ getInitials(foundPatient.firstName, foundPatient.lastName) }}
             </div>
+            <!-- Sin etiqueta: un paciente con cuenta propia es el caso normal y
+                 no necesita aclaración. La pastilla sólo aparece cuando es un
+                 dependiente, que sí cambia cómo sigue el trámite. -->
             <div class="ap__result-info">
-              <span class="status-badge status-badge--violet">Titular</span>
-              <p class="ap__result-name">{{ foundPatient.firstName }} {{ foundPatient.lastName }}</p>
+              <p class="ap__result-name">{{ foundPatient.firstName | titlecase }} {{ foundPatient.lastName | titlecase }}</p>
               <p class="ap__result-meta">DNI: {{ foundPatient.dni }}</p>
             </div>
           </div>
+
+          <div class="ap__notice">
+            <ion-icon name="information-circle" aria-hidden="true"></ion-icon>
+            <p>El paciente va a recibir una notificación para aceptar la solicitud.</p>
+          </div>
+
           <button
             type="button"
             class="auth-btn auth-btn--primary"
             (click)="linkPatient()"
             [disabled]="isLinking"
           >
-            {{ isLinking ? 'Vinculando...' : 'Vincular paciente' }}
+            {{ isLinking ? 'Enviando...' : 'Solicitar vinculación' }}
           </button>
         </article>
 
@@ -93,7 +101,7 @@ import { PatientsService } from '../shared/services/patients.service';
             <div class="ap__result-info">
               <span class="status-badge status-badge--warning">Dependiente</span>
               <p class="ap__result-name">
-                {{ foundPatient.dependentFirstName }} {{ foundPatient.dependentLastName }}
+                {{ foundPatient.dependentFirstName | titlecase }} {{ foundPatient.dependentLastName | titlecase }}
               </p>
               <p class="ap__result-meta">DNI: {{ foundPatient.dependentDni }}</p>
             </div>
@@ -102,8 +110,8 @@ import { PatientsService } from '../shared/services/patients.service';
           <div class="ap__notice">
             <ion-icon name="information-circle" aria-hidden="true"></ion-icon>
             <p>
-              Pertenece al grupo <strong>{{ foundPatient.groupName }}</strong>, administrado por
-              <strong>{{ foundPatient.responsibleFirstName }} {{ foundPatient.responsibleLastName }}</strong>.
+              Pertenece al grupo <strong>{{ foundPatient.groupName | capitalizeWords }}</strong>, administrado por
+              <strong>{{ foundPatient.responsibleFirstName | titlecase }} {{ foundPatient.responsibleLastName | titlecase }}</strong>.
               El responsable va a recibir una notificación para autorizar la solicitud.
             </p>
           </div>
@@ -213,7 +221,9 @@ export class AddPatientPage implements OnInit {
           'Solicitud enviada. El responsable del grupo recibirá una notificación para autorizar la vinculación.',
         );
       } else {
-        this.toastService.showSuccess('Paciente vinculado correctamente');
+        this.toastService.showSuccess(
+          'Solicitud enviada. El paciente recibirá una notificación para aceptar la vinculación.',
+        );
       }
 
       this.navController.back();

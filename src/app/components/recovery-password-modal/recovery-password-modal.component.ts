@@ -23,6 +23,7 @@ import { ModalController } from '@ionic/angular';
               placeholder="tu@email.com"
               formControlName="email"
               type="email"
+                autocapitalize="none"
               inputmode="email"
               autocomplete="email"
             ></ion-input>

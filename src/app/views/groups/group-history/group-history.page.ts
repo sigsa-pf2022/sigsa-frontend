@@ -1,0 +1,264 @@
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { NavController } from '@ionic/angular';
+import { GroupEventsService } from '../shared/services/group-events/group-events.service';
+import { titleCase } from 'src/app/utils/title-case';
+
+/**
+ * Texto e ícono de cada acción del historial.
+ *
+ * Adentro de un grupo la fila ya dice de qué evento se trata, así que el texto
+ * de cada movimiento se queda con el verbo y no repite el nombre.
+ */
+const ACTION_LABELS: Record<string, { icon: string; text: (p: any) => string }> = {
+  event_created: { icon: 'add-circle-outline', text: () => 'Lo creó' },
+  event_taken_charge: { icon: 'hand-left-outline', text: () => 'Se hizo cargo' },
+  event_declined: { icon: 'remove-circle-outline', text: () => 'Avisó que no puede' },
+  event_deleted: { icon: 'trash-outline', text: () => 'Lo borró' },
+  event_confirmed: { icon: 'checkmark-circle-outline', text: () => 'Lo confirmó' },
+  event_skipped: { icon: 'remove-circle-outline', text: () => 'Marcó que no se tomó' },
+  event_canceled: {
+    icon: 'close-circle-outline',
+    // Antes el cron cancelaba los turnos vencidos y por eso se distinguía; ese
+    // cron se apagó, pero quedan entradas viejas con la marca.
+    text: (p) => (p?.automatic ? 'Venció' : 'Lo canceló'),
+  },
+  member_added: {
+    icon: 'person-add-outline',
+    text: (p) => `Agregó a ${titleCase(p?.memberName) || 'un integrante'}`,
+  },
+  member_removed: {
+    icon: 'person-remove-outline',
+    text: (p) =>
+      p?.selfRemoved ? 'Salió del grupo' : `Sacó a ${titleCase(p?.memberName) || 'un integrante'}`,
+  },
+  professional_linked: {
+    icon: 'medkit-outline',
+    text: (p) => `Vinculó a ${titleCase(p?.professionalName) || 'un profesional'}`,
+  },
+  professional_note: {
+    icon: 'chatbox-ellipses-outline',
+    // El actor de la entrada es el propio profesional.
+    text: (p) => `Dejó una indicación para ${titleCase(p?.dependentName) || 'el dependiente'}`,
+  },
+};
+
+@Component({
+  selector: 'app-group-history',
+  template: `
+    <ion-header class="auth-page-header" mode="md">
+      <ion-toolbar class="auth-page-toolbar" mode="md">
+        <div class="auth-topbar">
+          <button type="button" class="auth-back" (click)="goToGroupHome()" aria-label="Volver">
+            <ion-icon name="chevron-back"></ion-icon>
+          </button>
+          <div></div>
+        </div>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content class="listing">
+      <header class="listing-header">
+        <p class="listing-header__eyebrow">Grupo familiar</p>
+        <h1 class="listing-header__title">Historial</h1>
+      </header>
+
+      <app-loading-state *ngIf="loading" [rows]="5"></app-loading-state>
+
+      <div
+        class="gh-history__scroll"
+        *ngIf="!loading && groups.length; else emptyState"
+      >
+        <ng-container *ngFor="let group of groups">
+          <!--
+            Un evento con sus movimientos adentro. Las entradas que no son de un
+            evento (alguien se sumó al grupo) llegan con grouped=false y se
+            dibujan como fila simple, sin desplegable.
+          -->
+          <ion-item
+            class="member-row"
+            lines="none"
+            [button]="isExpandable(group)"
+            detail="false"
+            (click)="isExpandable(group) && toggle(group.groupKey)"
+          >
+            <div class="member-row__avatar">
+              <app-avatar
+                [photo]="group.lastEntry.actorPhoto"
+                [name]="group.lastEntry.actorName"
+                icon="ellipse-outline"
+              ></app-avatar>
+            </div>
+            <div class="member-row__body">
+              <span class="member-row__name">{{ titleFor(group) }}</span>
+              <span class="member-row__sub">
+                {{ actorFor(group.lastEntry) }} {{ describeInline(group.lastEntry) }} ·
+                {{ group.lastEntry.createdAt | date: 'dd/MM HH:mm' }}
+              </span>
+            </div>
+            <span
+              class="gh-history__icon"
+              [class.gh-history__icon--open]="isOpen(group.groupKey)"
+              aria-hidden="true"
+            >
+              <ion-icon
+                [name]="isExpandable(group) ? 'chevron-down' : iconFor(group.lastEntry)"
+              ></ion-icon>
+            </span>
+          </ion-item>
+
+          <div class="gh-history__detail" *ngIf="noteText(group) && isOpen(group.groupKey)">
+            <p class="gh-history__note">{{ noteText(group) }}</p>
+          </div>
+
+          <div class="gh-history__detail" *ngIf="group.grouped && isOpen(group.groupKey)">
+            <div class="gh-history__step" *ngFor="let entry of group.entries">
+              <span class="gh-history__step-icon" aria-hidden="true">
+                <ion-icon [name]="iconFor(entry)"></ion-icon>
+              </span>
+              <div class="gh-history__step-body">
+                <span class="gh-history__step-text">
+                  {{ actorFor(entry) }} · {{ describeInline(entry) }}
+                </span>
+                <span class="gh-history__step-date">
+                  {{ entry.createdAt | date: 'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="empty-state" role="status" *ngIf="!loading">
+          <div class="empty-state__icon" aria-hidden="true">
+            <ion-icon name="time-outline"></ion-icon>
+          </div>
+          <h2 class="empty-state__title">Todavía no hay actividad</h2>
+          <p class="empty-state__subtitle">
+            Acá vas a ver quién creó cada evento y quién se hizo cargo.
+          </p>
+        </div>
+      </ng-template>
+    </ion-content>
+  `,
+  styleUrls: ['./group-history.page.scss'],
+})
+export class GroupHistoryPage implements OnInit {
+  groupId: string;
+  groups: any[] = [];
+  loading = false;
+  /** Qué grupo está desplegado. Uno por vez: el historial se lee de a uno. */
+  expandedKey: string | null = null;
+
+  constructor(
+    private groupEventsService: GroupEventsService,
+    private navController: NavController,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit() {
+    this.groupId = this.route.snapshot.paramMap.get('groupId');
+  }
+
+  ionViewWillEnter() {
+    this.getHistory();
+  }
+
+  goToGroupHome() {
+    return this.navController.navigateBack([`/groups/home/${this.groupId}`]);
+  }
+
+  async getHistory() {
+    // Antes usábamos un LoadingController con duration: 2000, que se
+    // auto-cerraba a los 2s aunque la request siguiera en vuelo. Ahora el
+    // skeleton vive y muere con la request.
+    this.loading = this.groups.length === 0;
+    try {
+      const res = await this.groupEventsService.getHistory(this.groupId);
+      this.groups = res?.groups ?? [];
+    } catch {
+      this.groups = [];
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  toggle(groupKey: string) {
+    this.expandedKey = this.expandedKey === groupKey ? null : groupKey;
+  }
+
+  isOpen(groupKey: string): boolean {
+    return this.expandedKey === groupKey;
+  }
+
+  /**
+   * Texto de la indicación de un profesional. Las entradas viejas sólo
+   * guardaban el extracto (120 caracteres); las nuevas traen el completo.
+   */
+  noteText(group: any): string | null {
+    const entry = group?.lastEntry;
+    if (entry?.action !== 'professional_note') return null;
+    return entry.payload?.content || entry.payload?.excerpt || null;
+  }
+
+  isExpandable(group: any): boolean {
+    return group?.grouped || !!this.noteText(group);
+  }
+
+  /**
+   * Título de la fila cerrada: de qué evento se trata.
+   *
+   * El payload trae el nombre del medicamento o el del profesional según el
+   * tipo, más la fecha del evento. En un tratamiento se usa el de la entrada de
+   * creación, porque las otras guardan la fecha de otra toma.
+   */
+  titleFor(group: any): string {
+    const p = group?.title ?? {};
+    if (group?.targetType === 'member') {
+      return this.describe(group.lastEntry);
+    }
+    const nombre = p.medName
+      ? p.medName
+      : p.professionalName
+      ? `Turno con ${titleCase(p.professionalName)}`
+      : group?.targetType === 'med_event'
+      ? 'Medicamento'
+      : 'Turno';
+    const dep = p.dependentName ? ` · ${titleCase(p.dependentName)}` : '';
+    return `${nombre}${dep}`;
+  }
+
+  describe(entry: any): string {
+    const text = ACTION_LABELS[entry?.action]?.text(entry?.payload) ?? 'Actividad del grupo';
+    // En un tratamiento el backend dice de qué toma es cada movimiento.
+    return entry?.doseIndex ? `${text} (toma ${entry.doseIndex})` : text;
+  }
+
+  /**
+   * La acción a continuación del nombre de quien la hizo ("Lucía agregó a …").
+   * Antes se pasaba todo por `| lowercase` y los nombres de las personas
+   * quedaban en minúscula; ahora sólo se baja la primera letra del verbo.
+   */
+  describeInline(entry: any): string {
+    const text = this.describe(entry);
+    return text.charAt(0).toLowerCase() + text.slice(1);
+  }
+
+  iconFor(entry: any): string {
+    return ACTION_LABELS[entry?.action]?.icon ?? 'ellipse-outline';
+  }
+
+  /**
+   * Quién figura como autor. Las entradas sin actor son del cron que vence los
+   * turnos: decir "Alguien" ahí hace pensar que fue un integrante del grupo.
+   */
+  actorFor(entry: any): string {
+    const name = titleCase(entry?.actorName);
+    if (name) return name;
+    return entry?.payload?.automatic ? 'El sistema' : 'Alguien';
+  }
+
+
+
+}

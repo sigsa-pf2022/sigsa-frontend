@@ -51,10 +51,15 @@ import { UserValidationModalComponent } from './shared-login/components/user-val
                 formControlName="email"
                 placeholder="tu@email.com"
                 type="email"
+                autocapitalize="none"
                 autocomplete="email"
                 inputmode="email"
               ></ion-input>
             </div>
+            <!-- Sin esto el botón "Ingresar" quedaba deshabilitado sin explicar por qué. -->
+            <p class="auth-field__error" *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid">
+              {{ loginForm.get('email')?.hasError('required') ? 'Ingresá tu email.' : 'El email no es válido.' }}
+            </p>
           </div>
 
           <div class="auth-field">
@@ -138,7 +143,7 @@ export class LoginPage implements OnInit {
   }
 
   goHome() {
-    this.navController.navigateRoot(['tabs/home']);
+    this.navController.navigateRoot(['tabs/home'], { animated: true });
   }
 
   async sendVerificationEmailModal() {
@@ -162,10 +167,16 @@ export class LoginPage implements OnInit {
     await modal.present();
     const { data } = await modal.onWillDismiss();
     if (data?.email) {
-      await this.auth.sendPasswordResetEmail(data.email).then(() => {
-        this.recoveryPasswordFormDataService.tokenForm.patchValue({ email: data.email });
-        this.router.navigateByUrl('/recovery-password/token-verification');
-      });
+      // Si el email no tiene cuenta el backend responde 404 y no se avanza a
+      // "Ingresá el código": antes respondía 201 y la app seguía igual.
+      try {
+        await this.auth.sendPasswordResetEmail(data.email);
+      } catch ({ error }) {
+        this.toastService.showError(error?.message || 'No pudimos enviar el email de recuperación');
+        return;
+      }
+      this.recoveryPasswordFormDataService.tokenForm.patchValue({ email: data.email });
+      this.router.navigateByUrl('/recovery-password/token-verification');
     }
   }
 

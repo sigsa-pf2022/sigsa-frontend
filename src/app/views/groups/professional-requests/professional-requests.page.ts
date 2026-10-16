@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ModalController, NavController } from '@ionic/angular';
 import { YesNoModalComponent } from 'src/app/components/yes-no-modal/yes-no-modal.component';
 import { ToastService } from 'src/app/services/toast/toast.service';
+import { titleCase } from 'src/app/utils/title-case';
 import { GroupsService } from '../shared/services/groups/groups.service';
 
 @Component({
@@ -26,13 +27,11 @@ import { GroupsService } from '../shared/services/groups/groups.service';
 
     <ion-content class="listing">
       <header class="listing-header">
-        <p class="listing-header__eyebrow">Grupo familiar</p>
+        <p class="listing-header__eyebrow">{{ groupId ? 'Grupo familiar' : 'Profesionales' }}</p>
         <h1 class="listing-header__title">Solicitudes</h1>
       </header>
 
-      <div *ngIf="isLoading" class="pr__loading">
-        <ion-spinner color="primary"></ion-spinner>
-      </div>
+      <app-loading-state *ngIf="isLoading" [rows]="3"></app-loading-state>
 
       <div *ngIf="!isLoading && requests.length > 0" class="pr__list">
         <article *ngFor="let req of requests" class="pr__card">
@@ -42,15 +41,18 @@ import { GroupsService } from '../shared/services/groups/groups.service';
             </div>
             <div class="pr__card-titles">
               <p class="pr__card-eyebrow">Solicitud para</p>
-              <p class="pr__card-title">{{ req.dependentFirstName }} {{ req.dependentLastName }}</p>
-              <p class="pr__card-sub">Grupo: {{ req.groupName }}</p>
+              <p class="pr__card-title" *ngIf="req.forMe">Vos</p>
+              <ng-container *ngIf="!req.forMe">
+                <p class="pr__card-title">{{ req.dependentFirstName | titlecase }} {{ req.dependentLastName | titlecase }}</p>
+                <p class="pr__card-sub">Grupo: {{ req.groupName | capitalizeWords }}</p>
+              </ng-container>
             </div>
           </header>
 
           <div class="pr__card-body">
             <div class="pr__row">
               <span class="pr__row-label">Profesional</span>
-              <span class="pr__row-value">{{ req.professionalFirstName }} {{ req.professionalLastName }}</span>
+              <span class="pr__row-value">{{ req.professionalFirstName | titlecase }} {{ req.professionalLastName | titlecase }}</span>
             </div>
             <div class="pr__row" *ngIf="req.licenseNumber">
               <span class="pr__row-label">Matrícula</span>
@@ -91,7 +93,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
         </div>
         <h2 class="empty-state__title">Sin solicitudes pendientes</h2>
         <p class="empty-state__subtitle">
-          Te avisamos por acá cuando un profesional pida acceso al grupo.
+          {{ groupId ? 'Te avisamos por acá cuando un profesional pida acceso al grupo.' : 'Te avisamos cuando un profesional quiera vincularse con vos o con tus grupos.' }}
         </p>
       </div>
     </ion-content>
@@ -101,7 +103,7 @@ import { GroupsService } from '../shared/services/groups/groups.service';
 export class ProfessionalRequestsPage implements OnInit {
   groupId: string;
   requests: any[] = [];
-  isLoading = false;
+  isLoading = true;
 
   constructor(
     private route: ActivatedRoute,
@@ -123,12 +125,15 @@ export class ProfessionalRequestsPage implements OnInit {
     if (this.groupId) {
       this.navController.navigateBack([`/groups/home/${this.groupId}`]);
     } else {
-      this.navController.navigateBack(['/tabs/groups']);
+      // Sin grupo se llega desde el perfil o desde la notificación.
+      this.navController.navigateBack(['/profile']);
     }
   }
 
   private async loadRequests() {
-    this.isLoading = true;
+    // Solo mostramos el skeleton si no hay nada en pantalla: al volver a la
+    // vista refrescamos en silencio sobre los datos que ya se ven.
+    this.isLoading = this.requests.length === 0;
     try {
       const all = await this.groupsService.getProfessionalRequests();
       // Filtra las solicitudes del grupo actual si se navegó desde un grupo específico
@@ -148,7 +153,12 @@ export class ProfessionalRequestsPage implements OnInit {
       component: YesNoModalComponent,
       cssClass: 'modal',
       componentProps: {
-        text: `¿Aceptar la solicitud de ${req.professionalFirstName} ${req.professionalLastName} para ${req.dependentFirstName} ${req.dependentLastName}?`,
+        text: `¿Aceptar la solicitud de ${titleCase(
+          `${req.professionalFirstName} ${req.professionalLastName}`,
+        )} para ${req.forMe ? 'vos' : titleCase(`${req.dependentFirstName} ${req.dependentLastName}`)}?`,
+        // El modal viene en rojo por defecto, pensado para cancelar o borrar.
+        // Aceptar es una acción positiva: en rojo parecía un error.
+        yesColor: 'primary',
       },
     });
     await modal.present();
@@ -172,7 +182,9 @@ export class ProfessionalRequestsPage implements OnInit {
       component: YesNoModalComponent,
       cssClass: 'modal',
       componentProps: {
-        text: `¿Rechazar la solicitud de ${req.professionalFirstName} ${req.professionalLastName}?`,
+        text: `¿Rechazar la solicitud de ${titleCase(
+          `${req.professionalFirstName} ${req.professionalLastName}`,
+        )}?`,
       },
     });
     await modal.present();

@@ -1,17 +1,30 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 import { IonicModule } from '@ionic/angular';
 
 import { ProfilePage } from './profile.page';
+import { MyDataPage } from './my-data/my-data.page';
+import { FaqPage } from './faq/faq.page';
 import { SharedProfileComponentsModule } from './components/shared-profile.module';
 import { RouterModule, Routes } from '@angular/router';
+import { TokenInterceptor } from 'src/app/services/interceptors/token-interceptor.service';
+import { AvatarModule } from 'src/app/components/avatar/avatar.module';
 
 const routes: Routes = [
   {
     path: '',
     component: ProfilePage
+  },
+  {
+    path: 'my-data',
+    component: MyDataPage
+  },
+  {
+    path: 'faq',
+    component: FaqPage
   }
 ];
 
@@ -20,9 +33,12 @@ const routes: Routes = [
     RouterModule.forChild(routes),
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     IonicModule,
-    SharedProfileComponentsModule
+    SharedProfileComponentsModule,
+    AvatarModule
   ],
-  declarations: [ProfilePage]
+  declarations: [ProfilePage, MyDataPage, FaqPage],
+  providers: [{ provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true }]
 })
 export class ProfilePageModule {}

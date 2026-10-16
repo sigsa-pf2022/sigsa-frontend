@@ -19,6 +19,9 @@ import { AppointmentsItemListComponent } from './appointments-item-list/appointm
 import { YesNoModalComponent } from './yes-no-modal/yes-no-modal.component';
 import { MedsEventsItemListComponent } from './meds-event-item-list/meds-event-item-list.component';
 import { SharedDocumentsModule } from '../views/documents/shared/shared-documents.module';
+import { AvatarModule } from './avatar/avatar.module';
+import { LoadingStateComponent } from './loading-state/loading-state.component';
+import { PipesModule } from '../pipes/pipes.module';
 
 @NgModule({
   declarations: [
@@ -35,9 +38,10 @@ import { SharedDocumentsModule } from '../views/documents/shared/shared-document
     EmptyEventCardComponent,
     AppointmentsItemListComponent,
     YesNoModalComponent,
-    MedsEventsItemListComponent
+    MedsEventsItemListComponent,
+    LoadingStateComponent
   ],
-  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule, SharedDocumentsModule],
+  imports: [SwiperModule, CommonModule, IonicModule, FormsModule, ReactiveFormsModule, ScrollingModule, SharedDocumentsModule, AvatarModule],
   exports: [
     HeaderComponent,
     SendVerificationEmailModalComponent,
@@ -52,7 +56,10 @@ import { SharedDocumentsModule } from '../views/documents/shared/shared-document
     EmptyEventCardComponent,
     AppointmentsItemListComponent,
     YesNoModalComponent,
-    MedsEventsItemListComponent
+    MedsEventsItemListComponent,
+    LoadingStateComponent,
+    AvatarModule,
+    PipesModule
   ],
 })
 export class SharedComponentsModule {}

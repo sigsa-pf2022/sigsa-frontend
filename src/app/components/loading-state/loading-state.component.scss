@@ -1,0 +1,72 @@
+/* Placeholder que se muestra mientras la vista espera datos del backend.
+   Reemplaza la transición tosca en la que el empty state se dibujaba durante
+   la request y los datos aparecían de golpe. */
+
+:host {
+  display: block;
+}
+
+/* El loader arranca invisible y recién se revela a los 120ms: contra el
+   backend local casi todo responde antes, así que el skeleton no llega a
+   verse y evitamos cambiar un parpadeo por otro. `both` mantiene el
+   opacity:0 del keyframe inicial durante el delay. */
+.loading-state {
+  animation: loading-state-fade-in 160ms var(--ease-out-soft, ease-out) both;
+  animation-delay: 120ms;
+}
+
+/* --- Variante lista: filas fantasma con la forma de las cards --- */
+.loading-state__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  min-height: 80px;
+}
+
+.loading-state__avatar {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  margin: 0;
+}
+
+.loading-state__text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.loading-state__line {
+  height: 12px;
+  border-radius: 6px;
+  margin: 0;
+}
+
+.loading-state__line--title {
+  width: 60%;
+}
+
+.loading-state__line--sub {
+  width: 40%;
+  height: 10px;
+}
+
+/* --- Variante spinner: para vistas de detalle y formularios --- */
+.loading-state--spinner {
+  display: flex;
+  justify-content: center;
+  padding: 64px 24px;
+}
+
+@keyframes loading-state-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

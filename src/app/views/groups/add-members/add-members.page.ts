@@ -56,6 +56,7 @@ import { ActivatedRoute } from '@angular/router';
             <p class="auth-field__error" *ngIf="form.get('search')?.value?.length > 0 && form.get('search')?.value?.length < 7">
               El DNI debe tener al menos 7 dígitos.
             </p>
+            <p class="auth-field__error" *ngIf="searchMessage" role="status">{{ searchMessage }}</p>
           </div>
 
           <ion-item
@@ -66,11 +67,11 @@ import { ActivatedRoute } from '@angular/router';
             detail="false"
             (click)="addMember()"
           >
-            <div class="member-row__avatar" aria-hidden="true">
-              {{ getInitials(memberToAdd) }}
+            <div class="member-row__avatar">
+              <app-avatar [photo]="memberToAdd.photo" [name]="memberToAdd.firstName + ' ' + memberToAdd.lastName"></app-avatar>
             </div>
             <div class="member-row__body">
-              <span class="member-row__name">{{ memberToAdd.firstName }} {{ memberToAdd.lastName }}</span>
+              <span class="member-row__name">{{ memberToAdd.firstName | titlecase }} {{ memberToAdd.lastName | titlecase }}</span>
               <span class="member-row__sub">Tocá para agregar</span>
             </div>
             <button
@@ -84,7 +85,17 @@ import { ActivatedRoute } from '@angular/router';
           </ion-item>
         </form>
 
-        <section *ngIf="currentGroupMembers.length > 0" class="am__section">
+        <section *ngIf="isLoadingCurrentMembers" class="am__section">
+          <div class="section-title am__section-title">
+            <h2>Miembros actuales</h2>
+          </div>
+          <app-loading-state [rows]="3"></app-loading-state>
+        </section>
+
+        <section
+          *ngIf="!isLoadingCurrentMembers && currentGroupMembers.length > 0"
+          class="am__section"
+        >
           <div class="section-title am__section-title">
             <h2>Miembros actuales</h2>
             <span>{{ currentGroupMembers.length }}</span>
@@ -95,11 +106,11 @@ import { ActivatedRoute } from '@angular/router';
             class="member-row"
             lines="none"
           >
-            <div class="member-row__avatar" aria-hidden="true">
-              {{ getInitials(member) }}
+            <div class="member-row__avatar">
+              <app-avatar [photo]="member.photo" [name]="member.firstName + ' ' + member.lastName"></app-avatar>
             </div>
             <div class="member-row__body">
-              <span class="member-row__name">{{ member.firstName }} {{ member.lastName }}</span>
+              <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>
             </div>
           </ion-item>
         </section>
@@ -127,11 +138,11 @@ import { ActivatedRoute } from '@angular/router';
               class="member-row"
               lines="none"
             >
-              <div class="member-row__avatar" aria-hidden="true">
-                {{ getInitials(member) }}
+              <div class="member-row__avatar">
+                <app-avatar [photo]="member.photo" [name]="member.firstName + ' ' + member.lastName"></app-avatar>
               </div>
               <div class="member-row__body">
-                <span class="member-row__name">{{ member.firstName }} {{ member.lastName }}</span>
+                <span class="member-row__name">{{ member.firstName | titlecase }} {{ member.lastName | titlecase }}</span>
               </div>
               <button
                 type="button"
@@ -168,7 +179,11 @@ import { ActivatedRoute } from '@angular/router';
 export class AddMembersPage implements OnInit {
   groupId: string;
   currentGroupMembers: any[] = [];
+  /** Solo sobre un grupo existente: los miembros actuales llegan por API. */
+  isLoadingCurrentMembers = false;
   memberToAdd: { firstName: string; lastName: string; dni: number };
+  /** Por qué la búsqueda por DNI no trajo a nadie. */
+  searchMessage = '';
   members: { firstName: string; lastName: string; dni: number }[] = [];
   form = this.fb.group({
     search: null,
@@ -205,22 +220,59 @@ export class AddMembersPage implements OnInit {
   }
 
   async loadCurrentGroupMembers() {
-    const group = await this.groupsService.getFamilyGroupById(this.groupId);
-    this.currentGroupMembers = group.members || [];
-  }
-
-  async handleChange(event) {
-    const dni = event.detail.value;
-    this.memberToAdd = null;
-    if (dni.length >= 7 && !this.memberAlreadyAdded(dni) && !this.isNotMe(dni)) {
-      this.memberToAdd = await this.auth.getUserByDni(dni);
+    this.isLoadingCurrentMembers = this.currentGroupMembers.length === 0;
+    try {
+      const group = await this.groupsService.getFamilyGroupById(this.groupId);
+      this.currentGroupMembers = group.members || [];
+    } catch (error) {
+      console.error('AddMembersPage: error cargando los miembros actuales', error);
+    } finally {
+      this.isLoadingCurrentMembers = false;
     }
   }
 
-  memberAlreadyAdded(dni: number) {
-    const alreadyInList = this.members.some((m) => m.dni === dni);
-    const alreadyInGroup = this.currentGroupMembers.some((m) => m.dni === dni);
-    return alreadyInList || alreadyInGroup;
+  /**
+   * Antes, si el DNI no existía (o era el propio, o alguien ya agregado) la
+   * búsqueda simplemente no mostraba nada y no se entendía qué pasaba.
+   */
+  async handleChange(event) {
+    const dni = String(event.detail.value ?? '').trim();
+    this.memberToAdd = null;
+    this.searchMessage = '';
+    if (dni.length < 7) {
+      return;
+    }
+
+    if (this.isNotMe(dni)) {
+      this.searchMessage = 'Ese DNI es el tuyo.';
+      return;
+    }
+    if (this.memberAlreadyAdded(dni)) {
+      this.searchMessage = 'Esa persona ya está en el grupo o en la lista.';
+      return;
+    }
+    try {
+      const found = await this.auth.getUserByDni(dni);
+      // Si mientras tanto se cambió el DNI, esta respuesta ya no aplica.
+      if (String(this.form.get('search')?.value ?? '').trim() !== dni) {
+        return;
+      }
+      if (found) {
+        this.memberToAdd = found;
+      } else {
+        this.searchMessage = 'No encontramos a nadie registrado con ese DNI.';
+      }
+    } catch (error) {
+      console.error('AddMembersPage: error buscando por DNI', error);
+      this.searchMessage = 'No pudimos buscar ese DNI. Probá de nuevo.';
+    }
+  }
+
+  // El buscador entrega strings y los DNI pueden venir como número: con `===`
+  // estas comparaciones nunca coincidían.
+  memberAlreadyAdded(dni: string | number) {
+    const same = (m) => String(m?.dni) === String(dni);
+    return this.members.some(same) || this.currentGroupMembers.some(same);
   }
 
   clearMembers() {
@@ -234,12 +286,12 @@ export class AddMembersPage implements OnInit {
     this.form.reset();
   }
   removeMember(dni: number) {
-    this.members = this.members.filter((m) => m.dni !== dni);
+    this.members = this.members.filter((m) => String(m.dni) !== String(dni));
     this.form.reset();
   }
 
   isNotMe(dni: string) {
-    return dni === this.auth.user().dni;
+    return String(dni) === String(this.auth.user()?.dni);
   }
 
   getInitials(member: any): string {
@@ -267,15 +319,22 @@ export class AddMembersPage implements OnInit {
     } else {
       // Lógica para crear grupo nuevo (flujo original)
       const data = { ...this.newGroupDataService.data, members: this.members };
-      await this.groupsService
-        .createGroup(data)
-        .then(() => this.success())
-        .catch((err) => console.log(err));
+      try {
+        await this.groupsService.createGroup(data);
+        this.success();
+      } catch (err) {
+        // Antes esto era un console.log: si el alta fallaba, la pantalla se
+        // quedaba quieta sin ningún aviso y no había forma de saber por qué.
+        console.error('AddMembersPage: error creando el grupo', err);
+        this.toastService.showError(
+          err?.error?.message || 'No pudimos crear el grupo. Revisá los datos e intentá de nuevo.',
+        );
+      }
     }
   }
 
   success() {
     this.toastService.showSuccess('Grupo creado exitosamente');
-    this.navController.navigateRoot(['/tabs/groups']);
+    this.navController.navigateRoot(['/tabs/groups'], { animated: true, animationDirection: 'back' });
   }
 }

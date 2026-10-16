@@ -95,6 +95,26 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   box-sizing: border-box;
 }
 
+/* Header/toolbar transparente usado por casi todas las páginas junto a
+   `.auth-topbar`. Vivían sólo en login.page.scss y, al estar encapsulados,
+   no aplicaban en el resto de las vistas. */
+.auth-page-header {
+  &::after {
+    background-image: none !important;
+    display: none;
+  }
+}
+
+.auth-page-toolbar {
+  --background: var(--color-surface-app);
+  --border-style: none;
+  --min-height: 56px;
+  --padding-top: 0;
+  --padding-bottom: 0;
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
 .auth-topbar {
   display: flex;
   align-items: center;
@@ -339,6 +359,46 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   font-weight: 600;
 }
 
+/* Destructivo sólido, para confirmar algo que no se deshace. Antes el botón de
+   confirmar de los modales era siempre violeta, así que "cancelar el turno" y
+   "borrarlo para siempre" se veían idénticos. */
+.auth-btn--danger {
+  background: #b91c1c;
+  color: #ffffff;
+
+  &:active:not(:disabled) {
+    background: #991b1b;
+    transform: scale(0.97);
+  }
+}
+
+/* Destructivo secundario, con borde: el "lo cargué por error" del footer.
+ *
+ * Antes esto era `--ghost-danger`, que pisaba `min-height` con `auto` y bajaba
+ * la fuente a 14px sobre un base que ya viene sin borde ni fondo: quedaba texto
+ * rojo sin área de toque y no se leía como botón. Acá el alto se baja a 48 —
+ * menos que los 54 de la acción principal, pero sigue siendo un botón. */
+.auth-btn--outline-danger {
+  background: #fff5f5;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+
+  &:active:not(:disabled) {
+    background: #fee2e2;
+    transform: scale(0.97);
+  }
+}
+
+/* Segunda línea del modal, para la advertencia de irreversibilidad. */
+.app-modal__text--warning {
+  color: #b91c1c;
+  font-weight: 600;
+  margin-top: -6px;
+}
+
 .auth-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -480,9 +540,12 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   ion-icon { color: #0369a1; }
 }
 
-.list-item__icon--due {
-  background: #fee2e2;
-  ion-icon { color: #b91c1c; }
+/* Lo que ya pasó se atenúa: gris neutro, no rojo. El rojo quedaba idéntico a
+   un turno cancelado y además se aplicaba también a los eventos que alguien ya
+   había tomado a cargo. El aviso de "vencido" ahora lo da la pastilla en ámbar. */
+.list-item__icon--past {
+  background: var(--color-surface-subtle);
+  ion-icon { color: var(--color-text-secondary); }
 }
 
 .list-item__body {
@@ -556,14 +619,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   &--danger  { background: #fee2e2; color: #b91c1c; }
   &--info    { background: #e0f2fe; color: #0369a1; }
   &--violet  { background: var(--sigsa-50); color: var(--sigsa-700); }
-}
-
-/* "Due" / overdue indicator (subtle red tint on whole row) */
-.list-item--due {
-  background: #fff5f5;
-  box-shadow: 0 1px 3px rgba(185, 28, 28, 0.06), 0 1px 2px rgba(185, 28, 28, 0.04);
-
-  &::part(native) { background: #fff5f5; }
 }
 
 /* ===========================================================
@@ -653,10 +708,12 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing-scroll {
   height: 100%;
   width: 100%;
-  /* No horizontal padding here because cdk-virtual-scroll's inner
-     .cdk-virtual-scroll-content-wrapper is position: absolute and
-     ignores it. We inset items with their own margin below. */
-  padding: 8px 0 calc(env(safe-area-inset-bottom, 0) + 120px);
+  /* El inset lateral lo pone el contenedor, alineado con `.listing-header`.
+     Las cards no llevan margen horizontal propio. Antes esto era `8px 0` y el
+     inset venía de una regla colgada de `cdk-virtual-scroll-viewport`; al pasar
+     los listados a un div común esa regla dejó de aplicar y las cards
+     quedaban pegadas a los bordes. */
+  padding: 8px 20px;
   box-sizing: border-box;
 }
 
@@ -672,7 +729,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing.apts,
 .listing.meds,
 .listing.groups,
-.listing.gh,
 .home {
   --overflow: hidden;
 }
@@ -681,7 +737,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing.apts::part(scroll),
 .listing.meds::part(scroll),
 .listing.groups::part(scroll),
-.listing.gh::part(scroll),
 .home::part(scroll) {
   display: flex;
   flex-direction: column;
@@ -695,6 +750,9 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   flex: 1 1 auto;
   min-height: 0;
   height: auto;
+  /* Cortar el listado ANTES del FAB, para que el último item no termine
+     justo debajo del "+". Mismo criterio que en el home del grupo, más abajo. */
+  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 88px);
 }
 
 .listing.groups .groups__scroll {
@@ -707,8 +765,7 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
 .listing.docs .listing-header, .listing.docs .listing-search,
 .listing.apts .listing-header, .listing.apts .listing-search,
 .listing.meds .listing-header, .listing.meds .listing-search,
-.listing.groups .listing-header,
-.listing.gh .listing-header {
+.listing.groups .listing-header {
   flex: 0 0 auto;
 }
 
@@ -720,15 +777,6 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   flex: 1 1 auto;
 }
 
-/* grupo/home: la info de arriba queda fija y el listado de
-   recordatorios ocupa el alto restante. */
-.listing.gh > .group-card,
-.listing.gh > .alert-card,
-.listing.gh > .section-title,
-.listing.gh > app-next-events {
-  flex: 0 0 auto;
-}
-.listing.gh > app-reminders,
 .home app-reminders {
   flex: 1 1 auto;
   min-height: 0;
@@ -736,17 +784,54 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   flex-direction: column;
 }
 
-/* En grupo/home, separar "Tus recordatorios" del carrusel de arriba. */
-.listing.gh > app-reminders {
+/* grupo/home: la página scrollea entera como cualquier listado. Antes el
+   ion-content quedaba fijo y el único scroll era el viewport virtual de
+   "Tus recordatorios", que con toda la ficha del dependiente arriba terminaba
+   con alto para una fila y media. Ahora el listado va corto (los primeros
+   items + "Ver todos") y el scroll es el natural de la página. */
+.listing.gh {
+  /* Alto del degradado del FAB (148px) + aire, para que al llegar al final del
+     scroll la última fila —"Ver todos"— quede por encima y no desvanecida. */
+  --padding-bottom: calc(env(safe-area-inset-bottom, 0) + 164px);
+}
+
+/* Separar "Tus recordatorios" del carrusel de arriba. */
+.listing.gh app-reminders {
+  display: block;
   margin-top: 14px;
 }
 
-/* Cortar el listado de recordatorios ANTES del FAB. Usamos margin-bottom
-   (fuera del viewport) en vez de padding interno: el cdk-virtual-scroll no
-   respeta bien el padding para extender el área scrolleable, así que el
-   margin reduce el alto del viewport y deja libre la zona donde flota el FAB. */
-.listing.gh .rem__scroll {
-  margin-bottom: calc(env(safe-area-inset-bottom, 0) + 88px);
+/* En el grupo, la card de "sin eventos" va en versión chica: es un aviso, no
+   tiene que pesar como una tarjeta con contenido. */
+.listing.gh app-next-events .eec,
+.listing.gh app-reminders .eec {
+  min-height: 0;
+  padding: 12px 16px;
+  flex-direction: row;
+  text-align: left;
+  gap: 12px;
+}
+.listing.gh app-next-events .eec__icon,
+.listing.gh app-reminders .eec__icon {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+
+  ion-icon {
+    font-size: 18px;
+  }
+}
+.listing.gh app-next-events .eec__description,
+.listing.gh app-reminders .eec__description {
+  align-items: flex-start;
+  max-width: none;
+
+  &__title {
+    font-size: 14px;
+  }
+  &__subtitle {
+    font-size: 12px;
+  }
 }
 
 /* Compactar la tarjeta del dependiente para ganar lugar al listado. */
@@ -767,31 +852,15 @@ ion-tabs ion-router-outlet > .ion-page.ion-page-hidden {
   gap: 8px 12px;
 }
 
-/* Restore the 20px horizontal inset on list-item cards that live
-   inside a virtualized scroll, so they line up with the rest of the
-   page (headers, segment switcher, etc). Outside of virtual scroll,
-   list-item keeps its base margin and the parent provides padding. */
-cdk-virtual-scroll-viewport .list-item,
-cdk-virtual-scroll-viewport .alert-card {
-  margin-left: 20px;
-  margin-right: 20px;
-}
-
 /* Las listas verticales nunca deben scrollear horizontalmente: todas las
    cards quedan al ancho del viewport (como en meds). Antes, contenido ancho
    en algún item habilitaba el scroll lateral en turnos/home. */
-cdk-virtual-scroll-viewport.listing-scroll,
-cdk-virtual-scroll-viewport.rem__scroll {
+/* Listado sin scroll virtual: scrollea el contenedor directamente. */
+.listing-scroll--plain,
+.rem__scroll--plain {
+  overflow-y: auto;
   overflow-x: hidden;
-}
-
-/* En scroll vertical, el content-wrapper del cdk es position:absolute SIN ancho
-   fijo, por lo que toma el ancho del item más ancho (un subtítulo largo
-   ensancha la card y la desborda). Lo fijamos al ancho del viewport para que
-   todas las cards midan igual y el contenido se trunque con ellipsis. */
-cdk-virtual-scroll-viewport.listing-scroll .cdk-virtual-scroll-content-wrapper,
-cdk-virtual-scroll-viewport.rem__scroll .cdk-virtual-scroll-content-wrapper {
-  width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Empty state with icon-in-circle */
@@ -1541,19 +1610,38 @@ cdk-virtual-scroll-viewport.rem__scroll .cdk-virtual-scroll-content-wrapper {
   }
 }
 
-/* Mini sub-fabs (used inside ion-fab-list for group-home) — small
-   circular white buttons stacked above the main FAB. */
+/*
+ * Sub-fabs del desplegable del grupo.
+ *
+ * Eran blancos y planos al lado del "+" de 60px con degradado, y sin texto
+ * había que adivinar qué era cada ícono. Ahora comparten la sombra en capas del
+ * principal y cada uno lleva el tinte de su dominio, el mismo que usan los
+ * íconos de las cards (`.list-item__icon--*`).
+ *
+ * La etiqueta se dibuja con `::after` desde un `data-label` en vez de envolver
+ * el botón: `ion-fab-list` anima sus hijos directos, así que meter un div en el
+ * medio rompería la animación de apertura.
+ */
 .sub-fab-button {
   --background: var(--color-surface);
   --background-activated: var(--color-surface-subtle);
   --background-focused: var(--color-surface-subtle);
   --background-hover: var(--color-surface);
   --color: var(--sigsa-700);
-  --box-shadow: var(--shadow-elevated);
+  --box-shadow: 0 6px 16px rgba(75, 37, 130, 0.22), 0 2px 4px rgba(17, 24, 39, 0.10);
   --border-radius: 9999px;
+  --size: 48px;
+  position: relative;
+  overflow: visible;
 
   ion-icon { font-size: 22px; }
+
 }
+
+/* Tintes por dominio, los mismos de los íconos de las cards. */
+.sub-fab-button--med { --color: var(--sigsa-700); --background: var(--sigsa-50); }
+.sub-fab-button--appointment { --color: #d97706; --background: #fff3df; }
+.sub-fab-button--document { --color: #0369a1; --background: #e0f2fe; }
 
 /* ===========================================================
  *  Profile / Patients / Doctors — hero, option cards
@@ -1569,6 +1657,22 @@ cdk-virtual-scroll-viewport.rem__scroll .cdk-virtual-scroll-content-wrapper {
   display: flex;
   align-items: center;
   gap: 14px;
+
+  &--tappable {
+    cursor: pointer;
+    transition: background 150ms ease, transform 150ms var(--ease-out-soft);
+
+    &:active {
+      background: var(--color-surface-subtle);
+      transform: scale(0.99);
+    }
+  }
+}
+
+.profile-hero__chevron {
+  flex: 0 0 auto;
+  font-size: 20px;
+  color: var(--color-text-muted);
 }
 
 .profile-hero__avatar {
@@ -1925,19 +2029,89 @@ ion-toast.toast-danger {
   --background: #b91c1c;
 }
 
+/*
+ * Action sheet. Corre en `mode: 'ios'` —el único componente de la app que no es
+ * `md`—, que es el layout de tarjeta agrupada con el "Cerrar" aparte: el más
+ * parecido al lenguaje de cards del resto. Antes acá sólo se recoloreaban las
+ * custom props y toda la geometría quedaba en el default de Ionic; de ahí que
+ * desentonara.
+ *
+ * Los valores salen de los dos overlays que ya están traducidos al lenguaje de
+ * la app: `.modal` en theme/modals.scss (radio 24 y la sombra doble violeta) y
+ * el bloque de `ion-alert` acá abajo (radio 16 en botones, sin mayúsculas,
+ * peso 600). El `!important` es por la especificidad del shadow DOM de Ionic,
+ * mismo motivo que en `ion-alert`.
+ */
 ion-action-sheet {
-  --background: var(--color-surface-app);
+  --background: var(--color-surface);
   --color: var(--color-text);
   --button-background: var(--color-surface);
   --button-background-selected: var(--color-surface-subtle);
   --button-color: var(--color-text);
   --button-color-selected: var(--color-text);
   --button-color-activated: var(--sigsa-700);
+  --backdrop-opacity: 0.32;
 
+  .action-sheet-group {
+    border-radius: 24px !important;
+    background: var(--color-surface) !important;
+    /* La firma de overlay de la app: sombra doble teñida de violeta oscuro. */
+    box-shadow:
+      0 24px 64px -16px rgba(75, 37, 130, 0.28),
+      0 8px 24px -8px rgba(75, 37, 130, 0.16) !important;
+    overflow: hidden;
+    margin: 0 8px 8px;
+  }
+
+  /* El "Cerrar" va en su propia tarjeta, separado del grupo de acciones. */
+  .action-sheet-group-cancel {
+    margin-bottom: calc(env(safe-area-inset-bottom, 0) + 8px);
+
+    .action-sheet-button {
+      color: var(--sigsa-700) !important;
+      font-weight: 600 !important;
+    }
+  }
+
+  .action-sheet-title {
+    padding: 16px 20px 12px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.01em;
+    color: var(--color-text-muted) !important;
+    text-transform: none !important;
+    border-bottom: 1px solid var(--color-hairline);
+  }
+
+  .action-sheet-button {
+    min-height: 54px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
+    color: var(--color-text) !important;
+    /* Ionic iOS dibuja los separadores con un ::after heredado; lo reemplazamos
+       por el hairline del design system. */
+    border-bottom: 1px solid var(--color-hairline);
+
+    &:last-child { border-bottom: none; }
+
+    &::after { background: transparent !important; }
+
+    &.activated {
+      background: var(--color-surface-subtle) !important;
+    }
+  }
+
+  /* Destructivo con el mismo patrón que `.va__btn-danger`: rojo oscuro sobre
+     rosa pálido, no el rojo saturado de Ionic. */
   .action-sheet-button.ion-color-danger,
   .action-sheet-button.action-sheet-destructive {
-    color: #b91c1c;
-    font-weight: 600;
+    color: #b91c1c !important;
+    font-weight: 600 !important;
+    background: #fff5f5 !important;
+
+    &.activated { background: #fee2e2 !important; }
   }
 }
 
@@ -1999,19 +2173,34 @@ ion-alert .alert-button.alert-button-role-cancel {
 }
 
 .app-fab-button {
-  --background: linear-gradient(135deg, var(--sigsa-500) 0%, var(--sigsa-600) 100%);
+  /* 4px más que el default de Ionic: es la acción principal de cada pestaña
+     y a 56 px quedaba tímido al lado de las cards. */
+  --size: 60px;
+  /* El degradado arranca un tono más claro para que se note que es degradado
+     y no un violeta plano. */
+  --background: linear-gradient(135deg, var(--sigsa-400) 0%, var(--sigsa-600) 100%);
   --background-activated: var(--sigsa-700);
   --background-focused: var(--sigsa-700);
   --background-hover: var(--sigsa-600);
   --color: #ffffff;
-  --box-shadow: var(--shadow-floating);
+  /* Dos sombras en capas: el halo de marca lo despega del fondo y una sombra
+     neutra corta le da apoyo. Con una sola se veía flotando sin peso. */
+  --box-shadow: 0 10px 24px rgba(156, 89, 232, 0.38), 0 2px 6px rgba(17, 24, 39, 0.12);
   --border-radius: 9999px;
-  transition: transform 150ms var(--ease-out-soft);
+  transition: transform 150ms var(--ease-out-soft),
+              box-shadow 200ms var(--ease-out-soft);
 
-  ion-icon { font-size: 24px; }
+  ion-icon {
+    /* El "+" se veía chico y fino para el tamaño del botón. Ionicons no expone
+       grosor de trazo, así que se engorda dibujándolo otra vez por detrás con
+       su propio color y un blur mínimo. */
+    font-size: 30px;
+    filter: drop-shadow(0 0 0.7px currentColor);
+  }
 
   &:active {
     transform: scale(0.92);
+    --box-shadow: 0 4px 12px rgba(156, 89, 232, 0.32);
   }
 }
 
@@ -2021,4 +2210,34 @@ ion-alert .alert-button.alert-button-role-cancel {
 ion-fab-list[side="top"] {
   align-items: center;
   gap: 8px;
+}
+/* Aviso de que un integrante del grupo se hizo cargo del evento del
+   dependiente. Va debajo del subtítulo en las listas. */
+.list-item__taken {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success, #16a34a);
+
+  ion-icon {
+    font-size: 14px;
+  }
+
+  /* Mismo renglón, otra historia: acá el evento se dio de baja. Rojo oscuro,
+     el mismo de la pastilla CANCELADO y del botón destructivo. */
+  &--canceled {
+    color: #b91c1c;
+  }
+}
+
+/* Dos botones alternativos en el mismo renglón del footer ("Me hago cargo" /
+   "No puedo"). */
+.auth-footer__row {
+  display: flex;
+  gap: 10px;
+
+  .auth-btn { flex: 1; }
 }

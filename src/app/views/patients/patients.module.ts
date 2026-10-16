@@ -9,7 +9,8 @@ import { SharedComponentsModule } from 'src/app/components/shared-components.mod
 import { SharedDocumentsModule } from '../documents/shared/shared-documents.module';
 import { PatientsPage } from './patients.page';
 import { AddPatientPage } from './add-patient/add-patient.page';
-import { PatientDocumentsPage } from './patient-documents/patient-documents.page';
+import { PatientDetailPage } from './patient-detail/patient-detail.page';
+import { AgendaPage } from './agenda/agenda.page';
 
 const routes: Routes = [
   {
@@ -20,9 +21,14 @@ const routes: Routes = [
     path: 'add',
     component: AddPatientPage,
   },
+  // Antes que ':patientId', o el comodín se la come.
   {
-    path: ':patientId/documents',
-    component: PatientDocumentsPage,
+    path: 'agenda',
+    component: AgendaPage,
+  },
+  {
+    path: ':patientId',
+    component: PatientDetailPage,
   },
 ];
 
@@ -36,7 +42,7 @@ const routes: Routes = [
     SharedComponentsModule,
     SharedDocumentsModule,
   ],
-  declarations: [PatientsPage, AddPatientPage, PatientDocumentsPage],
+  declarations: [PatientsPage, AddPatientPage, PatientDetailPage, AgendaPage],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true },
   ],

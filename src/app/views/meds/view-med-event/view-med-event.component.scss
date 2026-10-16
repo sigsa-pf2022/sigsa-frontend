@@ -4,12 +4,6 @@
   height: 100%;
 }
 
-.vm__loading {
-  display: flex;
-  justify-content: center;
-  padding: 64px 24px;
-}
-
 .vm__summary {
   margin: 8px 20px 0;
   padding: 16px 18px;
@@ -102,4 +96,115 @@
   color: var(--color-text);
   text-align: right;
   word-break: break-word;
+}
+
+.vm__dose {
+  align-items: center;
+
+  &--current {
+    background: var(--sigsa-50);
+  }
+
+  .vm__row-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+.vm__takecharge {
+  margin: 0 20px;
+  padding: 14px 18px;
+  background: var(--color-surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+
+  ion-icon {
+    flex: 0 0 auto;
+    font-size: 22px;
+    color: var(--color-success, #16a34a);
+  }
+
+  small {
+    font-weight: 500;
+    color: var(--color-text-muted);
+  }
+}
+
+.vm__takecharge-btn {
+  margin: 0 20px;
+  width: calc(100% - 40px);
+}
+
+.vm__takecharge-hint {
+  padding: 8px 24px 0;
+}
+
+/* Igual que en el detalle del turno: la toma se dio de baja. */
+.vm__takecharge--canceled ion-icon {
+  color: #b91c1c;
+}
+
+/* La aclaración del tratamiento, bajo el botón de borrar del footer. */
+.vm__delete-hint {
+  text-align: center;
+  padding-left: 0;
+}
+
+/* Aire al final del contenido: con un tratamiento largo, la última sección
+   ("X se hizo cargo") quedaba pegada al footer y se cortaba. Incluye el área
+   segura por si el footer no está (evento sin acciones). */
+.vm__section:last-child {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0) + 32px);
+}
+
+/* Las tomas futuras se eligen tocándolas: "Me hago cargo" actúa sobre la
+   seleccionada. */
+.vm__dose--selectable {
+  cursor: pointer;
+
+  &:active { background: var(--color-surface-subtle); }
+}
+
+.vm__dose-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.vm__dose-owner {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-success, #16a34a);
+}
+
+/* "Me hago cargo" con la toma debajo: en media fila del footer no entra en
+   una sola línea. */
+.vm__btn-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.15;
+
+  small {
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.85;
+  }
+}
+
+/* La fecha y el estado de cada toma no se parten: con "a cargo de" y un
+   nombre largo al lado, la fecha quedaba en dos líneas. */
+.vm__dose .vm__row-value {
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.vm__dose-head {
+  min-width: 0;
 }

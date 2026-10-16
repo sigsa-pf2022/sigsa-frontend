@@ -27,6 +27,10 @@ const routes: Routes = [
     loadChildren: () => import('../../views/groups/group-members/group-members.module').then((m) => m.GroupMembersPageModule),
   },
   {
+    path: ':groupId/history',
+    loadChildren: () => import('../../views/groups/group-history/group-history.module').then((m) => m.GroupHistoryPageModule),
+  },
+  {
     path: 'professional-requests',
     loadChildren: () => import('../../views/groups/professional-requests/professional-requests.module').then((m) => m.ProfessionalRequestsPageModule),
   },

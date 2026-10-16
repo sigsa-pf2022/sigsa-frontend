@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 import { GroupHomePage } from './group-home.page';
+import { GroupRemindersModalComponent } from './group-reminders-modal/group-reminders-modal.component';
 import { SharedGroupsModule } from '../shared/shared-groups.module';
 import { SharedComponentsModule } from 'src/app/components/shared-components.module';
 import { RouterModule, Routes } from '@angular/router';
@@ -22,7 +23,7 @@ const routes: Routes = [
     SharedGroupsModule,
     SharedComponentsModule,
   ],
-  declarations: [GroupHomePage],
+  declarations: [GroupHomePage, GroupRemindersModalComponent],
 
 })
 export class GroupHomePageModule {}

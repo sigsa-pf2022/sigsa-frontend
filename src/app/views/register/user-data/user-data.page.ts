@@ -56,10 +56,14 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
                 formControlName="email"
                 placeholder="tu@email.com"
                 type="email"
+                autocapitalize="none"
                 inputmode="email"
                 autocomplete="email"
               ></ion-input>
             </div>
+            <p class="auth-field__error" *ngIf="form.get('email')?.touched && form.get('email')?.invalid">
+              {{ form.get('email')?.hasError('required') ? 'Ingresá tu email.' : 'El email no es válido.' }}
+            </p>
           </div>
 
           <div class="auth-field">
@@ -71,6 +75,10 @@ import { RegisterFormDataService } from '../shared-register/services/register-fo
           <div class="auth-field">
             <label class="auth-field__label">Repetir contraseña</label>
             <app-password-input placeholder="Volvé a escribirla" controlName="repeatPassword"></app-password-input>
+            <!-- "Crear cuenta" se deshabilita si no coinciden; sin el mensaje no se entendía por qué. -->
+            <p class="auth-field__error" *ngIf="form.get('repeatPassword')?.value && form.get('repeatPassword')?.hasError('noPasswordMatch')">
+              Las contraseñas no coinciden.
+            </p>
           </div>
 
           <button type="submit" hidden></button>

@@ -13,6 +13,9 @@ export class RecoveryPasswordFormDataService {
 
   private _resetPasswordForm = this.fb.group({
     email: [null, [Validators.compose([Validators.required, Validators.email])]],
+    // El backend vuelve a pedir el código al guardar: sin él cualquiera podía
+    // cambiarle la contraseña a otro sabiendo sólo su email.
+    code: [null, Validators.required],
     password: [null, [Validators.required, Validators.minLength(6)]],
     repeatPassword: [null, [Validators.required, Validators.minLength(6)]],
   });

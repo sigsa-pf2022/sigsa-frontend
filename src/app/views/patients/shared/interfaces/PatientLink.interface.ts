@@ -6,4 +6,7 @@ export interface PatientLink {
   firstName: string;
   lastName: string;
   createdAt: string;
+  /** Sólo en los aceptados. */
+  nextAppointmentDate?: string | null;
+  activeTreatmentsCount?: number;
 }

@@ -11,6 +11,24 @@ export const PROFILE_OPTIONS = [
       payload: '/doctors',
     },
   },
+  // Para el profesional, buildOptions la reemplaza por "Mi agenda".
+  {
+    icon: 'chatbox-ellipses-outline',
+    title: 'Indicaciones de mis profesionales',
+    action: {
+      type: 'navigate',
+      payload: '/notes',
+    },
+  },
+  // Las solicitudes de vinculación que mandan los profesionales.
+  {
+    icon: 'shield-checkmark-outline',
+    title: 'Solicitudes de profesionales',
+    action: {
+      type: 'navigate',
+      payload: '/groups/professional-requests',
+    },
+  },
   {
     icon: 'time-outline',
     title: 'Mis Turnos',
@@ -36,24 +54,21 @@ export const PROFILE_OPTIONS = [
     },
   },
   {
-    icon: 'help-circle-outline',
-    title: 'Ayuda',
-    content: [
-      {
-        title: 'Preguntas frecuentes',
-      },
-      {
-        title: 'Hablar con soporte',
-      },
-    ],
+    icon: 'people-outline',
+    title: 'Mis Grupos',
+    action: {
+      type: 'navigate',
+      payload: '/tabs/groups',
+    },
   },
   {
-    icon: 'lock-closed-outline',
-    title: 'Seguridad',
-    content: [
-      {
-        title: 'Cambiar contraseña',
-      },
-    ],
+    icon: 'help-circle-outline',
+    title: 'Preguntas frecuentes',
+    action: {
+      type: 'navigate',
+      payload: '/profile/faq',
+    },
   },
+  // "Seguridad → Cambiar contraseña" se movió a "Mis datos", donde el ítem
+  // efectivamente dispara el flujo de recuperación por email.
 ];
